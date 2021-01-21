@@ -1,2 +1,2 @@
-console.error('Not implemented');
-process.exit(1);
+console.error('Not implemented')
+process.exit(1)
