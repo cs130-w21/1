@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Zero-config distributed parallel processing",
   "license": "Apache-2.0",
-  "main": "./dist/server.js",
+  "main": "dist/controller.js",
   "repository": "github:cs130-w21/1",
   "scripts": {
     "build": "tsc",
