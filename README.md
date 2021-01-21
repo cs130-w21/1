@@ -1,6 +1,6 @@
 # Repository Template
 
-[![Build Status](https://travis-ci.org/cs130-w21/template.svg?branch=master)](https://travis-ci.org/cs130-w21/template)
+[![Build Status](https://travis-ci.org/cs130-w21/1.svg?branch=master)](https://travis-ci.com/github/cs130-w21/1)
 [![Release](https://img.shields.io/github/v/release/cs130-w21/template?label=release)](https://github.com/cs130-w21/template/releases/latest)
 
 This repo serves as a template for repositories in this organization. The following information describes how the native features/workflows of Github can be customized to work in a scrum development process.
