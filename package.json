@@ -9,7 +9,7 @@
     "compile": "npx tsc",
     "compile:watch": "npx tsc -w",
     "start": "node ./dist/server.js",
-    "start:dev": "ts-node ./src/server.ts",
+    "start:watch": "nodemon ./dist/server.js",
     "prefix": "eslint --fix .",
     "fix": "prettier -w src",
     "pretest": "eslint .",
@@ -21,8 +21,8 @@
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "eslint": "^7.18.0",
+    "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
-    "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
   }
 }
