@@ -1,12 +1,4 @@
 {
-	"overrides": [
-		{
-			"files": "*.ts",
-			"options": {
-				"parser": "typescript"
-			}
-		}
-	],
 	"useTabs": true,
 	"semi": true,
 	"singleQuote": true,
