@@ -23,8 +23,8 @@ const listContainers = async () => {
 
 const importImage = async (name) => {
 	try{
-		const out = await docker.pull(name)
-		return out
+		const stream = await docker.pull(name)
+		return stream
 	} catch(err) {
 		console.log(err)
 	}
@@ -53,6 +53,47 @@ const removeContainer = async (container) => {
 	} catch(err) {
 		console.log(err)
 	}
+}
+
+const runCommand = async (image, command) => {
+	//create helper function to run command to avoid duplication
+	const onFinished = (err, output) => {
+		createContainer('testtest', 'ubuntu', ['/bin/yes']).then( async (container) => {
+			container.start(async (err,data) => {
+				if(err)
+					console.log(err)
+				else {
+					console.log('started')
+
+					//TODO: Find when command has stopped instead of stopping it
+					await container.stop()
+					console.log('stopped')
+
+					await container.remove()
+					console.log('removed')
+				}
+			})
+		})
+	}
+
+	//callback for determining progress of image fetch
+	const onProgress = (event) => {
+		//TODO: show progress
+	}
+
+	//get the image list
+	const images = await listImages()
+
+	if(images.findIndex((e) => e.RepoTags.findIndex((el) => el == image) > -1) < 0){
+		//if image is not fetched, fetch it (search only works if version is in image)
+		console.log(`Fetching image: ${image}`)
+		const stream = await importImage(image)
+		docker.modem.followProgress(stream, onFinished, onProgress)
+	} else {
+		//if image is fetched, just run command
+		onFinished(null, null)
+	}
+	//TODO: remove image?
 }
 
 /*listImages().then((images) => {
@@ -91,26 +132,33 @@ const removeContainer = async (container) => {
 	})
 })*/
 
-listImages().then((images) => {
-	importImage('ubuntu:latest').then(() => {
-		createContainer('testtest', 'ubuntu', ['/bin/yes']).then( async (container) => {
-			container.start(async (err,data) => {
-				if(err)
-					console.log(err)
-				else {
-					/*container.stop()
-					container.remove()*/
-					console.log('started')
+/*listImages().then((images) => {
+	importImage('ubuntu:latest').then((stream) => {
+		const onFinished = function(err, output){
+			createContainer('testtest', 'ubuntu', ['/bin/yes']).then( async (container) => {
+				container.start(async (err,data) => {
+					if(err)
+						console.log(err)
+					else {
+						console.log('started')
 
-					await container.stop()
-					console.log('stopped')
+						await container.stop()
+						console.log('stopped')
 
-					await container.remove()
-					console.log('removed')
-				}
+						await container.remove()
+						console.log('removed')
+					}
+				})
 			})
-		})
+		}
+
+		function onProgress(event) {
+		}
+
+		docker.modem.followProgress(stream, onFinished, onProgress)
 	})
-})
+})*/
+
+runCommand('ubuntu:latest', ['/bin/ls'])
 
 module.export = {listContainers, listImages}
