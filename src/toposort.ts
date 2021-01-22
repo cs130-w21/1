@@ -7,7 +7,7 @@ interface Node{
 //working on the assumption that we are given the requirements and prereqs
 //for a target
 
-function findSources(dict: any){
+function findSources(dict: Map<number, Node>){
     const sourceJOBIDs: Array<number> = [];
 
     //go through each node
