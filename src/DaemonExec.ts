@@ -40,7 +40,7 @@ const createContainer = async (name: string, image: string, command: string[]) =
 	}
 }
 
-const stopContainer = async (container: object) => {
+const stopContainer = async (container: any) => {
 	try{
 		await container.stop()
 	} catch(err) {
@@ -48,7 +48,7 @@ const stopContainer = async (container: object) => {
 	}
 }
 
-const removeContainer = async (container: object) => {
+const removeContainer = async (container: any) => {
 	try{
 		await container.remove()
 	} catch(err) {
@@ -58,20 +58,22 @@ const removeContainer = async (container: object) => {
 
 const runCommand = async (name: string, image: string, command: string[]) => {
 	//create helper function to run command to avoid duplication
-	const onFinished = (err: object, output: object) => {
-		createContainer(name, image, command).then( async (container: object) => {
+	const onFinished = (err: any) => {
+		if(err)
+			console.log(err)
+		createContainer(name, image, command).then( async (container: any) => {
 			//setup stream
 			const stream = await container.attach({stream: true, stdout: true, stderr: true})
 			const writeStream = fs.createWriteStream(`./${name}.out`)
 			stream.pipe(writeStream)
 
 			//start container
-			container.start(async (err: object,data: any) => {
+			container.start(async (err: any) => {
 				if(err)
 					console.log(err)
 				else {
 					console.log('started')
-					container.wait(async (err: object,data: any) => {
+					container.wait(async (err: any,data: any) => {
 						if(err)
 							console.log(err)
 						console.log('container end: ', data)
@@ -84,7 +86,7 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 	}
 
 	//callback for determining progress of image fetch
-	const onProgress = (event: object) => {
+	const onProgress = (event: any) => {
 		console.log(event.status)
 		if(event.progressDetail && event.progressDetail.current && event.progressDetail.total){
 			console.log(`${event.progressDetail.current}/${event.progressDetail.total} `)
@@ -97,40 +99,40 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 	//get the image list
 	const images = await listImages()
 
-	if(images.findIndex((e: object) => e.RepoTags.findIndex((el: string) => el == image) > -1) < 0){
+	if(images.findIndex((e: any) => e.RepoTags.findIndex((el: string) => el == image) > -1) < 0){
 		//if image is not fetched, fetch it (search only works if version is in image)
 		console.log(`Fetching image: ${image}`)
 		const stream = await importImage(image)
 		docker.modem.followProgress(stream, onFinished, onProgress)
 	} else {
 		//if image is fetched, just run command
-		onFinished(null, null)
+		onFinished(null)
 	}
 	//TODO: remove image?
 }
 
-/*listImages().then((images: object[]) => {
+/*listImages().then((images: any[]) => {
 	images.forEach(function (imageInfo) {
 		console.log(imageInfo)
 	})
 })*/
 
-/*listContainers().then((containers: object[]) => {
+/*listContainers().then((containers: any[]) => {
 	containers.forEach(function (containerInfo) {
 		console.log(containerInfo)
 	})
 })*/
 
 /*importImage('ubuntu').then(() => {
-	listImages().then((images: object[]) => {
-		images.forEach(function (imageInfo: object) {
+	listImages().then((images: any[]) => {
+		images.forEach(function (imageInfo: any) {
 			console.log(imageInfo)
 		})
 	})
 })*/
 
-/*createContainer('testest', 'ubuntu', ['/bin/yes']).then((container: object) => {
-	container.start(async (err: object,data: any) => {
+/*createContainer('testest', 'ubuntu', ['/bin/yes']).then((container: any) => {
+	container.start(async (err: any,data: any) => {
 		if(err)
 			console.log(err)
 		else {
@@ -145,11 +147,11 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 	})
 })*/
 
-/*listImages().then((images: object[]) => {
-	importImage('ubuntu:latest').then((stream: object) => {
-		const onFinished = function(err: object, output: any){
-			createContainer('testtest', 'ubuntu', ['/bin/yes']).then( async (container: object) => {
-				container.start(async (err: object,data: any) => {
+/*listImages().then((images: any[]) => {
+	importImage('ubuntu:latest').then((stream: any) => {
+		const onFinished = function(err: any, output: any){
+			createContainer('testtest', 'ubuntu', ['/bin/yes']).then( async (container: any) => {
+				container.start(async (err: any,data: any) => {
 					if(err)
 						console.log(err)
 					else {
@@ -165,7 +167,7 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 			})
 		}
 
-		function onProgress(event: object) {
+		function onProgress(event: any) {
 		}
 
 		docker.modem.followProgress(stream, onFinished, onProgress)
