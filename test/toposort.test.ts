@@ -1,12 +1,11 @@
-import {NodeJob, createTopoSort} from '../src/toposort'
-console.log("---t1---")
+import {NodeJob, createTopoSort} from '../src/toposort';
+
+console.log("---t1---");
 
 const f:NodeJob = {jobID : 1, requirements : (new Set<number>()).add(2).add(3), preReqTo: new Set(), oriNumPreReqTo: 0};
 const s:NodeJob = {jobID : 2, requirements: new Set<number>(), preReqTo: new Set(), oriNumPreReqTo: 0};
 const t:NodeJob = {jobID : 3, requirements: new Set<number>(), preReqTo: new Set(), oriNumPreReqTo: 0};
 const fo:NodeJob = {jobID: 4, requirements: (new Set<number>()).add(3), preReqTo: new Set(), oriNumPreReqTo: 0}
-
-createTopoSort( [f,s,t,fo] as Array<NodeJob>);
 
 console.log("---t2---");
 
@@ -75,3 +74,8 @@ const test7N6:NodeJob = {jobID : 6, requirements : (new Set<number>()).add(5), p
 createTopoSort([test7N1,test7N3,test7N5,test7N2,test7N4,test7N6] as Array<NodeJob>);
 
 console.log("----End----");
+
+test('createTopoSort', () => {
+	expect(createTopoSort( [f,s,t,fo] as Array<NodeJob>)).toBe((new Set<number>).add(3).add(2).add(1).add(4));
+  expect(createTopoSort([test2N1,test2N2, test2N3] as Array<NodeJob>)).toBe((new Set<number>).add(1).add(2).add(3));
+})
