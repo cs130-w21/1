@@ -39,7 +39,7 @@ function createDict_and_fill_empty_fields(manyNodes: Array<Node>){
 }
 
 
-function createTopoSort(manyNodes: Array<Node>){
+export function createTopoSort(manyNodes: Array<Node>){
 
     let finalSortedList: Array<number> = [];
     //places all nodes into the dictionary
