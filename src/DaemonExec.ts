@@ -174,4 +174,4 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 
 runCommand('name', 'ubuntu:latest', ['/bin/ls'])
 
-module.export = {listContainers, listImages, importImage, runCommand}
+module.exports = {listContainers, listImages, importImage, runCommand}
