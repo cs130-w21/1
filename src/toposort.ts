@@ -47,7 +47,6 @@ function createTopoSort(manyNodes: Array<Node>){
     let dict = createDict_and_fill_empty_fields(manyNodes);
 
     //console.log("Amount of Nodes in Dictionary " + dict.size);
-    let roundNum: number = 1;
     while(dict.size > 0) {
         //find sources
         let source = findSources(dict);
@@ -87,7 +86,6 @@ function createTopoSort(manyNodes: Array<Node>){
             console.log(entry.requirements);
             console.log(entry.preReqTo);
         }*/
-        roundNum++;
     }
     //we have finished creating the DAG
     //well when we do create it, we do not know if want to put it into queue or something
