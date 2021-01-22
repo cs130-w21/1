@@ -1,5 +1,5 @@
 
-interface NodeJob{
+export interface NodeJob{
     jobID: number;
     requirements : Set<number>;
     preReqTo : Set<number>;
