@@ -76,6 +76,6 @@ createTopoSort([test7N1,test7N3,test7N5,test7N2,test7N4,test7N6] as Array<NodeJo
 console.log("----End----");
 
 test('createTopoSort', () => {
-	expect(createTopoSort( [f,s,t,fo] as Array<NodeJob>)).toBe((new Set<number>).add(3).add(2).add(1).add(4));
-  expect(createTopoSort([test2N1,test2N2, test2N3] as Array<NodeJob>)).toBe((new Set<number>).add(1).add(2).add(3));
+	expect(createTopoSort( [f,s,t,fo] as Array<NodeJob>)).toBe((new Set<number>()).add(3).add(2).add(1).add(4));
+  expect(createTopoSort([test2N1,test2N2, test2N3] as Array<NodeJob>)).toBe((new Set<number>()).add(1).add(2).add(3));
 })
