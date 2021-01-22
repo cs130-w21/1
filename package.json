@@ -3,9 +3,26 @@
   "version": "1.0.0",
   "description": "Zero-config distributed parallel processing",
   "license": "Apache-2.0",
-  "main": "client.js",
   "repository": "github:cs130-w21/1",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "prepare": "tsc",
+    "start": "node dist/server.js",
+    "start:dev": "tsnd src/server.ts",
+    "cli": "node dist/controller.js",
+    "cli:dev": "ts-node src/controller.ts",
+    "prefix": "eslint --fix .",
+    "fix": "prettier -w src",
+    "pretest": "eslint .",
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "posttest": "prettier -c src"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.21",
+    "@typescript-eslint/eslint-plugin": "^4.14.0",
+    "@typescript-eslint/parser": "^4.14.0",
+    "eslint": "^7.18.0",
+    "prettier": "^2.2.1",
+    "ts-node-dev": "^1.1.1",
+    "typescript": "^4.1.3"
   }
 }
