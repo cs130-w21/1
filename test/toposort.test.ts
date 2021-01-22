@@ -1,3 +1,5 @@
+import { createTopoSort } from '../src/toposort'
+
 console.log("---t1---")
 
 const f = {jobID : 1, requirements : (new Set).add(2).add(3), preReqTo: new Set(), oriNumPreReqTo: 0};
