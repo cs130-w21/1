@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Zero-config distributed parallel processing",
   "license": "Apache-2.0",
-  "main": "dist/controller.js",
   "repository": "github:cs130-w21/1",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc -w",
-    "start": "node ./dist/server.js",
-    "start:watch": "nodemon ./dist/server.js",
+    "prepare": "tsc",
+    "start": "node dist/server.js",
+    "start:dev": "tsnd src/server.ts",
+    "cli": "node dist/controller.js",
+    "cli:dev": "ts-node src/controller.ts",
     "prefix": "eslint --fix .",
     "fix": "prettier -w src",
     "pretest": "eslint .",
@@ -21,8 +21,8 @@
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "eslint": "^7.18.0",
-    "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
+    "ts-node-dev": "^1.1.1",
     "typescript": "^4.1.3"
   }
 }
