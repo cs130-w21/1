@@ -89,6 +89,5 @@ export function createTopoSort(manyNodes: Array<NodeJob>){
     }
     //we have finished creating the DAG
     //well when we do create it, we do not know if want to put it into queue or something
-    console.log(finalSortedList);
     return finalSortedList;
 }
