@@ -1,4 +1,4 @@
-import {createTopoSort} from '../src/toposort'
+import {NodeJob, createTopoSort} from '../src/toposort'
 console.log("---t1---")
 
 const f:NodeJob = {jobID : 1, requirements : (new Set<number>()).add(2).add(3), preReqTo: new Set(), oriNumPreReqTo: 0};
