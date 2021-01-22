@@ -1,6 +1,5 @@
-const util = require('util')
-const fs = require('fs')
-const Docker = require('dockerode')
+import fs = require('fs')
+import Docker = require('dockerode')
 //needs docker to already be running
 const docker = new Docker()
 
@@ -10,6 +9,7 @@ const listImages = async () => {
 		return images
 	} catch(err) {
 		console.log(err)
+		return []
 	}
 }
 
@@ -19,6 +19,7 @@ const listContainers = async () => {
 		return containers
 	} catch(err) {
 		console.log(err)
+		return []
 	}
 }
 
@@ -31,37 +32,38 @@ const importImage = async (name: string) => {
 	}
 }
 
-const createContainer = async (name: string, image: string, command: string[]) => {
+const createContainer = async (image: string, command: string[]) => {
 	try{
-		const container = await docker.createContainer({Name: name, Image: image, Cmd: command, AttachStdout: true, AttachStderr: true})
+		const container = await docker.createContainer({Image: image, Cmd: command, AttachStdout: true, AttachStderr: true})
 		return container
 	} catch(err) {
 		console.log(err)
+		return null
 	}
 }
 
-const stopContainer = async (container: any) => {
+/*const stopContainer = async (container: any) => {
 	try{
 		await container.stop()
 	} catch(err) {
 		console.log(err)
 	}
-}
+}*/
 
-const removeContainer = async (container: any) => {
+/*const removeContainer = async (container: any) => {
 	try{
 		await container.remove()
 	} catch(err) {
 		console.log(err)
 	}
-}
+}*/
 
 const runCommand = async (name: string, image: string, command: string[]) => {
 	//create helper function to run command to avoid duplication
 	const onFinished = (err: any) => {
 		if(err)
 			console.log(err)
-		createContainer(name, image, command).then( async (container: any) => {
+		createContainer(image, command).then( async (container: any) => {
 			//setup stream
 			const stream = await container.attach({stream: true, stdout: true, stderr: true})
 			const writeStream = fs.createWriteStream(`./${name}.out`)
@@ -131,7 +133,7 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 	})
 })*/
 
-/*createContainer('testest', 'ubuntu', ['/bin/yes']).then((container: any) => {
+/*createContainer('ubuntu', ['/bin/yes']).then((container: any) => {
 	container.start(async (err: any,data: any) => {
 		if(err)
 			console.log(err)
@@ -150,7 +152,7 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 /*listImages().then((images: any[]) => {
 	importImage('ubuntu:latest').then((stream: any) => {
 		const onFinished = function(err: any, output: any){
-			createContainer('testtest', 'ubuntu', ['/bin/yes']).then( async (container: any) => {
+			createContainer('ubuntu', ['/bin/yes']).then( async (container: any) => {
 				container.start(async (err: any,data: any) => {
 					if(err)
 						console.log(err)
