@@ -4,8 +4,7 @@
 
 ### For development
 
-The commands you'll use most are listed below. 
-They operate on the TypeScript source code, so there is no separate <q>build step</q> to worry about.
+The commands you'll use most are listed below. They operate on the TypeScript source code, so there is no separate <q>build step</q> to worry about.
 
 - `start:dev`: Run the daemon program, watching for changes to dependent source files and auto-restarting as needed. Just start this process and leave it running as you work on the daemon.
 - `cli:dev`: Run the controller program.
