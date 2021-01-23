@@ -32,15 +32,27 @@ const importImage = async (name: string) => {
 	}
 }
 
+//volumePairs should be of the form [[hostSrc,containerDest]]
 const createContainer = async (
 	image: string,
 	command: string[],
+	outputDir: string,
 	stdoutFile: string,
+	volumePairs: [[string, string]],
 ) => {
 	try {
+		const volumeJson: any = {}
+		for (const volumePair of volumePairs) {
+			volumeJson[`${volumePair[1]}`] = {}
+		}
+		const volumeArray = volumePairs.map((el) => el[0] + ':' + el[1])
 		const container = await docker.createContainer({
 			Image: image,
 			Cmd: command,
+			Volumes: volumeJson,
+			HostConfig: {
+				Binds: volumeArray,
+			},
 			AttachStdout: true,
 			AttachStderr: true,
 		})
@@ -49,7 +61,13 @@ const createContainer = async (
 			stdout: true,
 			stderr: true,
 		})
-		const writeStream = fs.createWriteStream(`${stdoutFile}.out`)
+		await fs.mkdir(outputDir, { recursive: true }, (err) => {
+			if (err) {
+				console.log(err)
+				throw err
+			}
+		})
+		const writeStream = fs.createWriteStream(`${outputDir}/${stdoutFile}.out`)
 		stream.pipe(writeStream)
 		return container
 	} catch (err) {
@@ -94,17 +112,21 @@ const runContainer = async (container: any) => {
 
 //This method is only an example of how to run a command. This is not part of the API
 const runCommand = async (
-	stdoutFile: string,
 	image: string,
 	command: string[],
+	outputDir: string,
+	stdoutFile: string,
+	volumePairs: [[string, string]],
 ) => {
 	//create helper function to run command to avoid duplication
 	const onFinished = (err: any) => {
 		if (err) console.log(err)
-		createContainer(image, command, stdoutFile).then(async (container: any) => {
-			//start container
-			runContainer(container)
-		})
+		createContainer(image, command, outputDir, stdoutFile, volumePairs).then(
+			async (container: any) => {
+				//start container
+				runContainer(container)
+			},
+		)
 	}
 
 	//callback for determining progress of image fetch
@@ -142,7 +164,9 @@ const runCommand = async (
 	}
 }
 
-runCommand('name', 'ubuntu:latest', ['/bin/ls'])
+runCommand('ubuntu:latest', ['/bin/ls', '/stuff'], './output', 'output', [
+	['/bin', '/stuff'],
+])
 
 module.exports = {
 	listContainers,
