@@ -142,69 +142,6 @@ const runCommand = async (
 	}
 }
 
-/*listImages().then((images: any[]) => {
-	images.forEach(function (imageInfo) {
-		console.log(imageInfo)
-	})
-})*/
-
-/*listContainers().then((containers: any[]) => {
-	containers.forEach(function (containerInfo) {
-		console.log(containerInfo)
-	})
-})*/
-
-/*importImage('ubuntu').then(() => {
-	listImages().then((images: any[]) => {
-		images.forEach(function (imageInfo: any) {
-			console.log(imageInfo)
-		})
-	})
-})*/
-
-/*createContainer('ubuntu', ['/bin/yes']).then((container: any) => {
-	container.start(async (err: any,data: any) => {
-		if(err)
-			console.log(err)
-		else {
-			console.log('started')
-
-			await container.stop()
-			console.log('stopped')
-
-			await container.remove()
-			console.log('removed')
-		}
-	})
-})*/
-
-/*listImages().then((images: any[]) => {
-	importImage('ubuntu:latest').then((stream: any) => {
-		const onFinished = function(err: any, output: any){
-			createContainer('ubuntu', ['/bin/yes']).then( async (container: any) => {
-				container.start(async (err: any,data: any) => {
-					if(err)
-						console.log(err)
-					else {
-						console.log('started')
-
-						await container.stop()
-						console.log('stopped')
-
-						await container.remove()
-						console.log('removed')
-					}
-				})
-			})
-		}
-
-		function onProgress(event: any) {
-		}
-
-		docker.modem.followProgress(stream, onFinished, onProgress)
-	})
-})*/
-
 runCommand('name', 'ubuntu:latest', ['/bin/ls'])
 
 module.exports = {
