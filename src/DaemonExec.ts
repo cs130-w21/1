@@ -32,7 +32,11 @@ const importImage = async (name: string) => {
 	}
 }
 
-const createContainer = async (image: string, command: string[]) => {
+const createContainer = async (
+	image: string,
+	command: string[],
+	stdoutFile: string,
+) => {
 	try {
 		const container = await docker.createContainer({
 			Image: image,
@@ -40,6 +44,13 @@ const createContainer = async (image: string, command: string[]) => {
 			AttachStdout: true,
 			AttachStderr: true,
 		})
+		const stream = await container.attach({
+			stream: true,
+			stdout: true,
+			stderr: true,
+		})
+		const writeStream = fs.createWriteStream(`${stdoutFile}.out`)
+		stream.pipe(writeStream)
 		return container
 	} catch (err) {
 		console.log(err)
@@ -47,49 +58,52 @@ const createContainer = async (image: string, command: string[]) => {
 	}
 }
 
-/*const stopContainer = async (container: any) => {
-	try{
+const stopContainer = async (container: any) => {
+	try {
 		await container.stop()
-	} catch(err) {
+	} catch (err) {
 		console.log(err)
 	}
-}*/
+}
 
-/*const removeContainer = async (container: any) => {
-	try{
+const removeContainer = async (container: any) => {
+	try {
 		await container.remove()
-	} catch(err) {
+	} catch (err) {
 		console.log(err)
 	}
-}*/
+}
 
-const runCommand = async (name: string, image: string, command: string[]) => {
+const runContainer = async (container: any) => {
+	container.start(async (err: any) => {
+		if (err) {
+			console.log(err)
+		} else {
+			console.log('started')
+			container.wait(async (err: any, data: any) => {
+				if (err) {
+					console.log(err)
+				}
+				console.log('container end: ', data)
+				await container.remove()
+				console.log('removed')
+			})
+		}
+	})
+}
+
+//This method is only an example of how to run a command. This is not part of the API
+const runCommand = async (
+	stdoutFile: string,
+	image: string,
+	command: string[],
+) => {
 	//create helper function to run command to avoid duplication
 	const onFinished = (err: any) => {
 		if (err) console.log(err)
-		createContainer(image, command).then(async (container: any) => {
-			//setup stream
-			const stream = await container.attach({
-				stream: true,
-				stdout: true,
-				stderr: true,
-			})
-			const writeStream = fs.createWriteStream(`./${name}.out`)
-			stream.pipe(writeStream)
-
+		createContainer(image, command, stdoutFile).then(async (container: any) => {
 			//start container
-			container.start(async (err: any) => {
-				if (err) console.log(err)
-				else {
-					console.log('started')
-					container.wait(async (err: any, data: any) => {
-						if (err) console.log(err)
-						console.log('container end: ', data)
-						await container.remove()
-						console.log('removed')
-					})
-				}
-			})
+			runContainer(container)
 		})
 	}
 
@@ -126,7 +140,6 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 		//if image is fetched, just run command
 		onFinished(null)
 	}
-	//TODO: remove image?
 }
 
 /*listImages().then((images: any[]) => {
@@ -194,4 +207,12 @@ const runCommand = async (name: string, image: string, command: string[]) => {
 
 runCommand('name', 'ubuntu:latest', ['/bin/ls'])
 
-module.exports = { listContainers, listImages, importImage, runCommand }
+module.exports = {
+	listContainers,
+	listImages,
+	importImage,
+	createContainer,
+	stopContainer,
+	removeContainer,
+	runContainer,
+}
