@@ -10,8 +10,8 @@
     "start:dev": "tsnd src/server.ts",
     "cli": "node dist/controller.js",
     "cli:dev": "ts-node src/controller.ts",
-    "prefix": "eslint --fix .",
-    "fix": "prettier -w .",
+    "fix": "eslint --fix .",
+    "postfix": "prettier -w .",
     "pretest": "eslint .",
     "test": "jest",
     "posttest": "prettier -c ."
