@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { publishServer } from './ZeroconfDaemon'
 import { createDaemon } from './Daemon'
 import { SERVICE_TYPE } from './constants'

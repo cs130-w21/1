@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { supplyClient } from './ZeroconfClient'
 import Client from './Client'
 
