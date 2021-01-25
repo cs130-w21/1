@@ -41,6 +41,8 @@ const createContainer = async (
 	stdinFile: string,
 	outputDir: string,
 	stdoutFile: string,
+	errorDir: string,
+	stderrFile: string,
 	volumePairs: [[string, string]],
 ) => {
 	try {
@@ -76,8 +78,16 @@ const createContainer = async (
 				throw err
 			}
 		})
-		const writeStream = fs.createWriteStream(`${outputDir}/${stdoutFile}.out`)
-		stream.pipe(writeStream)
+		await fs.mkdir(errorDir, { recursive: true }, (err) => {
+			if (err) {
+				console.log(err)
+				throw err
+			}
+		})
+		const stdoutStream = fs.createWriteStream(`${outputDir}/${stdoutFile}`)
+		const stderrStream = fs.createWriteStream(`${errorDir}/${stderrFile}`)
+		container.modem.demuxStream(stream, stdoutStream, stderrStream)
+		//stream.pipe(stdoutStream)
 		const readStream = fs.createReadStream(`${inputDir}/${stdinFile}`, 'binary')
 		readStream.pipe(stream)
 		return container
@@ -129,6 +139,8 @@ const runCommand = async (
 	stdinFile: string,
 	outputDir: string,
 	stdoutFile: string,
+	errorDir: string,
+	stderrFile: string,
 	volumePairs: [[string, string]],
 ) => {
 	//create helper function to run command to avoid duplication
@@ -141,6 +153,8 @@ const runCommand = async (
 			stdinFile,
 			outputDir,
 			stdoutFile,
+			errorDir,
+			stderrFile,
 			volumePairs,
 		).then(async (container: any) => {
 			//start container
@@ -190,6 +204,8 @@ runCommand(
 	'input',
 	'./output',
 	'output',
+	'./error',
+	'error',
 	[[path.resolve('./output'), '/stuff']],
 )
 
