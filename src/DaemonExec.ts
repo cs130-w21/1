@@ -1,4 +1,5 @@
 import fs = require('fs')
+import path = require('path')
 import Docker = require('dockerode')
 //needs docker to already be running
 const docker = new Docker()
@@ -36,6 +37,8 @@ const importImage = async (name: string) => {
 const createContainer = async (
 	image: string,
 	command: string[],
+	inputDir: string,
+	stdinFile: string,
 	outputDir: string,
 	stdoutFile: string,
 	volumePairs: [[string, string]],
@@ -53,11 +56,17 @@ const createContainer = async (
 			HostConfig: {
 				Binds: volumeArray,
 			},
+			AttachStdin: true,
 			AttachStdout: true,
 			AttachStderr: true,
+			Tty: false,
+			OpenStdin: true,
+			StdinOnce: true,
 		})
 		const stream = await container.attach({
+			hijack: true,
 			stream: true,
+			stdin: true,
 			stdout: true,
 			stderr: true,
 		})
@@ -69,6 +78,8 @@ const createContainer = async (
 		})
 		const writeStream = fs.createWriteStream(`${outputDir}/${stdoutFile}.out`)
 		stream.pipe(writeStream)
+		const readStream = fs.createReadStream(`${inputDir}/${stdinFile}`, 'binary')
+		readStream.pipe(stream)
 		return container
 	} catch (err) {
 		console.log(err)
@@ -114,6 +125,8 @@ const runContainer = async (container: any) => {
 const runCommand = async (
 	image: string,
 	command: string[],
+	inputDir: string,
+	stdinFile: string,
 	outputDir: string,
 	stdoutFile: string,
 	volumePairs: [[string, string]],
@@ -121,12 +134,18 @@ const runCommand = async (
 	//create helper function to run command to avoid duplication
 	const onFinished = (err: any) => {
 		if (err) console.log(err)
-		createContainer(image, command, outputDir, stdoutFile, volumePairs).then(
-			async (container: any) => {
-				//start container
-				runContainer(container)
-			},
-		)
+		createContainer(
+			image,
+			command,
+			inputDir,
+			stdinFile,
+			outputDir,
+			stdoutFile,
+			volumePairs,
+		).then(async (container: any) => {
+			//start container
+			runContainer(container)
+		})
 	}
 
 	//callback for determining progress of image fetch
@@ -164,9 +183,15 @@ const runCommand = async (
 	}
 }
 
-runCommand('ubuntu:latest', ['/bin/ls', '/stuff'], './output', 'output', [
-	['/bin', '/stuff'],
-])
+runCommand(
+	'ubuntu:latest',
+	['/bin/cat'],
+	'./input',
+	'input',
+	'./output',
+	'output',
+	[[path.resolve('./output'), '/stuff']],
+)
 
 module.exports = {
 	listContainers,
