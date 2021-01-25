@@ -11,7 +11,7 @@ import { strict as assert } from 'assert'
  * @param type - Unix service type, e.g. http or ssh
  * @param name - human-readable name which is unique on the LAN
  * @param server - a TCP server in the listening state
- * @experimental
+ * @returns the underlying service descriptor that was announced.
  */
 export async function publishServer(
 	bonjour: Bonjour,

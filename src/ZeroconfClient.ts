@@ -9,7 +9,6 @@ import { Bonjour, Browser } from 'bonjour'
  * @param bonjour - a Zeroconf session
  * @param client - a Junknet client
  * @returns the underlying network discovery browser
- * @experimental
  */
 export function supplyClient(bonjour: Bonjour, client: Client): Browser {
 	const browser = bonjour.find({ type: SERVICE_TYPE })

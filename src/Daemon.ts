@@ -3,6 +3,10 @@ import { Server } from 'net'
 
 const MAX_DELAY_MS = 2000
 
+/**
+ * Randomly generate a number between 0 and {@link MAX_DELAY_MS}.
+ * @returns the generated number
+ */
 function mockDelayMs(): number {
 	return MAX_DELAY_MS * Math.random()
 }
