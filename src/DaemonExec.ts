@@ -1,5 +1,5 @@
 import fs = require('fs')
-import path = require('path')
+//import path = require('path')
 import Docker = require('dockerode')
 //needs docker to already be running
 const docker = new Docker()
@@ -132,7 +132,7 @@ const runContainer = async (container: any) => {
 }
 
 //This method is only an example of how to run a command. This is not part of the API
-const runCommand = async (
+/*const runCommand = async (
 	image: string,
 	command: string[],
 	inputDir: string,
@@ -195,9 +195,9 @@ const runCommand = async (
 		//if image is fetched, just run command
 		onFinished(null)
 	}
-}
+}*/
 
-runCommand(
+/*runCommand(
 	'ubuntu:latest',
 	['/bin/cat'],
 	'./input',
@@ -207,7 +207,7 @@ runCommand(
 	'./error',
 	'error',
 	[[path.resolve('./output'), '/stuff']],
-)
+)*/
 
 module.exports = {
 	listContainers,
