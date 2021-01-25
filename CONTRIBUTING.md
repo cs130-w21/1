@@ -14,4 +14,4 @@ The commands you'll use most are listed below. They operate on the TypeScript so
 
 These commands involve compiling TypeScript to JavaScript.
 
-- `prepare`: Build the project. This will write the build output as JavaScript files into [dist](dist). There's no need to run this task during your normal development process. This is run automatically on `npm install` or `npm pack`, which means that Travis will run it.
+- `prepare`: Build the project (as JavaScript files, into [dist](dist)) and documentation (as HTML files, into [docs](docs)). There's no need to run this task during your normal development process. This is run automatically on `npm install` or `npm pack`, which means that Travis will run it.
