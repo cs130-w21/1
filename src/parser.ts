@@ -1,10 +1,8 @@
 import * as fs from 'fs'
 import * as process from 'process'
 import * as yargs from 'yargs'
-// We need to import yargs types from the `@types/yargs`
-// package. This probably wasn't done right; might cause problems later?
 
-// Specify command-line options.
+// Specify available command-line options.
 // Use only the first two elements; Node.js appends extra elements to argv.
 const argv = yargs(process.argv.slice(2)).options({
 	makefile: {
