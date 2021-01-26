@@ -30,10 +30,7 @@ const runCommand = async (
 		if (err) console.log(err)
 		let stdinStream: any = process.stdin
 		if (inputDir != '' && stdinFile != '') {
-			stdinStream = fs.createReadStream(
-				`${inputDir}/${stdinFile}`,
-				'binary',
-			)
+			stdinStream = fs.createReadStream(`${inputDir}/${stdinFile}`, 'binary')
 		}
 		let stdoutStream: any = process.stdout
 		if (outputDir != '' && stdoutFile != '') {
@@ -55,33 +52,26 @@ const runCommand = async (
 			})
 			stderrStream = fs.createWriteStream(`${errorDir}/${stderrFile}`)
 		}
-		await createContainer(
-			image,
-			command,
-			volumePairs,
-		).then(async (container: any) => {
-			await attachStreams(
-				container,
-				stdinStream,
-				stdoutStream,
-				stderrStream,
-			)
-			//start container
-			await container.start(async (err: any) => {
-		                if (err) {
-		                        console.log(err)
-		                } else {
-		                        console.log('started')
-		                        container.wait(async (err: any, data: any) => {
-		                                if (err) {
-		                                        console.log(err)
-		                                }
-	        	                        console.log('container end: ', data)
-		                                removeContainer(container)
-		                        })
-				}
-        	        })
-		})
+		await createContainer(image, command, volumePairs).then(
+			async (container: any) => {
+				await attachStreams(container, stdinStream, stdoutStream, stderrStream)
+				//start container
+				await container.start(async (err: any) => {
+					if (err) {
+						console.log(err)
+					} else {
+						console.log('started')
+						container.wait(async (err: any, data: any) => {
+							if (err) {
+								console.log(err)
+							}
+							console.log('container end: ', data)
+							removeContainer(container)
+						})
+					}
+				})
+			},
+		)
 	}
 
 	//callback for determining progress of image fetch
@@ -131,14 +121,4 @@ runCommand(
 	[[path.resolve('./output'), '/stuff']],
 )
 
-runCommand(
-	'ubuntu:latest',
-	['/bin/ls'],
-	'',
-	'',
-	'',
-	'',
-	'',
-	'',
-	[],
-)
+runCommand('ubuntu:latest', ['/bin/ls'], '', '', '', '', '', '', [])
