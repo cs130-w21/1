@@ -43,7 +43,7 @@ const createContainer = async (
 	stdoutFile: string,
 	errorDir: string,
 	stderrFile: string,
-	volumePairs: [[string, string]],
+	volumePairs: [string, string][],
 ) => {
 	try {
 		const volumeJson: any = {}
@@ -72,24 +72,36 @@ const createContainer = async (
 			stdout: true,
 			stderr: true,
 		})
-		await fs.mkdir(outputDir, { recursive: true }, (err) => {
-			if (err) {
-				console.log(err)
-				throw err
-			}
-		})
-		await fs.mkdir(errorDir, { recursive: true }, (err) => {
-			if (err) {
-				console.log(err)
-				throw err
-			}
-		})
-		const stdoutStream = fs.createWriteStream(`${outputDir}/${stdoutFile}`)
-		const stderrStream = fs.createWriteStream(`${errorDir}/${stderrFile}`)
+		let stdoutStream: any = process.stdout
+		if (outputDir != '' && stdoutFile != '') {
+			await fs.mkdir(outputDir, { recursive: true }, (err) => {
+				if (err) {
+					console.log(err)
+					throw err
+				}
+			})
+			stdoutStream = fs.createWriteStream(`${outputDir}/${stdoutFile}`)
+		}
+		let stderrStream: any = process.stderr
+		if (errorDir != '' && stderrFile != '') {
+			await fs.mkdir(errorDir, { recursive: true }, (err) => {
+				if (err) {
+					console.log(err)
+					throw err
+				}
+			})
+			stderrStream = fs.createWriteStream(`${errorDir}/${stderrFile}`)
+		}
 		container.modem.demuxStream(stream, stdoutStream, stderrStream)
-		//stream.pipe(stdoutStream)
-		const readStream = fs.createReadStream(`${inputDir}/${stdinFile}`, 'binary')
-		readStream.pipe(stream)
+
+		if (inputDir != '' && stdinFile != '') {
+			const readStream = fs.createReadStream(
+				`${inputDir}/${stdinFile}`,
+				'binary',
+			)
+			readStream.pipe(stream)
+		}
+
 		return container
 	} catch (err) {
 		console.log(err)
@@ -141,7 +153,7 @@ const runContainer = async (container: any) => {
 	stdoutFile: string,
 	errorDir: string,
 	stderrFile: string,
-	volumePairs: [[string, string]],
+	volumePairs: [string, string][],
 ) => {
 	//create helper function to run command to avoid duplication
 	const onFinished = (err: any) => {
@@ -207,6 +219,18 @@ const runContainer = async (container: any) => {
 	'./error',
 	'error',
 	[[path.resolve('./output'), '/stuff']],
+)*/
+
+/*runCommand(
+	'ubuntu:latest',
+	['/bin/ls'],
+	'',
+	'',
+	'',
+	'',
+	'',
+	'',
+	[],
 )*/
 
 module.exports = {
