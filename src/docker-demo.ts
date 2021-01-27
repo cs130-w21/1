@@ -52,7 +52,7 @@ const runCommand = async (
 			})
 			stderrStream = fs.createWriteStream(`${errorDir}/${stderrFile}`)
 		}
-		await createContainer(image, command, volumePairs).then(
+		await createContainer(docker, image, command, volumePairs).then(
 			async (container: any) => {
 				await attachStreams(container, stdinStream, stdoutStream, stderrStream)
 				//start container
@@ -92,7 +92,7 @@ const runCommand = async (
 	}
 
 	//get the image list
-	const images = await listImages()
+	const images = await listImages(docker)
 
 	if (
 		images.findIndex(
@@ -101,7 +101,7 @@ const runCommand = async (
 	) {
 		//if image is not fetched, fetch it (search only works if version is in image)
 		console.log(`Fetching image: ${image}`)
-		const stream = await importImage(image)
+		const stream = await importImage(docker, image)
 		docker.modem.followProgress(stream, onFinished, onProgress)
 	} else {
 		//if image is fetched, just run command
@@ -112,8 +112,8 @@ const runCommand = async (
 runCommand(
 	'ubuntu:latest',
 	['/bin/cat'],
-	'./input',
-	'input',
+	'.',
+	'package.json',
 	'./output',
 	'output',
 	'./error',

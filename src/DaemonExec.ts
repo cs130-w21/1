@@ -1,24 +1,20 @@
-import Docker = require('dockerode')
-
-//needs docker to already be running
-const docker = new Docker()
-
-export async function listImages() {
+export async function listImages(docker: any) {
 	const images = await docker.listImages({})
 	return images
 }
 
-export async function listContainers() {
+export async function listContainers(docker: any) {
 	const containers = await docker.listContainers()
 	return containers
 }
 
-export async function importImage(name: string) {
+export async function importImage(docker: any, name: string) {
 	const stream = await docker.pull(name)
 	return stream
 }
 
 export async function createContainer(
+	docker: any,
 	image: string,
 	command: string[],
 	volumePairs: [string, string][] = [],
