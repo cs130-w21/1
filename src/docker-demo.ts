@@ -1,6 +1,6 @@
-import fs = require('fs')
-import path = require('path')
-import Docker = require('dockerode')
+import { mkdir, createReadStream, createWriteStream } from 'fs'
+import { resolve } from 'path'
+import * as Docker from 'dockerode'
 
 //needs docker to already be running
 const docker = new Docker()
@@ -30,27 +30,27 @@ const runCommand = async (
 		if (err) console.log(err)
 		let stdinStream: any = process.stdin
 		if (inputDir != '' && stdinFile != '') {
-			stdinStream = fs.createReadStream(`${inputDir}/${stdinFile}`, 'binary')
+			stdinStream = createReadStream(`${inputDir}/${stdinFile}`, 'binary')
 		}
 		let stdoutStream: any = process.stdout
 		if (outputDir != '' && stdoutFile != '') {
-			await fs.mkdir(outputDir, { recursive: true }, (err) => {
+			await mkdir(outputDir, { recursive: true }, (err) => {
 				if (err) {
 					console.log(err)
 					throw err
 				}
 			})
-			stdoutStream = fs.createWriteStream(`${outputDir}/${stdoutFile}`)
+			stdoutStream = createWriteStream(`${outputDir}/${stdoutFile}`)
 		}
 		let stderrStream: any = process.stderr
 		if (errorDir != '' && stderrFile != '') {
-			await fs.mkdir(errorDir, { recursive: true }, (err) => {
+			await mkdir(errorDir, { recursive: true }, (err) => {
 				if (err) {
 					console.log(err)
 					throw err
 				}
 			})
-			stderrStream = fs.createWriteStream(`${errorDir}/${stderrFile}`)
+			stderrStream = createWriteStream(`${errorDir}/${stderrFile}`)
 		}
 		await createContainer(docker, image, command, volumePairs).then(
 			async (container: any) => {
@@ -118,7 +118,7 @@ runCommand(
 	'output',
 	'./error',
 	'error',
-	[[path.resolve('./output'), '/stuff']],
+	[[resolve('./output'), '/stuff']],
 )
 
 runCommand('ubuntu:latest', ['/bin/ls'], '', '', '', '', '', '', [])
