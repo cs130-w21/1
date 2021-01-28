@@ -2,9 +2,6 @@ import { promises as fs, createReadStream, createWriteStream } from 'fs'
 import { resolve } from 'path'
 import * as Docker from 'dockerode'
 
-//needs docker to already be running
-const docker = new Docker()
-
 import {
 	listImages,
 	importImage,
@@ -13,7 +10,10 @@ import {
 	removeContainer,
 } from './DaemonExec'
 
-//This method is only an example of how to run a command. This is not part of the API
+// needs docker to already be running
+const docker = new Docker()
+
+// This method is only an example of how to run a command. This is not part of the API
 const runCommand = async (
 	image: string,
 	command: string[],
@@ -25,7 +25,7 @@ const runCommand = async (
 	stderrFile: string,
 	volumePairs: [string, string][],
 ) => {
-	//create helper function to run command to avoid duplication
+	// create helper function to run command to avoid duplication
 	const onFinished = async (err: any) => {
 		if (err) console.log(err)
 		let stdinStream: any = process.stdin
@@ -45,7 +45,7 @@ const runCommand = async (
 		await createContainer(docker, image, command, volumePairs).then(
 			async (container: any) => {
 				await attachStreams(container, stdinStream, stdoutStream, stderrStream)
-				//start container
+				// start container
 				await container.start(async (err: any) => {
 					if (err) {
 						console.log(err)
@@ -64,7 +64,7 @@ const runCommand = async (
 		)
 	}
 
-	//callback for determining progress of image fetch
+	// callback for determining progress of image fetch
 	const onProgress = (event: any) => {
 		console.log(event.status)
 		if (
@@ -81,7 +81,7 @@ const runCommand = async (
 		}
 	}
 
-	//get the image list
+	// get the image list
 	const images = await listImages(docker)
 
 	if (
@@ -89,12 +89,12 @@ const runCommand = async (
 			(e: any) => e.RepoTags.findIndex((el: string) => el == image) > -1,
 		) < 0
 	) {
-		//if image is not fetched, fetch it (search only works if version is in image)
+		// if image is not fetched, fetch it (search only works if version is in image)
 		console.log(`Fetching image: ${image}`)
 		const stream = await importImage(docker, image)
 		docker.modem.followProgress(stream, onFinished, onProgress)
 	} else {
-		//if image is fetched, just run command
+		// if image is fetched, just run command
 		onFinished(null)
 	}
 }

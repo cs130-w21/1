@@ -43,14 +43,14 @@ export async function createContainer(
 	command: string[],
 	volumePairs: [string, string][] = [],
 ) {
-	//make volumes in form accepted by createContainer
+	// make volumes in form accepted by createContainer
 	const volumeJson: any = {}
 	for (const volumePair of volumePairs) {
 		volumeJson[`${volumePair[1]}`] = {}
 	}
-	const volumeArray = volumePairs.map((el) => el[0] + ':' + el[1])
+	const volumeArray = volumePairs.map((el) => `${el[0]}:${el[1]}`)
 
-	//create container
+	// create container
 	const container = await docker.createContainer({
 		Image: image,
 		Cmd: command,
