@@ -13,6 +13,6 @@ import { Bonjour, Browser } from 'bonjour'
 export function supplyClient(bonjour: Bonjour, client: Client): Browser {
 	const browser = bonjour.find({ type: SERVICE_TYPE })
 	browser.on('up', (service) => client.introduce(service.host, service.port))
-	client.once('done', browser.stop)
+	client.once('done', () => browser.stop())
 	return browser
 }

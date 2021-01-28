@@ -30,6 +30,6 @@ export async function publishServer(
 	})
 
 	await once(service, 'up')
-	server.once('close', service.stop)
+	server.once('close', () => service.stop())
 	return service
 }
