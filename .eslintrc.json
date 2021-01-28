@@ -15,7 +15,7 @@
 		"prettier/@typescript-eslint"
 	],
 	"rules": {
-		"tsdoc/syntax": "warn"
+		"tsdoc/syntax": "error"
 	},
 	"env": {
 		"node": true,
