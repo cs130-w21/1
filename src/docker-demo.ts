@@ -1,4 +1,4 @@
-import { mkdir, createReadStream, createWriteStream } from 'fs'
+import { promises as fs, createReadStream, createWriteStream } from 'fs'
 import { resolve } from 'path'
 import * as Docker from 'dockerode'
 
@@ -34,22 +34,12 @@ const runCommand = async (
 		}
 		let stdoutStream: any = process.stdout
 		if (outputDir != '' && stdoutFile != '') {
-			await mkdir(outputDir, { recursive: true }, (err) => {
-				if (err) {
-					console.log(err)
-					throw err
-				}
-			})
+			await fs.mkdir(outputDir, { recursive: true })
 			stdoutStream = createWriteStream(`${outputDir}/${stdoutFile}`)
 		}
 		let stderrStream: any = process.stderr
 		if (errorDir != '' && stderrFile != '') {
-			await mkdir(errorDir, { recursive: true }, (err) => {
-				if (err) {
-					console.log(err)
-					throw err
-				}
-			})
+			await fs.mkdir(errorDir, { recursive: true })
 			stderrStream = createWriteStream(`${errorDir}/${stderrFile}`)
 		}
 		await createContainer(docker, image, command, volumePairs).then(
