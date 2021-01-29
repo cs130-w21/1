@@ -16,6 +16,7 @@ function mockDelayMs(): number {
  * Echoes the requested path back to the client in uppercase as plain text.
  * Randomly delayed response to create more interesting tests.
  * @experimental
+ * Plan: Convert this server to be an SSH server using the ssh2 node.js library.
  */
 export function createDaemon(): Server {
 	const server = createServer()
