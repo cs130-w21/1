@@ -69,7 +69,7 @@ const runCommand = async (
 	}
 
 	// callback for determining progress of image fetch
-	const onProgress = (event: any) => {
+	const onProgress = (event: {status: string, progressDetail: {current: number, total: number}, progress: string, id: string}) => {
 		console.log(event.status)
 		if (
 			event.progressDetail &&

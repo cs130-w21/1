@@ -27,7 +27,7 @@ export async function listContainers(docker: Docker) : Promise<Docker.ContainerI
  * @returns a ReadableStream to track the progress of the import
  */
 export async function importImage(docker: Docker, name: string) : Promise<NodeJS.ReadWriteStream>{
-	const stream: NodeJS.ReadWriteStream = await docker.pull(name)
+	const stream: NodeJS.ReadWriteStream = await (docker.pull(name) as Promise<NodeJS.ReadWriteStream>)
 	return stream
 }
 
