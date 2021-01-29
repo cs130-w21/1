@@ -28,40 +28,44 @@ const runCommand = async (
 	// create helper function to run command to avoid duplication
 	const onFinished = async (err: any) => {
 		if (err) console.log(err)
-		let stdinStream: any = process.stdin
-		if (inputDir != '' && stdinFile != '') {
+		let stdinStream: NodeJS.ReadableStream = process.stdin
+		if (inputDir !== '' && stdinFile !== '') {
 			stdinStream = createReadStream(`${inputDir}/${stdinFile}`, 'binary')
 		}
-		let stdoutStream: any = process.stdout
-		if (outputDir != '' && stdoutFile != '') {
+		let stdoutStream: NodeJS.WritableStream = process.stdout
+		if (outputDir !== '' && stdoutFile !== '') {
 			await fs.mkdir(outputDir, { recursive: true })
 			stdoutStream = createWriteStream(`${outputDir}/${stdoutFile}`)
 		}
-		let stderrStream: any = process.stderr
-		if (errorDir != '' && stderrFile != '') {
+		let stderrStream: NodeJS.WritableStream = process.stderr
+		if (errorDir !== '' && stderrFile !== '') {
 			await fs.mkdir(errorDir, { recursive: true })
 			stderrStream = createWriteStream(`${errorDir}/${stderrFile}`)
 		}
 		await createContainer(docker, image, command, volumePairs).then(
-			async (container: any) => {
+			async (container: Docker.Container) => {
 				await attachStreams(container, stdinStream, stdoutStream, stderrStream)
 				// start container
-				await container.start(async (err: any) => {
-					if (err) {
-						console.log(err)
+				container.start((error) => {
+					if (error) {
+						console.log(error)
 					} else {
 						console.log('started')
-						container.wait(async (err: any, data: any) => {
-							if (err) {
-								console.log(err)
+						container.wait((e, data) => {
+							if (e) {
+								console.log(e)
 							}
 							console.log('container end: ', data)
-							removeContainer(container)
+							removeContainer(container).catch((er) => {
+								if(er)
+									console.log(er)
+							})
 						})
 					}
 				})
 			},
 		)
+		
 	}
 
 	// callback for determining progress of image fetch
@@ -79,6 +83,7 @@ const runCommand = async (
 		if (event.progress) {
 			console.log(event.progress)
 		}
+		
 	}
 
 	// get the image list
@@ -86,7 +91,7 @@ const runCommand = async (
 
 	if (
 		images.findIndex(
-			(e: any) => e.RepoTags.findIndex((el: string) => el == image) > -1,
+			(e: Docker.ImageInfo) => e.RepoTags.findIndex((el: string) => el === image) > -1,
 		) < 0
 	) {
 		// if image is not fetched, fetch it (search only works if version is in image)
@@ -95,7 +100,10 @@ const runCommand = async (
 		docker.modem.followProgress(stream, onFinished, onProgress)
 	} else {
 		// if image is fetched, just run command
-		onFinished(null)
+		onFinished(null).catch((err) => {
+			if(err)
+				console.log(err)
+		})
 	}
 }
 
@@ -109,6 +117,10 @@ runCommand(
 	'./error',
 	'error',
 	[[resolve('./output'), '/stuff']],
-)
+).catch((err) => {
+	console.log(err)
+})
 
-runCommand('ubuntu:latest', ['/bin/ls'], '', '', '', '', '', '', [])
+runCommand('ubuntu:latest', ['/bin/ls'], '', '', '', '', '', '', []).catch((err) => {
+	console.log(err)
+})
