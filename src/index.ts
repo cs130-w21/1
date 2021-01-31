@@ -1,5 +1,6 @@
 export * from './Constants'
 export * from './Daemon'
 export * from './Client'
+export * from './Http2Client'
 export * from './ZeroconfDaemon'
 export * from './ZeroconfClient'
