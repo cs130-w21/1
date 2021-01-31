@@ -1,5 +1,6 @@
 import { ClientHttp2Session, connect } from 'http2'
 import { EventEmitter } from 'events'
+import TypedEmitter from 'typed-emitter'
 
 /**
  * String representation of the host and port together.
@@ -24,17 +25,37 @@ function hostAndPort(host: string, port: number): string {
 export type Job = string
 
 /**
- * A Junknet client. It distributes the given jobs among daemons it knows about.
- *
- * @remarks
- * Events:
- * - `'error'(Error)`: network-related failure
- * - `'progress'({@link Job}, string)`: a finished job resulted in the given data
- * - `'done'()`: all jobs completed
- *
+ * Model for events emitted by {@link Client}.
  * @experimental
  */
-export class Client extends EventEmitter {
+export interface ClientEvents {
+	/**
+	 * An unrecoverable network error occurred.
+	 *
+	 * @param err - the underlying network error
+	 */
+	error(err: Error): void
+
+	/**
+	 * One job completed, and returned some data.
+	 *
+	 * @param job - the job which completed
+	 * @param data - the result of the job
+	 */
+	progress(job: Job, data: string): void
+
+	/**
+	 * All jobs have completed.
+	 * The {@link progress} event will not trigger again.
+	 */
+	done(): void
+}
+
+/**
+ * A Junknet client. It distributes the given jobs among daemons it knows about.
+ * @experimental
+ */
+export class Client extends (EventEmitter as new () => TypedEmitter<ClientEvents>) {
 	/**
 	 * Create a client whose responsibility is to finish the given jobs.
 	 * It won't start until it knows about some daemons.
