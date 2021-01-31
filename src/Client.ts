@@ -25,6 +25,13 @@ function hostAndPort(host: string, port: number): string {
 export type Job = string
 
 /**
+ * Representation of the output of a single job.
+ * Obviously, in the future this will not just be a string.
+ * @experimental
+ */
+export type JobResult = string
+
+/**
  * Model for events emitted by {@link Client}.
  * @experimental
  */
@@ -40,9 +47,9 @@ export interface ClientEvents {
 	 * One job completed, and returned some data.
 	 *
 	 * @param job - the job which completed
-	 * @param data - the result of the job
+	 * @param data - the result of that job
 	 */
-	progress(job: Job, data: string): void
+	progress(job: Job, data: JobResult): void
 
 	/**
 	 * All jobs have completed.
