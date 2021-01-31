@@ -52,10 +52,27 @@ export interface ClientEvents {
 }
 
 /**
- * A Junknet client. It distributes the given jobs among daemons it knows about.
+ * A Junknet client.
+ * It's responsible for finishing some jobs by distributing them among daemons it knows about.
  * @experimental
  */
-export class Client extends (EventEmitter as new () => TypedEmitter<ClientEvents>) {
+export interface Client extends TypedEmitter<ClientEvents> {
+	/**
+	 * Add a new daemon to the swarm.
+	 * The client may now give jobs to this daemon.
+	 *
+	 * @param host - hostname or IP address of daemon
+	 * @param port - port number of daemon on the host
+	 */
+	introduce(host: string, port: number): void
+}
+
+/**
+ * A mock Junknet client using HTTP/2.
+ * It distributes the given jobs among daemons it knows about.
+ * @deprecated Implement a {@link Client} using SSH instead.
+ */
+export class Http2Client extends EventEmitter implements Client {
 	/**
 	 * Create a client whose responsibility is to finish the given jobs.
 	 * It won't start until it knows about some daemons.
@@ -72,6 +89,7 @@ export class Client extends (EventEmitter as new () => TypedEmitter<ClientEvents
 	 *
 	 * @param host - hostname or IP address of daemon
 	 * @param port - port number of daemon on the host
+	 * @override
 	 */
 	introduce(host: string, port: number): void {
 		const client = connect(`http://${hostAndPort(host, port)}`)
