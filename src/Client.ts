@@ -34,7 +34,7 @@ export type Job = string
  *
  * @experimental
  */
-export default class Client extends EventEmitter {
+export class Client extends EventEmitter {
 	/**
 	 * Create a client whose responsibility is to finish the given jobs.
 	 * It won't start until it knows about some daemons.

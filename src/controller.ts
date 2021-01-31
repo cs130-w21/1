@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { supplyClient } from './ZeroconfClient'
-import Client from './Client'
+import { Client } from './Client'
 
 import * as bonjour from 'bonjour'
 import { once } from 'events'
