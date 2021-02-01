@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { promises as fs, createReadStream, createWriteStream } from 'fs'
 import { resolve } from 'path'
 import * as Docker from 'dockerode'

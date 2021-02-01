@@ -65,9 +65,6 @@ export async function createContainer(
 	Object.values(volumePairs).forEach((value) => {
 		volumeJson[value[1]] = {}
 	})
-	/* for (const volumePair of volumePairs) {
-		volumeJson[`${volumePair[1]}`] = {}
-	} */
 	const volumeArray = volumePairs.map((el) => `${el[0]}:${el[1]}`)
 
 	// create container
