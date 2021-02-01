@@ -16,7 +16,7 @@ const docker = new Docker()
 interface DockerModem {
 	followProgress(
 		stream: NodeJS.ReadableStream,
-		onFinished: (err: any) => any,
+		onFinished: (err?: Error) => Promise<void>,
 		onProgress: (event: {
 			status: string
 			progressDetail: { current: number; total: number }
@@ -39,7 +39,7 @@ const runCommand = async (
 	volumePairs: [string, string][],
 ) => {
 	// create helper function to run command to avoid duplication
-	const onFinished = async (err: any) => {
+	const onFinished = async (err?: Error) => {
 		if (err) console.log(err)
 		let stdinStream: NodeJS.ReadableStream = process.stdin
 		if (inputDir !== '' && stdinFile !== '') {
@@ -117,7 +117,7 @@ const runCommand = async (
 		modem.followProgress(stream, onFinished, onProgress)
 	} else {
 		// if image is fetched, just run command
-		onFinished(null).catch((err) => {
+		onFinished(undefined).catch((err) => {
 			if (err) console.log(err)
 		})
 	}
