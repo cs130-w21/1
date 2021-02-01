@@ -57,28 +57,24 @@ const runCommand = async (
 			await fs.mkdir(errorDir, { recursive: true })
 			stderrStream = createWriteStream(`${errorDir}/${stderrFile}`)
 		}
-		await createContainer(docker, image, command, volumePairs).then(
-			async (container: Docker.Container) => {
-				await attachStreams(container, stdinStream, stdoutStream, stderrStream)
-				// start container
-				container.start((error) => {
-					if (error) {
-						console.log(error)
-					} else {
-						console.log('started')
-						container.wait((e, data) => {
-							if (e) {
-								console.log(e)
-							}
-							console.log('container end: ', data)
-							removeContainer(container).catch((er) => {
-								if (er) console.log(er)
-							})
-						})
+		const container = await createContainer(docker, image, command, volumePairs)
+		await attachStreams(container, stdinStream, stdoutStream, stderrStream)
+		container.start((error) => {
+			if (error) {
+				console.log(error)
+			} else {
+				console.log('started')
+				container.wait((e, data) => {
+					if (e) {
+						console.log(e)
 					}
+					console.log('container end: ', data)
+					removeContainer(container).catch((er) => {
+						if (er) console.log(er)
+					})
 				})
-			},
-		)
+			}
+		})
 	}
 
 	// callback for determining progress of image fetch
