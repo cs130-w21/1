@@ -6,8 +6,7 @@ import * as Docker from 'dockerode'
 
 import {
 	VolumeDefinition,
-	listImages,
-	importImage,
+	callbackImportImage,
 	createContainer,
 	attachStreams,
 	removeContainer,
@@ -15,19 +14,6 @@ import {
 
 // needs docker to already be running
 const docker = new Docker()
-
-interface DockerModem {
-	followProgress(
-		stream: NodeJS.ReadableStream,
-		onFinished: (err?: Error) => Promise<void>,
-		onProgress: (event: {
-			status: string
-			progressDetail: { current: number; total: number }
-			progress: string
-			id: string
-		}) => void,
-	): void
-}
 
 // This method is only an example of how to run a command. This is not part of the API
 const runCommand = async (
@@ -100,26 +86,7 @@ const runCommand = async (
 		}
 	}
 
-	// get the image list
-	const images = await listImages(docker)
-
-	if (
-		images.findIndex(
-			(e: Docker.ImageInfo) =>
-				e.RepoTags.findIndex((el: string) => el === image) > -1,
-		) < 0
-	) {
-		// if image is not fetched, fetch it (search only works if version is in image)
-		console.log(`Fetching image: ${image}`)
-		const stream = await importImage(docker, image)
-		const modem: DockerModem = docker.modem as DockerModem
-		modem.followProgress(stream, onFinished, onProgress)
-	} else {
-		// if image is fetched, just run command
-		onFinished(undefined).catch((err) => {
-			if (err) console.log(err)
-		})
-	}
+	await callbackImportImage(docker, image, onFinished, onProgress)
 }
 
 runCommand(

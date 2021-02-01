@@ -8,6 +8,19 @@ interface ContainerModem {
 	): void
 }
 
+interface DockerModem {
+	followProgress(
+		stream: NodeJS.ReadableStream,
+		onFinished: (err?: Error) => Promise<void>,
+		onProgress: (event: {
+			status: string
+			progressDetail: { current: number; total: number }
+			progress: string
+			id: string
+		}) => void,
+	): void
+}
+
 export interface VolumeDefinition {
 	fromPath: string
 	toPath: string
@@ -49,6 +62,44 @@ export async function importImage(
 		name,
 	) as Promise<NodeJS.ReadWriteStream>)
 	return stream
+}
+
+/**
+ * Imports an image if it does not exist and then calls callbacks for progress and finish events
+ * @param docker - The docker daemon with which the image will be stored
+ * @param name - The name of the image to pull
+ * @param onFinished - a callback for when the image import is finished
+ * @param onProgress - a callback for when the progress of the image import updates
+ */
+export async function callbackImportImage(
+	docker: Docker,
+	name: string,
+	onFinished: (err?: Error) => Promise<void>,
+	onProgress: (event: {
+		status: string
+		progressDetail: { current: number; total: number }
+		progress: string
+		id: string
+	}) => void,
+): Promise<void> {
+	const images = await listImages(docker)
+
+	if (
+		images.findIndex(
+			(e: Docker.ImageInfo) =>
+				e.RepoTags.findIndex((el: string) => el === name) > -1,
+		) < 0
+	) {
+		// if image is not fetched, fetch it (search only works if version is in image)
+		const stream = await importImage(docker, name)
+		const modem: DockerModem = docker.modem as DockerModem
+		modem.followProgress(stream, onFinished, onProgress)
+	} else {
+		// if image is fetched, just run command
+		onFinished(undefined).catch((err) => {
+			if (err) console.log(err)
+		})
+	}
 }
 
 /**
