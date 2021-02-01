@@ -13,6 +13,19 @@ import {
 // needs docker to already be running
 const docker = new Docker()
 
+interface DockerModem {
+	followProgress(
+		stream: NodeJS.ReadableStream,
+		onFinished: (err: any) => any,
+		onProgress: (event: {
+			status: string
+			progressDetail: { current: number; total: number }
+			progress: string
+			id: string
+		}) => void,
+	): void
+}
+
 // This method is only an example of how to run a command. This is not part of the API
 const runCommand = async (
 	image: string,
@@ -57,19 +70,22 @@ const runCommand = async (
 							}
 							console.log('container end: ', data)
 							removeContainer(container).catch((er) => {
-								if(er)
-									console.log(er)
+								if (er) console.log(er)
 							})
 						})
 					}
 				})
 			},
 		)
-		
 	}
 
 	// callback for determining progress of image fetch
-	const onProgress = (event: {status: string, progressDetail: {current: number, total: number}, progress: string, id: string}) => {
+	const onProgress = (event: {
+		status: string
+		progressDetail: { current: number; total: number }
+		progress: string
+		id: string
+	}) => {
 		console.log(event.status)
 		if (
 			event.progressDetail &&
@@ -83,7 +99,6 @@ const runCommand = async (
 		if (event.progress) {
 			console.log(event.progress)
 		}
-		
 	}
 
 	// get the image list
@@ -91,18 +106,19 @@ const runCommand = async (
 
 	if (
 		images.findIndex(
-			(e: Docker.ImageInfo) => e.RepoTags.findIndex((el: string) => el === image) > -1,
+			(e: Docker.ImageInfo) =>
+				e.RepoTags.findIndex((el: string) => el === image) > -1,
 		) < 0
 	) {
 		// if image is not fetched, fetch it (search only works if version is in image)
 		console.log(`Fetching image: ${image}`)
 		const stream = await importImage(docker, image)
-		docker.modem.followProgress(stream, onFinished, onProgress)
+		const modem: DockerModem = docker.modem as DockerModem
+		modem.followProgress(stream, onFinished, onProgress)
 	} else {
 		// if image is fetched, just run command
 		onFinished(null).catch((err) => {
-			if(err)
-				console.log(err)
+			if (err) console.log(err)
 		})
 	}
 }
@@ -121,6 +137,8 @@ runCommand(
 	console.log(err)
 })
 
-runCommand('ubuntu:latest', ['/bin/ls'], '', '', '', '', '', '', []).catch((err) => {
-	console.log(err)
-})
+runCommand('ubuntu:latest', ['/bin/ls'], '', '', '', '', '', '', []).catch(
+	(err) => {
+		console.log(err)
+	},
+)

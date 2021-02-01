@@ -1,11 +1,19 @@
 import * as Docker from 'dockerode'
 
+interface ContainerModem {
+	demuxStream(
+		stream: NodeJS.ReadWriteStream,
+		stdoutStream: NodeJS.WritableStream,
+		stderrStream: NodeJS.WritableStream,
+	): void
+}
+
 /**
  * Returns information about the images
  * @param docker - The docker daemon to pull information from
  * @returns an array of ImageInfo
  */
-export async function listImages(docker: Docker) : Promise<Docker.ImageInfo[]>{
+export async function listImages(docker: Docker): Promise<Docker.ImageInfo[]> {
 	const images = await docker.listImages({})
 	return images
 }
@@ -15,7 +23,9 @@ export async function listImages(docker: Docker) : Promise<Docker.ImageInfo[]>{
  * @param docker - The docker daemon to pull information from
  * @returns an array of ContainerInfo
  */
-export async function listContainers(docker: Docker) : Promise<Docker.ContainerInfo[]>{
+export async function listContainers(
+	docker: Docker,
+): Promise<Docker.ContainerInfo[]> {
 	const containers = await docker.listContainers()
 	return containers
 }
@@ -26,8 +36,13 @@ export async function listContainers(docker: Docker) : Promise<Docker.ContainerI
  * @param name - The name of the image to pull
  * @returns a ReadableStream to track the progress of the import
  */
-export async function importImage(docker: Docker, name: string) : Promise<NodeJS.ReadWriteStream>{
-	const stream: NodeJS.ReadWriteStream = await (docker.pull(name) as Promise<NodeJS.ReadWriteStream>)
+export async function importImage(
+	docker: Docker,
+	name: string,
+): Promise<NodeJS.ReadWriteStream> {
+	const stream: NodeJS.ReadWriteStream = await (docker.pull(
+		name,
+	) as Promise<NodeJS.ReadWriteStream>)
 	return stream
 }
 
@@ -44,10 +59,10 @@ export async function createContainer(
 	image: string,
 	command: string[],
 	volumePairs: [string, string][] = [],
-) : Promise<Docker.Container> {
+): Promise<Docker.Container> {
 	// make volumes in form accepted by createContainer
 	const volumeJson: { [volume: string]: Record<string, never> } = {}
-	Object.values(volumePairs).forEach(value => {
+	Object.values(volumePairs).forEach((value) => {
 		volumeJson[value[1]] = {}
 	})
 	/* for (const volumePair of volumePairs) {
@@ -84,11 +99,11 @@ export async function createContainer(
  * @returns a ReadWriteStream for the container
  */
 export async function attachStreams(
-	container : Docker.Container,
-	stdinStream : NodeJS.ReadableStream,
-	stdoutStream : NodeJS.WritableStream,
-	stderrStream : NodeJS.WritableStream,
-) : Promise<NodeJS.ReadWriteStream> {
+	container: Docker.Container,
+	stdinStream: NodeJS.ReadableStream,
+	stdoutStream: NodeJS.WritableStream,
+	stderrStream: NodeJS.WritableStream,
+): Promise<NodeJS.ReadWriteStream> {
 	const stream = await container.attach({
 		hijack: true,
 		stream: true,
@@ -96,7 +111,8 @@ export async function attachStreams(
 		stdout: true,
 		stderr: true,
 	})
-	container.modem.demuxStream(stream, stdoutStream, stderrStream)
+	const modem: ContainerModem = container.modem as ContainerModem
+	modem.demuxStream(stream, stdoutStream, stderrStream)
 	stdinStream.pipe(stream)
 	return stream
 }
@@ -105,7 +121,9 @@ export async function attachStreams(
  * Stops the container
  * @param container - the container to stop
  */
-export async function stopContainer(container: Docker.Container) : Promise<void> {
+export async function stopContainer(
+	container: Docker.Container,
+): Promise<void> {
 	await container.stop()
 }
 
@@ -113,6 +131,8 @@ export async function stopContainer(container: Docker.Container) : Promise<void>
  * Removes the container
  * @param container - the container to remove
  */
-export async function removeContainer(container: Docker.Container) : Promise<void> {
+export async function removeContainer(
+	container: Docker.Container,
+): Promise<void> {
 	await container.remove()
 }
