@@ -8,6 +8,11 @@ interface ContainerModem {
 	): void
 }
 
+export interface VolumeDefinition {
+	fromPath: string
+	toPath: string
+}
+
 /**
  * Returns information about the images
  * @param docker - The docker daemon to pull information from
@@ -51,24 +56,21 @@ export async function importImage(
  * @param docker - the docker daemon that controls the container
  * @param image - the image the container uses
  * @param command - an array that holds the command for the container
- * @param volumePairs - an array of string pairs that represents the volumes
+ * @param volumePairs - an array of VolumeDefinitions
  * @returns the Container
  */
 export async function createContainer(
 	docker: Docker,
 	image: string,
 	command: string[],
-	volumePairs: [string, string][] = [],
+	volumePairs: VolumeDefinition[] = [],
 ): Promise<Docker.Container> {
 	// make volumes in form accepted by createContainer
 	const volumeJson: { [volume: string]: Record<string, never> } = {}
 	Object.values(volumePairs).forEach((value) => {
-		volumeJson[value[1]] = {}
+		volumeJson[value.toPath] = {}
 	})
-	/* for (const volumePair of volumePairs) {
-		volumeJson[`${volumePair[1]}`] = {}
-	} */
-	const volumeArray = volumePairs.map((el) => `${el[0]}:${el[1]}`)
+	const volumeArray = volumePairs.map((el) => `${el.fromPath}:${el.toPath}`)
 
 	// create container
 	const container = await docker.createContainer({
@@ -91,7 +93,6 @@ export async function createContainer(
 
 /**
  * Attaches input, output, and error streams to a container
- * Default is stdin, stdout, and stderr
  * @param container - the container to attach
  * @param stdinStream - the input stream
  * @param stdoutStream - the output stream

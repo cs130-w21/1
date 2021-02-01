@@ -3,6 +3,7 @@ import { resolve } from 'path'
 import * as Docker from 'dockerode'
 
 import {
+	VolumeDefinition,
 	listImages,
 	importImage,
 	createContainer,
@@ -36,7 +37,7 @@ const runCommand = async (
 	stdoutFile: string,
 	errorDir: string,
 	stderrFile: string,
-	volumePairs: [string, string][],
+	volumePairs: VolumeDefinition[],
 ) => {
 	// create helper function to run command to avoid duplication
 	const onFinished = async (err?: Error) => {
@@ -132,7 +133,7 @@ runCommand(
 	'output',
 	'./error',
 	'error',
-	[[resolve('./output'), '/stuff']],
+	[{ fromPath: resolve('./output'), toPath: '/stuff' }],
 ).catch((err) => {
 	console.log(err)
 })
