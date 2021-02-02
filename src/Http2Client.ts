@@ -48,6 +48,11 @@ export class Http2Client extends EventEmitter implements Client {
 		this.available(client)
 	}
 
+	/**
+	 * Drive the given daemon, by providing it with one task at a time in an async loop.
+	 *
+	 * @param client - a HTTP/2 client connected to a daemon.
+	 */
 	private available(client: ClientHttp2Session): void {
 		const job = this.queue.pop()
 		if (!job) {
