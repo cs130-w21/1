@@ -3,26 +3,45 @@
   "version": "1.0.0",
   "description": "Zero-config distributed parallel processing",
   "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "docs"
+  ],
+  "main": "dist",
+  "types": "dist",
+  "bin": {
+    "junknetd": "dist/server.js",
+    "junknet-make": "dist/controller.js"
+  },
   "repository": "github:cs130-w21/1",
   "scripts": {
     "prepare": "tsc",
-    "start": "node dist/server.js",
-    "start:dev": "tsnd src/server.ts",
-    "cli": "node dist/controller.js",
-    "cli:dev": "ts-node src/controller.ts",
-    "prefix": "eslint --fix .",
-    "fix": "prettier -w src",
+    "postprepare": "typedoc",
+    "start": "tsnd src/server.ts",
+    "cli": "ts-node src/controller.ts",
+    "fix": "eslint --fix .",
+    "postfix": "prettier -w .",
     "pretest": "eslint .",
-    "test": "echo \"Error: no test specified\" && exit 0",
-    "posttest": "prettier -c src"
+    "test": "jest",
+    "posttest": "prettier -c ."
   },
   "devDependencies": {
+    "@types/bonjour": "^3.5.8",
     "@types/node": "^14.14.21",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "eslint": "^7.18.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-jest": "^24.1.3",
+    "eslint-plugin-tsdoc": "^0.2.11",
+    "jest": "^26.6.3",
     "prettier": "^2.2.1",
+    "ts-jest": "^26.4.4",
     "ts-node-dev": "^1.1.1",
+    "typedoc": "^0.20.18",
     "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "bonjour": "^3.5.0"
   }
 }
