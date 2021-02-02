@@ -6,6 +6,7 @@ import {
 	listImages,
 	listContainers,
 	importImage,
+	callbackImportImage,
 	createContainer,
 	attachStreams,
 	stopContainer,
@@ -16,6 +17,7 @@ test('dockerode', () => {
 	expect(listImages).toBeDefined()
 	expect(listContainers).toBeDefined()
 	expect(importImage).toBeDefined()
+	expect(callbackImportImage).toBeDefined()
 	expect(createContainer).toBeDefined()
 	expect(attachStreams).toBeDefined()
 	expect(stopContainer).toBeDefined()
