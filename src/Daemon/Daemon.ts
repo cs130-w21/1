@@ -30,8 +30,9 @@ function mockFailure(): boolean {
  * @experimental
  * Plan: Convert this server to be an SSH server using the ssh2 node.js library.
  */
+
 export function createDaemon(): Server {
-	const server = createServer()
+	const server = new ssh2.Server({})
 	server.on('stream', (stream, headers) => {
 		const input = headers[':path']
 
