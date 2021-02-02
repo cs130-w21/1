@@ -6,11 +6,11 @@ import { JobOrderer } from '../src/JobOrderer'
  */
 test('JobOrderer', () => {
 	// The names are untouched.
-	const job1: Job = { prerequisites: new Set(), name: 'yee1' }
-	const job2: Job = { prerequisites: new Set([job1]), name: 'yee2' }
-	const job3: Job = { prerequisites: new Set([job1]), name: 'yee' }
-	const job4: Job = { prerequisites: new Set([job1, job2]), name: 'yee3' }
-	const job5: Job = { prerequisites: new Set([job4]), name: 'yee4' }
+	const job1: Job = new Job('yee1')
+	const job2: Job = new Job('yee2', [job1])
+	const job3: Job = new Job('yee', [job1])
+	const job4: Job = new Job('yee3', [job1, job2])
+	const job5: Job = new Job('yee4', [job4])
 
 	const jobs: Job[] = [job1, job2, job3, job4, job5]
 	const jobOrderer = new JobOrderer(jobs)

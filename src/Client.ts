@@ -102,7 +102,7 @@ export default class Client extends EventEmitter {
 	}
 
 	/**
-	 * Asksthe daemon to work on the job.
+	 * Asks the daemon to work on the job.
 	 * Sends HTTP request and handles response.
 	 *
 	 * @param job - The job to assign.
@@ -123,7 +123,7 @@ export default class Client extends EventEmitter {
 				this.jobOrderer.reportCompletedJob(job)
 			}
 
-			this.emit('progress', job, data)
+			this.emit('progress', job.toString(), data)
 			this.setAvailable(daemon)
 			this.checkJobsAndAssign()
 		})

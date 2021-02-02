@@ -22,9 +22,9 @@ export class JobOrderer {
 
 		// Populate dependents map.
 		jobs.forEach((job) => {
-			job.prerequisites.forEach((prerequisite) => {
+			job.incompletePrerequisites.forEach((prerequisite) => {
 				if (prerequisite == job) {
-					throw `Circular dependency: job ${job.name} has itself as a preqrequisite.`
+					throw `Circular dependency: job ${job} has itself as a preqrequisite.`
 				} else {
 					const prerequisiteDependents = this.jobToDependents.get(prerequisite)
 
@@ -39,7 +39,7 @@ export class JobOrderer {
 
 		// Move sources to correct set.
 		jobs.forEach((job) => {
-			if (job.prerequisites.size == 0) {
+			if (job.isSource()) {
 				this.sources.add(job)
 			} else {
 				this.nonSources.add(job)
@@ -100,14 +100,14 @@ export class JobOrderer {
 
 		if (dependents) {
 			dependents.forEach((dependent) => {
-				dependent.prerequisites.delete(completedJob)
-				if (dependent.prerequisites.size == 0) {
+				dependent.incompletePrerequisites.delete(completedJob)
+				if (dependent.isSource()) {
 					this.sources.add(dependent)
 					this.nonSources.delete(dependent)
 				}
 			})
 		} else {
-			throw `We don't know about this job marked completed: ${completedJob.name}.`
+			throw `We don't know about this job marked completed: ${completedJob}.`
 		}
 
 		this.inProgress.delete(completedJob)
@@ -122,10 +122,10 @@ export class JobOrderer {
 	public reportFailedJob(failedJob: Job): void {
 		if (this.inProgress.has(failedJob)) {
 			this.inProgress.delete(failedJob)
-			assert(failedJob.prerequisites.size == 0)
+			assert(failedJob.isSource())
 			this.sources.add(failedJob)
 		} else {
-			throw `We don't know about the job ${failedJob.name}.`
+			throw `We don't know about the job ${failedJob}.`
 		}
 	}
 

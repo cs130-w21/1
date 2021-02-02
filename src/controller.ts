@@ -16,11 +16,11 @@ function done() {
 	zeroconf.destroy()
 }
 
-const job3: Job = { name: 'third', prerequisites: new Set() }
-const job4: Job = { name: 'fourth', prerequisites: new Set() }
-const job2: Job = { name: 'second', prerequisites: new Set([job3]) }
-const job1: Job = { name: 'first', prerequisites: new Set([job4, job2]) }
-const job5: Job = { name: 'fifth', prerequisites: new Set([job1]) }
+const job3: Job = new Job('third')
+const job4: Job = new Job('fourth')
+const job2: Job = new Job('second', [job3])
+const job1: Job = new Job('first', [job4, job2])
+const job5: Job = new Job('fifth', [job1])
 
 const client = new Client([job1, job2, job3, job4, job5])
 client.on('progress', console.log)
