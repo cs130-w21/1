@@ -1,0 +1,6 @@
+{
+	"entryPoints": "src",
+	"includeVersion": true,
+	"readme": "CONTRIBUTING.md",
+	"listInvalidSymbolLinks": true
+}
