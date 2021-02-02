@@ -1,119 +1,84 @@
-import { Job, JobWithDependents } from './Job'
+import { Job } from './Job'
 
 export class JobOrderer {
-	private sources: Set<JobWithDependents> = new Set()
-	private nonSources: Set<JobWithDependents> = new Set()
-	private inProgress: Set<JobWithDependents> = new Set()
-	private jobToJWD: Map<Job, JobWithDependents> = new Map()
-	private jwdToJob: Map<JobWithDependents, Job> = new Map()
+	private sources: Set<Job> = new Set()
+	private nonSources: Set<Job> = new Set()
+	private inProgress: Set<Job> = new Set()
+	private jobToDependents: Map<Job, Set<Job>> = new Map()
 
 	constructor(jobs: Job[]) {
-		// Create a map from Job to the new JWD object.
-		jobs.forEach((job) =>
-			this.jobToJWD.set(job, {
-				...job,
-				dependents: new Set(),
-				prerequisites: new Set(),
-			}),
-		)
+		// Initialize dependents map.
+		jobs.forEach((job) => this.jobToDependents.set(job, new Set()))
 
-		// Fill each JWD's prerequisites with the corresponding Job's prerequisites.
-		this.jobToJWD.forEach((jobWithDependents, job) => {
-			for (const prerequisite of job.prerequisites) {
-				const prerequisiteWithDependents = this.jobToJWD.get(prerequisite)
+		// Populate dependents map.
+		jobs.forEach((job) => {
+			job.prerequisites.forEach((prerequisite) => {
+				const prerequisiteDependents = this.jobToDependents.get(prerequisite)
 
-				if (prerequisiteWithDependents) {
-					jobWithDependents.prerequisites.add(prerequisiteWithDependents)
+				if (prerequisiteDependents) {
+					prerequisiteDependents.add(job)
 				} else {
 					throw `Job ${job} has prerequisite ${prerequisite} which was not passed to the constructor.`
 				}
-			}
+			})
 		})
 
-		// Now the JWDs have their prerequisites. Add them to our nonSources.
-		for (const jobWithDependents of this.jobToJWD.values()) {
-			this.nonSources.add(jobWithDependents)
-		}
-
-		// Add the dependents field.
-		for (const job of this.nonSources) {
-			for (const prerequisite of job.prerequisites) {
-				prerequisite.dependents.add(job)
-			}
-		}
-
-		// Move all sources to the sources set.
-		for (const job of this.nonSources) {
+		// Move sources to correct set.
+		jobs.forEach((job) => {
 			if (job.prerequisites.size == 0) {
-				this.nonSources.delete(job)
 				this.sources.add(job)
+			} else {
+				this.nonSources.add(job)
 			}
-		}
-
-		// Populate the reverse map.
-		this.jobToJWD.forEach((jobWithDependents, job) =>
-			this.jwdToJob.set(jobWithDependents, job),
-		)
-	}
-
-	private _peekNextJob(): JobWithDependents | null {
-		if (this.sources.size) {
-			return Array.from(this.sources.values()).reduce((job1, job2) =>
-				job1.dependents.size > job2.dependents.size ? job1 : job2,
-			)
-		} else {
-			return null
-		}
+		})
 	}
 
 	public peekNextJob(): Job | null {
-		const jwd = this._peekNextJob()
+		if (this.sources.size) {
+			return Array.from(this.sources.values()).reduce((job1, job2) => {
+				const job1Dependents = this.jobToDependents.get(job1)
+				const job2Dependents = this.jobToDependents.get(job2)
 
-		if (jwd) {
-			return this.jwdToJob.get(jwd) || null
+				if (!job1Dependents) {
+					throw 'Job 1 is missing in the map'
+				} else if (!job2Dependents) {
+					throw 'Job 1 is missing in the map'
+				} else {
+					return job1Dependents.size > job2Dependents.size ? job1 : job2
+				}
+			})
 		} else {
 			return null
 		}
 	}
 
 	public popNextJob(): Job | null {
-		const jwd = this._peekNextJob()
+		const nextJob = this.peekNextJob()
 
-		if (jwd) {
-			const job = this.jwdToJob.get(jwd)
-
-			if (job) {
-				this.sources.delete(jwd)
-				this.inProgress.add(jwd)
-				return this.jwdToJob.get(jwd) || null
-			} else {
-				throw 'This shouldnt happen.'
-			}
-		} else {
-			return null
+		if (nextJob) {
+			this.sources.delete(nextJob)
+			this.inProgress.add(nextJob)
 		}
+
+		return nextJob
 	}
 
 	public reportCompletedJob(completedJob: Job): void {
-		const jwd = this.jobToJWD.get(completedJob)
+		const dependents = this.jobToDependents.get(completedJob)
 
-		if (jwd) {
-			for (const dependent of jwd.dependents) {
-				dependent.prerequisites.delete(jwd)
-
+		if (dependents) {
+			dependents.forEach((dependent) => {
+				dependent.prerequisites.delete(completedJob)
 				if (dependent.prerequisites.size == 0) {
 					this.sources.add(dependent)
 					this.nonSources.delete(dependent)
 				}
-			}
-
-			// Delete job.
-			this.inProgress.delete(jwd)
-			this.jobToJWD.delete(completedJob)
-			this.jwdToJob.delete(jwd)
+			})
 		} else {
-			throw 'We dont know about this job.'
+			throw `We don't know about this job.`
 		}
+
+		this.inProgress.delete(completedJob)
 	}
 
 	public isDone(): boolean {
