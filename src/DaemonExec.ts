@@ -32,8 +32,7 @@ export interface VolumeDefinition {
  * @returns an array of ImageInfo
  */
 export async function listImages(docker: Docker): Promise<Docker.ImageInfo[]> {
-	const images = await docker.listImages({})
-	return images
+	return docker.listImages({})
 }
 
 /**
@@ -44,8 +43,7 @@ export async function listImages(docker: Docker): Promise<Docker.ImageInfo[]> {
 export async function listContainers(
 	docker: Docker,
 ): Promise<Docker.ContainerInfo[]> {
-	const containers = await docker.listContainers()
-	return containers
+	return docker.listContainers()
 }
 
 /**
