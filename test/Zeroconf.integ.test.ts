@@ -8,7 +8,17 @@ import { Client, Job, JobResult } from '../src/Client'
 import { Http2Client } from '../src/Http2Client'
 import { SERVICE_TYPE } from '../src/Constants'
 
+/**
+ * A unique name on any LAN this integration test runs on.
+ *
+ * @remarks
+ * Consider both the developers' homes and the CI/CD environment.
+ */
 const MOCK_SERVER_NAME = 'Junknet Integration Test'
+
+/**
+ * Mock jobs for the client to distribute to the daemons.
+ */
 const MOCK_CLIENT_JOBS = Object.freeze([
 	'fifth',
 	'fourth',
@@ -31,6 +41,15 @@ function mockResult(job: Job): JobResult {
 	return `/${job.toUpperCase()}`
 }
 
+/**
+ * Create a server and a Zeroconf wrapper, then connect the two.
+ * Resolve once both are ready (i.e. the server is listening and published).
+ *
+ * @remarks
+ * This needs better instrumentation, so we can debug failures in CI.
+ *
+ * @param zeroconf - a Zeroconf session
+ */
 async function bootServerAssembly(zeroconf: bonjour.Bonjour): Promise<void> {
 	const server = createDaemon().listen()
 	// TODO: watch for server error events (aside from before 'listening')?
@@ -47,6 +66,16 @@ async function bootServerAssembly(zeroconf: bonjour.Bonjour): Promise<void> {
 	console.log(service)
 }
 
+/**
+ * Create a client and a Zeroconf wrapper, then connect the two.
+ * Resolve once the client has completed all of its tasks.
+ *
+ * @remarks
+ * This needs better instrumentation, so we can debug failures in CI.
+ *
+ * @param zeroconf - a Zeroconf session
+ * @param onProgress - called on each job completion - @see {@link ClientEvents.progress}
+ */
 async function makeAndWaitForClient(
 	zeroconf: bonjour.Bonjour,
 	onProgress: (job: Job, data: JobResult) => void,
