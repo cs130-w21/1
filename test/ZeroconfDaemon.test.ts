@@ -68,6 +68,5 @@ describe('publishServer', () => {
 		expect(service.port).toBe(MOCK_SERVER_PORT)
 	})
 
-	it.todo('waits to resolve until the service is published')
 	it.todo('stops publishing when the server stops listening')
 })
