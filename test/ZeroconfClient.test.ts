@@ -1,5 +1,6 @@
 import { supplyClient } from '../src/ZeroconfClient'
 import { Client } from '../src/Client'
+import { SERVICE_TYPE } from '../src/Constants'
 
 import { mock, mockReset } from 'jest-mock-extended'
 import { Bonjour, Browser, RemoteService } from 'bonjour'
@@ -11,6 +12,20 @@ const MOCK_SERVICE_PORT = 1337
 describe('supplyClient', () => {
 	const zeroconf = mock<Bonjour>()
 	beforeEach(() => mockReset(zeroconf))
+
+	it('browses for services of the right type', () => {
+		// Arrange
+		const client = mock<Client>()
+		zeroconf.find.mockReturnValue(mock<Browser>())
+
+		// Act
+		supplyClient(zeroconf, client)
+
+		// Assert
+		for (const [options] of zeroconf.find.mock.calls) {
+			expect(options.type).toBe(SERVICE_TYPE)
+		}
+	})
 
 	it('introduces a service that just came up to the client', () => {
 		// Arrange
