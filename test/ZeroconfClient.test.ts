@@ -28,4 +28,18 @@ describe('supplyClient', () => {
 			MOCK_SERVICE_PORT,
 		)
 	})
+
+	it('stops the browser once the client is done', () => {
+		// Arrange
+		const zeroconf = mock<Bonjour>()
+		const client = new EventEmitter() as Client
+		zeroconf.find.mockReturnValue(mock<Browser>())
+
+		// Act
+		const browser = supplyClient(zeroconf, client)
+		client.emit('done')
+
+		// Assert
+		expect(browser.stop).toHaveBeenCalled()
+	})
 })
