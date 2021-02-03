@@ -19,6 +19,7 @@ function mockDelayMs(): number {
  * Plan: Convert this server to be an SSH server using the ssh2 node.js library.
  */
 
+/*
 export function createDaemon(): Server {
 	const server = new ssh2.Server({})
 	server.on('stream', (stream, headers) => {
@@ -40,3 +41,6 @@ export function createDaemon(): Server {
 
 	return server
 }
+*/
+
+export function createDaemon(): Server {}
