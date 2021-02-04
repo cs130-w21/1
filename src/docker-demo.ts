@@ -6,7 +6,7 @@ import * as Docker from 'dockerode'
 
 import {
 	VolumeDefinition,
-	callbackImportImage,
+	ensureImageImport,
 	createContainer,
 	attachStreams,
 	removeContainer,
@@ -86,7 +86,7 @@ const runCommand = async (
 		}
 	}
 
-	await callbackImportImage(docker, image, onFinished, onProgress)
+	await ensureImageImport(docker, image, onFinished, onProgress)
 }
 
 runCommand(

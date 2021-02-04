@@ -12,7 +12,7 @@ interface DockerModem {
 	followProgress(
 		stream: NodeJS.ReadableStream,
 		onFinished: (err?: Error) => Promise<void>,
-		onProgress: (event: {
+		onProgress?: (event: {
 			status: string
 			progressDetail: { current: number; total: number }
 			progress: string
@@ -69,11 +69,11 @@ export async function importImage(
  * @param onFinished - a callback for when the image import is finished
  * @param onProgress - a callback for when the progress of the image import updates
  */
-export async function callbackImportImage(
+export async function ensureImageImport(
 	docker: Docker,
 	name: string,
 	onFinished: (err?: Error) => Promise<void>,
-	onProgress: (event: {
+	onProgress?: (event: {
 		status: string
 		progressDetail: { current: number; total: number }
 		progress: string
@@ -83,10 +83,9 @@ export async function callbackImportImage(
 	const images = await listImages(docker)
 
 	if (
-		images.findIndex(
-			(e: Docker.ImageInfo) =>
-				e.RepoTags.findIndex((el: string) => el === name) > -1,
-		) < 0
+		!images.some((e: Docker.ImageInfo) =>
+			e.RepoTags.some((el: string) => el === name),
+		)
 	) {
 		// if image is not fetched, fetch it (search only works if version is in image)
 		const stream = await importImage(docker, name)
@@ -94,9 +93,7 @@ export async function callbackImportImage(
 		modem.followProgress(stream, onFinished, onProgress)
 	} else {
 		// if image is fetched, just run command
-		onFinished(undefined).catch((err) => {
-			if (err) console.log(err)
-		})
+		await onFinished(undefined)
 	}
 }
 
