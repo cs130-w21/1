@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "bonjour": "^3.5.0",
-    "dockerode": "^3.2.1"
+    "dockerode": "^3.2.1",
+    "ssh2": "^0.8.9"
   }
 }
