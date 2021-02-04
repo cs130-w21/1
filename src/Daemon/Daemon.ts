@@ -80,10 +80,20 @@ export function createDaemon(): Server {
  		stdout and stdin
 */
 
-/*
+/* Variables for hostkeys */
+var fs = require('fs');
+var crypto = require('crypto');
+var inspect = require('util').inspect;
+ 
+var ssh2 = require('ssh2');
+var utils = ssh2.utils;
+
 export function createDaemon(): Server {
+
 	// Create server object
 	const server = new Server({
-
-	})	
-}*/
+		// Host key, for SSH verification
+		hostKeys: [fs.readFileSync('host.key')]
+	});
+	
+}
