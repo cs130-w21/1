@@ -43,4 +43,30 @@ export function createDaemon(): Server {
 }
 */
 
-export function createDaemon(): Server {}
+/* SSH Server (Daemon) 
+	The Daemon receives from the client: 
+		Job identifier (unique)
+    	Name of Docker image
+    	Name of the Makefile target to build
+    	Contents of Makefile
+    	Input files needed for the target
+    	Human-readable metadata
+        	Name of the job
+	
+	It returns:
+    	Job identifier (echoed)
+    	Current job status
+    		In progress (heartbeat)
+    		Failed to execute, with cause
+    		Finished with return code
+ 		Output files produced by the target
+ 		stdout and stdin
+*/
+
+/*
+export function createDaemon(): Server {
+	// Create server object
+	const server = new Server({
+
+	})	
+}*/
