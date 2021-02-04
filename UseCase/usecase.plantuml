@@ -1,27 +1,23 @@
 @startuml
-
 left to right direction
 
 actor Developer as developer
-actor "Device Owner" as devOwn
+actor "Device Owner" as DevOwn
+
 package Junknet { 
 	usecase (Initiate a Job) as initiate
 	usecase (Monitor Job Progress) as monitor
 	usecase (Cancel Job) as cancel
-	usecase (Set Up Daemon) as setup
-	usecase (Start Daemon) as start
-	usecase (Broadcast Presence) as broadcast
-	usecase (Stop Daemon) as stopD
-	usecase (Stop Job) as stopJ
+        usecase (Start Daemon) as start
+        usecase (monitor resource usage) as resUsa
+        usecase (Stop Daemon) as stop
+
 }
 
 developer --> initiate
 developer --> monitor
 developer --> cancel
-devOwn --> start
-start .> setup: included on first time
-broadcast .> start: extends
-devOwn --> stopD
-devOwn --> stopJ
-
+DevOwn --> start
+DevOwn --> resUsa
+DevOwn --> stop
 @enduml
