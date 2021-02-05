@@ -28,5 +28,7 @@ repeat
 	:Process Results;
 repeat while(more commands?) is (yes)
 ->no;
+|Controller|
+:Notify User;
 stop
 @enduml
