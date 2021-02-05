@@ -1,0 +1,32 @@
+@startuml
+|Controller|
+start
+:Receive Makefile;
+|Client|
+:Parse Makefile;
+:Sort Makefile;
+repeat
+	repeat
+		:Search Available Daemons;
+		|Daemons|
+		:Reply Available;
+		|Client|
+	repeat while(daemons available?) is (no)
+	->yes;
+	:Divide Work;
+	:Send Commands;
+	->Files, Target;
+	|Daemons|
+	:Execute Command;
+	if (success?) then (yes)
+		:Send Result;
+	else (no)
+		:Send Failure;
+	endif
+	->files, streams, messages;
+	|Client|
+	:Process Results;
+repeat while(more commands?) is (yes)
+->no;
+stop
+@enduml
