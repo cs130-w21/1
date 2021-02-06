@@ -1,13 +1,5 @@
 import * as Docker from 'dockerode'
 
-interface ContainerModem {
-	demuxStream(
-		stream: NodeJS.ReadWriteStream,
-		stdoutStream: NodeJS.WritableStream,
-		stderrStream: NodeJS.WritableStream,
-	): void
-}
-
 interface DockerModemEvent {
 	status: string
 	progressDetail: { current: number; total: number }
@@ -20,6 +12,12 @@ interface DockerModem {
 		stream: NodeJS.ReadableStream,
 		onFinished: (err: Error, output: DockerModemEvent) => void,
 		onProgress?: (event: DockerModemEvent) => void,
+	): void
+
+	demuxStream(
+		stream: NodeJS.ReadWriteStream,
+		stdoutStream: NodeJS.WritableStream,
+		stderrStream: NodeJS.WritableStream,
 	): void
 }
 
@@ -158,7 +156,7 @@ export async function attachStreams(
 		stdout: true,
 		stderr: true,
 	})
-	const modem: ContainerModem = container.modem as ContainerModem
+	const modem = container.modem as DockerModem
 	modem.demuxStream(stream, stdoutStream, stderrStream)
 	stdinStream.pipe(stream)
 	return stream
