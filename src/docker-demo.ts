@@ -71,22 +71,13 @@ const runCommand = async (
 	const container = await createContainer(docker, image, command, volumePairs)
 	await attachStreams(container, stdinStream, stdoutStream, stderrStream)
 
-	container.start((error) => {
-		if (error) {
-			console.log(error)
-		} else {
-			console.log('started')
-			container.wait((e, data) => {
-				if (e) {
-					console.log(e)
-				}
-				console.log('container end: ', data)
-				removeContainer(container).catch((er) => {
-					if (er) console.log(er)
-				})
-			})
-		}
-	})
+	await container.start()
+	console.log('started')
+
+	const data: unknown = await container.wait()
+	console.log('container end: ', data)
+
+	await removeContainer(container)
 }
 
 runCommand(
