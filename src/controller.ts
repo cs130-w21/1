@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { supplyClient } from './ZeroconfClient'
-import Client from './Client'
+import { Client } from './Client'
+import { Http2Client } from './Http2Client'
 
 import * as bonjour from 'bonjour'
 import { once } from 'events'
@@ -15,7 +16,13 @@ function done() {
 	zeroconf.destroy()
 }
 
-const client = new Client(['fifth', 'fourth', 'third', 'second', 'first'])
+const client: Client = new Http2Client([
+	'fifth',
+	'fourth',
+	'third',
+	'second',
+	'first',
+])
 client.on('progress', console.log)
 once(client, 'done').then(done).catch(console.error)
 

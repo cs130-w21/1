@@ -1,4 +1,4 @@
-import Client from './Client'
+import { Client } from './Client'
 import { SERVICE_TYPE } from './Constants'
 
 import { Bonjour, Browser } from 'bonjour'
