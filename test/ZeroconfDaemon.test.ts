@@ -20,6 +20,7 @@ function mockEmitter<T extends EventEmitter>(
 	const original = mock<T>(mockImplementation as never, opts as never)
 	return new Proxy(new EventEmitter(), {
 		get(target, prop) {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 			return Reflect.has(target, prop)
 				? Reflect.get(target, prop)
 				: Reflect.get(original, prop)
