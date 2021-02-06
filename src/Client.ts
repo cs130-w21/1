@@ -1,50 +1,46 @@
-import { ClientHttp2Session, connect } from 'http2'
-import { EventEmitter } from 'events'
-import { JobOrderer } from './JobOrderer'
+import TypedEmitter from 'typed-emitter'
 import { Job } from './Job'
-import assert = require('assert')
 
 /**
- * A Junknet client. It distributes the given jobs among daemons it knows about.
- *
- * @remarks
- * Events:
- * - `'error'(Error)`: network-related failure
- * - `'progress'({@link Job}, string)`: a finished job resulted in the given data
- * - `'done'()`: all jobs completed
- *
+ * Representation of the output of a single job.
+ * Obviously, in the future this will not just be a string.
  * @experimental
  */
-export default class Client extends EventEmitter {
-	private jobOrderer: JobOrderer
-	private availableDaemons: Set<ClientHttp2Session> = new Set()
+export type JobResult = string
+
+/**
+ * Model for events emitted by {@link Client}.
+ * @experimental
+ */
+export interface ClientEvents {
+	/**
+	 * An unrecoverable network error occurred.
+	 *
+	 * @param err - the underlying network error
+	 */
+	error(err: Error): void
 
 	/**
-	 * Create a client whose responsibility is to finish the given jobs.
-	 * It won't start until it knows about some daemons.
+	 * One job completed, and returned some data.
 	 *
-	 * @param jobs - array of the jobs in any order
+	 * @param job - the job which completed
+	 * @param data - the result of that job
 	 */
-	constructor(jobs: Job[]) {
-		super()
-		this.jobOrderer = new JobOrderer(jobs)
-	}
+	progress(job: Job, data: JobResult): void
 
 	/**
-	 * String representation of the host and port together.
-	 *
-	 * @remarks
-	 * Needed because IPv6 addresses must be bracketed to disambiguate colons.
-	 *
-	 * @param host - hostname or IP address
-	 * @param port - port number
-	 * @returns connection string suitable for a URL
+	 * All jobs have completed.
+	 * The {@link progress} event will not trigger again.
 	 */
-	private static hostAndPort(host: string, port: number): string {
-		const seg = host.indexOf(':') < 0 ? host : `[${host}]`
-		return `${seg}:${port}`
-	}
+	done(): void
+}
 
+/**
+ * A Junknet client.
+ * It's responsible for finishing some jobs by distributing them among daemons it knows about.
+ * @experimental
+ */
+export interface Client extends TypedEmitter<ClientEvents> {
 	/**
 	 * Add a new daemon to the swarm.
 	 * The client may now give jobs to this daemon.
@@ -52,81 +48,5 @@ export default class Client extends EventEmitter {
 	 * @param host - hostname or IP address of daemon
 	 * @param port - port number of daemon on the host
 	 */
-	public introduce(host: string, port: number): void {
-		const client = connect(`http://${Client.hostAndPort(host, port)}`)
-		client.on('error', (err) => this.emit('error', err))
-		this.setAvailableAndCheckJobs(client)
-	}
-
-	/**
-	 * Mark the daemon as available.
-	 * Then calls function to check if there are any doable jobs.
-	 *
-	 * @param daemon - The daemon that is available.
-	 */
-	private setAvailableAndCheckJobs(daemon: ClientHttp2Session): void {
-		this.availableDaemons.add(daemon)
-		this.checkJobsAndAssign()
-	}
-
-	/**
-	 * Tries to assign the next available job to a daemon.
-	 * Closes all daemons if all jobs are finished.
-	 */
-	private checkJobsAndAssign(): void {
-		const job = this.jobOrderer.popNextJob()
-
-		if (job && this.availableDaemons.size > 0) {
-			const daemon: ClientHttp2Session = this.availableDaemons.values().next()
-				.value
-
-			assert(daemon, 'No available daemon found (logic error).')
-
-			this.assignJobToDaemon(job, daemon)
-		} else if (this.jobOrderer.isDone()) {
-			this.closeAllDaemonsAndFinish()
-		}
-	}
-
-	/**
-	 * Closes all daemons.
-	 * Emits 'done' once all daemons are closed.
-	 */
-	private closeAllDaemonsAndFinish() {
-		for (const daemon of this.availableDaemons) {
-			daemon.close(() => {
-				this.availableDaemons.delete(daemon)
-				if (this.availableDaemons.size === 0) {
-					this.emit('done')
-				}
-			})
-		}
-	}
-
-	/**
-	 * Asks the daemon to work on the job.
-	 * Sends HTTP request and handles response.
-	 *
-	 * @param job - The job to assign.
-	 * @param daemon - The daemon to which to assign the job.
-	 */
-	private assignJobToDaemon(job: Job, daemon: ClientHttp2Session) {
-		const request = daemon.request({ ':path': `/${job.name}` })
-		daemon.on('error', (err) => this.emit('error', err))
-
-		let data = ''
-		request.setEncoding('utf8')
-		request.on('data', (chunk) => (data += chunk))
-
-		request.on('end', () => {
-			if (data === 'failed') {
-				this.jobOrderer.reportFailedJob(job)
-			} else {
-				this.jobOrderer.reportCompletedJob(job)
-			}
-
-			this.emit('progress', job.toString(), data)
-			this.setAvailableAndCheckJobs(daemon)
-		})
-	}
+	introduce(host: string, port: number): void
 }
