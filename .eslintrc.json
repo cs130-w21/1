@@ -18,6 +18,7 @@
 	],
 	"rules": {
 		"no-console": "off",
+		"no-restricted-syntax": "off",
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
 		"jest/consistent-test-it": "error",
