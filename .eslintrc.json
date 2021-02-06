@@ -4,12 +4,13 @@
 	"parserOptions": {
 		"project": "tsconfig.eslint.json"
 	},
-	"plugins": ["@typescript-eslint", "jest", "tsdoc"],
+	"plugins": ["tsdoc"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:@typescript-eslint/recommended-requiring-type-checking",
 		"airbnb-typescript/base",
+		"plugin:promise/recommended",
 		"plugin:jest/recommended",
 		"plugin:jest/style",
 		"prettier",
