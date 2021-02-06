@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { publishServer } from './ZeroconfDaemon'
-import { createDaemon } from './Daemon'
-import { SERVICE_TYPE } from './Constants'
-
 import * as bonjour from 'bonjour'
 import { AddressInfo } from 'net'
 import { hostname } from 'os'
+
+import { publishServer } from './ZeroconfDaemon'
+import { createDaemon } from './Daemon'
+import { SERVICE_TYPE } from './Constants'
 
 const zeroconf = bonjour()
 

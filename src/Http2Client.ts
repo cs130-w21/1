@@ -65,7 +65,9 @@ export class Http2Client extends EventEmitter implements Client {
 
 		let data = ''
 		req.setEncoding('utf8')
-		req.on('data', (chunk) => (data += chunk))
+		req.on('data', (chunk) => {
+			data += chunk
+		})
 
 		req.on('end', () => {
 			this.emit('progress', job, data)
