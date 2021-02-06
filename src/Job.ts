@@ -18,7 +18,7 @@ export class Job {
 	 * @returns Whether this job has any incomplete prerequisites.
 	 */
 	public isSource(): boolean {
-		return this.incompletePrerequisites.size == 0
+		return this.incompletePrerequisites.size === 0
 	}
 
 	/**
@@ -27,6 +27,14 @@ export class Job {
 	 * @returns This job's name.
 	 */
 	public toString(): string {
-		return this.name
+		if (this.incompletePrerequisites.size === 0) {
+			return `Independent job ${this.name}.`
+		}
+
+		return `Job "${this.name}" depending on ${Array.from(
+			this.incompletePrerequisites,
+		)
+			.map((prerequisite) => prerequisite.name)
+			.join(', ')}.`
 	}
 }

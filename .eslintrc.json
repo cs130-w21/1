@@ -1,16 +1,21 @@
 {
 	"root": true,
 	"parser": "@typescript-eslint/parser",
-	"plugins": ["@typescript-eslint", "jest", "tsdoc"],
+	"plugins": ["@typescript-eslint", "github", "jest", "tsdoc"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
+		"plugin:github/recommended",
+		"plugin:github/typescript",
 		"plugin:jest/recommended",
 		"plugin:jest/style",
 		"prettier",
 		"prettier/@typescript-eslint"
 	],
 	"rules": {
+		"github/no-then": "off", // TODO enable.
+		"import/no-namespace": "off", // TODO enable.
+		"no-console": "off", // TODO enable.
 		"tsdoc/syntax": "warn"
 	},
 	"env": {

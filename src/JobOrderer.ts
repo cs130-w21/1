@@ -1,11 +1,12 @@
-import { assert } from 'console'
 import { Job } from './Job'
+import { Heap } from 'heap-js'
+import assert = require('assert')
 
 /**
  * Manages a set of jobs that have to be run.
  */
 export class JobOrderer {
-	private sources: Set<Job> = new Set()
+	private sourcesHeap: Heap<Job>
 	private nonSources: Set<Job> = new Set()
 	private inProgress: Set<Job> = new Set()
 	private jobToDependents: Map<Job, Set<Job>> = new Map()
@@ -17,34 +18,52 @@ export class JobOrderer {
 	 * @param jobs - The jobs to manage. They must have correctly populated prerequisites fields.
 	 */
 	constructor(jobs: Job[]) {
+		this.sourcesHeap = new Heap((job1, job2) => {
+			const job1Dependents = this.jobToDependents.get(job1)
+			const job2Dependents = this.jobToDependents.get(job2)
+
+			assert(
+				job1Dependents && job2Dependents,
+				'Provided jobs are missing from map.',
+			)
+
+			return job2Dependents.size - job1Dependents.size
+		})
+
 		// Initialize dependents map.
-		jobs.forEach((job) => this.jobToDependents.set(job, new Set()))
+		for (const job of jobs) {
+			this.jobToDependents.set(job, new Set())
+		}
 
 		// Populate dependents map.
-		jobs.forEach((job) => {
-			job.incompletePrerequisites.forEach((prerequisite) => {
-				if (prerequisite == job) {
-					throw `Circular dependency: job ${job} has itself as a preqrequisite.`
+		for (const job of jobs) {
+			for (const prerequisite of job.incompletePrerequisites) {
+				if (prerequisite === job) {
+					throw new Error(
+						`Circular dependency: job ${job} has itself as a preqrequisite.`,
+					)
 				} else {
 					const prerequisiteDependents = this.jobToDependents.get(prerequisite)
 
 					if (prerequisiteDependents) {
 						prerequisiteDependents.add(job)
 					} else {
-						throw `Job ${job} has prerequisite ${prerequisite} which was not passed to the constructor.`
+						throw new Error(
+							`Job ${job} has prerequisite ${prerequisite} which was not passed to the constructor.`,
+						)
 					}
 				}
-			})
-		})
+			}
+		}
 
 		// Move sources to correct set.
-		jobs.forEach((job) => {
+		for (const job of jobs) {
 			if (job.isSource()) {
-				this.sources.add(job)
+				this.sourcesHeap.push(job)
 			} else {
 				this.nonSources.add(job)
 			}
-		})
+		}
 	}
 
 	/**
@@ -54,22 +73,7 @@ export class JobOrderer {
 	 * @returns The next job that would be run.
 	 */
 	public peekNextJob(): Job | null {
-		if (this.sources.size) {
-			return Array.from(this.sources.values()).reduce((job1, job2) => {
-				const job1Dependents = this.jobToDependents.get(job1)
-				const job2Dependents = this.jobToDependents.get(job2)
-
-				if (!job1Dependents) {
-					throw 'Job 1 is missing in the map'
-				} else if (!job2Dependents) {
-					throw 'Job 2 is missing in the map'
-				} else {
-					return job1Dependents.size > job2Dependents.size ? job1 : job2
-				}
-			})
-		} else {
-			return null
-		}
+		return this.sourcesHeap.peek() || null
 	}
 
 	/**
@@ -79,14 +83,13 @@ export class JobOrderer {
 	 * @returns The next job to run.
 	 */
 	public popNextJob(): Job | null {
-		const nextJob = this.peekNextJob()
+		const nextJob = this.sourcesHeap.pop()
 
 		if (nextJob) {
-			this.sources.delete(nextJob)
 			this.inProgress.add(nextJob)
 		}
 
-		return nextJob
+		return nextJob || null
 	}
 
 	/**
@@ -98,16 +101,18 @@ export class JobOrderer {
 	public reportCompletedJob(completedJob: Job): void {
 		const dependents = this.jobToDependents.get(completedJob)
 
-		if (dependents) {
-			dependents.forEach((dependent) => {
-				dependent.incompletePrerequisites.delete(completedJob)
-				if (dependent.isSource()) {
-					this.sources.add(dependent)
-					this.nonSources.delete(dependent)
-				}
-			})
-		} else {
-			throw `We don't know about this job marked completed: ${completedJob}.`
+		if (!dependents) {
+			throw new Error(
+				`We don't know about this job marked completed: ${completedJob}.`,
+			)
+		}
+
+		for (const dependent of dependents) {
+			dependent.incompletePrerequisites.delete(completedJob)
+			if (dependent.isSource()) {
+				this.sourcesHeap.push(dependent)
+				this.nonSources.delete(dependent)
+			}
 		}
 
 		this.inProgress.delete(completedJob)
@@ -120,19 +125,23 @@ export class JobOrderer {
 	 * @param failedJob - The job that failed.
 	 */
 	public reportFailedJob(failedJob: Job): void {
-		if (this.inProgress.has(failedJob)) {
-			this.inProgress.delete(failedJob)
-			assert(failedJob.isSource())
-			this.sources.add(failedJob)
-		} else {
-			throw `We don't know about the job ${failedJob}.`
+		if (!this.inProgress.has(failedJob)) {
+			throw new Error(`We don't know about the job ${failedJob}.`)
 		}
+
+		this.inProgress.delete(failedJob)
+		assert(failedJob.isSource())
+		this.sourcesHeap.push(failedJob)
 	}
 
 	/**
 	 * @returns Whether all of the jobs are complete.
 	 */
 	public isDone(): boolean {
-		return !(this.sources.size || this.nonSources.size || this.inProgress.size)
+		return !(
+			this.sourcesHeap.length ||
+			this.nonSources.size ||
+			this.inProgress.size
+		)
 	}
 }

@@ -2,6 +2,7 @@ import { ClientHttp2Session, connect } from 'http2'
 import { EventEmitter } from 'events'
 import { JobOrderer } from './JobOrderer'
 import { Job } from './Job'
+import assert = require('assert')
 
 /**
  * A Junknet client. It distributes the given jobs among daemons it knows about.
@@ -54,15 +55,16 @@ export default class Client extends EventEmitter {
 	public introduce(host: string, port: number): void {
 		const client = connect(`http://${Client.hostAndPort(host, port)}`)
 		client.on('error', (err) => this.emit('error', err))
-		this.setAvailable(client)
+		this.setAvailableAndCheckJobs(client)
 	}
 
 	/**
-	 * Mark a daemon as available.
+	 * Mark the daemon as available.
+	 * Then calls function to check if there are any doable jobs.
 	 *
 	 * @param daemon - The daemon that is available.
 	 */
-	private setAvailable(daemon: ClientHttp2Session): void {
+	private setAvailableAndCheckJobs(daemon: ClientHttp2Session): void {
 		this.availableDaemons.add(daemon)
 		this.checkJobsAndAssign()
 	}
@@ -75,12 +77,12 @@ export default class Client extends EventEmitter {
 		const job = this.jobOrderer.popNextJob()
 
 		if (job && this.availableDaemons.size > 0) {
-			const daemon = Array.from(this.availableDaemons.values())[0]
-			if (daemon) {
-				this.assignJobToDaemon(job, daemon)
-			} else {
-				throw 'skjdfhsadkfl'
-			}
+			const daemon: ClientHttp2Session = this.availableDaemons.values().next()
+				.value
+
+			assert(daemon, 'No available daemon found (logic error).')
+
+			this.assignJobToDaemon(job, daemon)
 		} else if (this.jobOrderer.isDone()) {
 			this.closeAllDaemonsAndFinish()
 		}
@@ -91,14 +93,14 @@ export default class Client extends EventEmitter {
 	 * Emits 'done' once all daemons are closed.
 	 */
 	private closeAllDaemonsAndFinish() {
-		this.availableDaemons.forEach((daemon) =>
+		for (const daemon of this.availableDaemons) {
 			daemon.close(() => {
 				this.availableDaemons.delete(daemon)
-				if (this.availableDaemons.size == 0) {
+				if (this.availableDaemons.size === 0) {
 					this.emit('done')
 				}
-			}),
-		)
+			})
+		}
 	}
 
 	/**
@@ -117,15 +119,14 @@ export default class Client extends EventEmitter {
 		request.on('data', (chunk) => (data += chunk))
 
 		request.on('end', () => {
-			if (data == 'failed') {
+			if (data === 'failed') {
 				this.jobOrderer.reportFailedJob(job)
 			} else {
 				this.jobOrderer.reportCompletedJob(job)
 			}
 
 			this.emit('progress', job.toString(), data)
-			this.setAvailable(daemon)
-			this.checkJobsAndAssign()
+			this.setAvailableAndCheckJobs(daemon)
 		})
 	}
 }
