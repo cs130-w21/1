@@ -1,10 +1,10 @@
-import { publishServer } from '../src/ZeroconfDaemon'
-import { SERVICE_TYPE } from '../src/Constants'
-
 import { mock } from 'jest-mock-extended'
 import { Bonjour, Service } from 'bonjour'
 import { AddressInfo, Server } from 'net'
 import { EventEmitter } from 'events'
+
+import { SERVICE_TYPE } from '../src/Constants'
+import { publishServer } from '../src/ZeroconfDaemon'
 
 const MOCK_SERVICE_NAME = 'Junknet Unit Test'
 

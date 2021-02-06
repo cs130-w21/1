@@ -1,10 +1,10 @@
-import { supplyClient } from '../src/ZeroconfClient'
-import { Client } from '../src/Client'
-import { SERVICE_TYPE } from '../src/Constants'
-
 import { mock } from 'jest-mock-extended'
 import { Bonjour, Browser, RemoteService } from 'bonjour'
 import { EventEmitter } from 'events'
+
+import { supplyClient } from '../src/ZeroconfClient'
+import { Client } from '../src/Client'
+import { SERVICE_TYPE } from '../src/Constants'
 
 const MOCK_SERVICE_HOST = 'example.com'
 const MOCK_SERVICE_PORT = 1337
