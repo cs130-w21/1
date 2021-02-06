@@ -27,43 +27,6 @@ const runCommand = async (
 	stderrFile: string,
 	volumePairs: VolumeDefinition[],
 ) => {
-	// create helper function to run command to avoid duplication
-	const onFinished = async (err?: Error) => {
-		if (err) console.log(err)
-		let stdinStream: NodeJS.ReadableStream = process.stdin
-		if (inputDir !== '' && stdinFile !== '') {
-			stdinStream = createReadStream(`${inputDir}/${stdinFile}`, 'binary')
-		}
-		let stdoutStream: NodeJS.WritableStream = process.stdout
-		if (outputDir !== '' && stdoutFile !== '') {
-			await fs.mkdir(outputDir, { recursive: true })
-			stdoutStream = createWriteStream(`${outputDir}/${stdoutFile}`)
-		}
-		let stderrStream: NodeJS.WritableStream = process.stderr
-		if (errorDir !== '' && stderrFile !== '') {
-			await fs.mkdir(errorDir, { recursive: true })
-			stderrStream = createWriteStream(`${errorDir}/${stderrFile}`)
-		}
-		const container = await createContainer(docker, image, command, volumePairs)
-		await attachStreams(container, stdinStream, stdoutStream, stderrStream)
-		container.start((error) => {
-			if (error) {
-				console.log(error)
-			} else {
-				console.log('started')
-				container.wait((e, data) => {
-					if (e) {
-						console.log(e)
-					}
-					console.log('container end: ', data)
-					removeContainer(container).catch((er) => {
-						if (er) console.log(er)
-					})
-				})
-			}
-		})
-	}
-
 	// callback for determining progress of image fetch
 	const onProgress = (event: {
 		status: string
@@ -86,7 +49,44 @@ const runCommand = async (
 		}
 	}
 
-	await ensureImageImport(docker, image, onFinished, onProgress)
+	await ensureImageImport(docker, image, onProgress)
+
+	let stdinStream: NodeJS.ReadableStream = process.stdin
+	if (inputDir !== '' && stdinFile !== '') {
+		stdinStream = createReadStream(`${inputDir}/${stdinFile}`, 'binary')
+	}
+
+	let stdoutStream: NodeJS.WritableStream = process.stdout
+	if (outputDir !== '' && stdoutFile !== '') {
+		await fs.mkdir(outputDir, { recursive: true })
+		stdoutStream = createWriteStream(`${outputDir}/${stdoutFile}`)
+	}
+
+	let stderrStream: NodeJS.WritableStream = process.stderr
+	if (errorDir !== '' && stderrFile !== '') {
+		await fs.mkdir(errorDir, { recursive: true })
+		stderrStream = createWriteStream(`${errorDir}/${stderrFile}`)
+	}
+
+	const container = await createContainer(docker, image, command, volumePairs)
+	await attachStreams(container, stdinStream, stdoutStream, stderrStream)
+
+	container.start((error) => {
+		if (error) {
+			console.log(error)
+		} else {
+			console.log('started')
+			container.wait((e, data) => {
+				if (e) {
+					console.log(e)
+				}
+				console.log('container end: ', data)
+				removeContainer(container).catch((er) => {
+					if (er) console.log(er)
+				})
+			})
+		}
+	})
 }
 
 runCommand(
