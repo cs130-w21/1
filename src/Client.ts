@@ -1,3 +1,5 @@
+// Override for eslint-plugin-import older than v2.22.0:
+// eslint-disable-next-line import/no-extraneous-dependencies
 import TypedEmitter from 'typed-emitter'
 
 /**
