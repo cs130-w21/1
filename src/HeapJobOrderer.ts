@@ -18,7 +18,8 @@ export class HeapJobOrderer implements JobOrderer {
 	 * @throws When one of the jobs has a prerequisite that is not one of the jobs, or is itself.
 	 * @param jobs - The jobs to manage. They must have correctly populated prerequisites fields.
 	 */
-	constructor(jobs: Job[]) {
+	constructor(rootJobs: Job[]) {
+		// Initialize the sources heap with its sorting function.
 		this.sourcesHeap = new Heap((job1, job2) => {
 			const job1Dependents = this.jobToDependents.get(job1)
 			const job2Dependents = this.jobToDependents.get(job2)
@@ -31,38 +32,40 @@ export class HeapJobOrderer implements JobOrderer {
 			return job2Dependents.size - job1Dependents.size
 		})
 
-		// Initialize dependents map.
-		for (const job of jobs) {
-			this.jobToDependents.set(job, new Set())
+		// Add all of the root jobs to dependents map.
+		for (const rootJob of rootJobs) {
+			this.jobToDependents.set(rootJob, new Set())
 		}
 
-		// Populate dependents map.
-		for (const job of jobs) {
-			for (const prerequisite of job.incompletePrerequisites) {
-				if (prerequisite === job) {
-					throw new Error(
-						`Circular dependency: job ${job} has itself as a preqrequisite.`,
-					)
-				} else {
-					const prerequisiteDependents = this.jobToDependents.get(prerequisite)
+		const queue: Job[] = rootJobs
+		const seenSources: Set<Job> = new Set() // We use this because checking whether a heap has an element is O(n).
 
-					if (prerequisiteDependents) {
-						prerequisiteDependents.add(job)
-					} else {
-						throw new Error(
-							`Job ${job} has prerequisite ${prerequisite} which was not passed to the constructor.`,
-						)
+		// BFS traverse dependency graph, starting with root nodes (the ultimate jobs).
+		while (queue.length) {
+			const job = queue.pop()
+			assert(job, 'Queue with nonzero length should have returned object.')
+
+			// Don't process the same node twice.
+			if (!seenSources.has(job) && !this.nonSources.has(job)) {
+				// Update job's prerequisites' 'dependents' fields.
+				for (const prerequisite of job.incompletePrerequisites) {
+					let dependents = this.jobToDependents.get(prerequisite)
+
+					if (!dependents) {
+						dependents = new Set()
+						this.jobToDependents.set(prerequisite, dependents)
 					}
-				}
-			}
-		}
 
-		// Move sources to correct set.
-		for (const job of jobs) {
-			if (job.isSource()) {
-				this.sourcesHeap.push(job)
-			} else {
-				this.nonSources.add(job)
+					dependents.add(job)
+					queue.push(prerequisite)
+				}
+
+				if (job.isSource()) {
+					this.sourcesHeap.push(job)
+					seenSources.add(job)
+				} else {
+					this.nonSources.add(job)
+				}
 			}
 		}
 	}

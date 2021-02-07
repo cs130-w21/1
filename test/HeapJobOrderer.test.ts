@@ -12,8 +12,8 @@ test('HeapJobOrderer', () => {
 	const job4: NormalJob = new NormalJob('yee3', [job1, job2])
 	const job5: NormalJob = new NormalJob('yee4', [job4])
 
-	const jobs: NormalJob[] = [job1, job2, job3, job4, job5]
-	const jobOrderer = new HeapJobOrderer(jobs)
+	const rootJobs: NormalJob[] = [job3, job5]
+	const jobOrderer = new HeapJobOrderer(rootJobs)
 
 	expect(jobOrderer.isDone()).toBe(false)
 
