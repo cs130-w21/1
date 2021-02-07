@@ -1,8 +1,8 @@
 import { ClientHttp2Session, connect } from 'http2'
 import { EventEmitter } from 'events'
 import { Client } from './Client'
+import { NormalJob } from './NormalJob'
 import { JobOrderer } from './JobOrderer'
-import { Job } from './Job'
 import assert = require('assert')
 
 /**
@@ -11,7 +11,6 @@ import assert = require('assert')
 //  * @deprecated Implement a {@link Client} using SSH instead.
  */
 export class Http2Client extends EventEmitter implements Client {
-	private jobOrderer: JobOrderer
 	private availableDaemons: Set<ClientHttp2Session> = new Set()
 
 	/**
@@ -20,9 +19,8 @@ export class Http2Client extends EventEmitter implements Client {
 	 *
 	 * @param jobs - array of the jobs in any order
 	 */
-	constructor(jobs: Job[]) {
+	constructor(private jobOrderer: JobOrderer) {
 		super()
-		this.jobOrderer = new JobOrderer(jobs)
 	}
 
 	/**
@@ -105,7 +103,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 * @param job - The job to assign.
 	 * @param daemon - The daemon to which to assign the job.
 	 */
-	private assignJobToDaemon(job: Job, daemon: ClientHttp2Session) {
+	private assignJobToDaemon(job: NormalJob, daemon: ClientHttp2Session) {
 		const request = daemon.request({ ':path': `/${job.name}` })
 		daemon.on('error', (err) => this.emit('error', err))
 

@@ -6,7 +6,8 @@ import { Http2Client } from './Http2Client'
 
 import * as bonjour from 'bonjour'
 import { once } from 'events'
-import { Job } from './Job'
+import { NormalJob } from './NormalJob'
+import { HeapJobOrderer } from './HeapJobOrderer'
 
 const zeroconf = bonjour()
 
@@ -17,13 +18,15 @@ function done() {
 	zeroconf.destroy()
 }
 
-const job3: Job = new Job('third')
-const job4: Job = new Job('fourth')
-const job2: Job = new Job('second', [job3])
-const job1: Job = new Job('first', [job4, job2])
-const job5: Job = new Job('fifth', [job1])
+const job3: NormalJob = new NormalJob('third')
+const job4: NormalJob = new NormalJob('fourth')
+const job2: NormalJob = new NormalJob('second', [job3])
+const job1: NormalJob = new NormalJob('first', [job4, job2])
+const job5: NormalJob = new NormalJob('fifth', [job1])
 
-const client: Client = new Http2Client([job1, job2, job3, job4, job5])
+const client: Client = new Http2Client(
+	new HeapJobOrderer([job1, job2, job3, job4, job5]),
+)
 client.on('progress', console.log)
 once(client, 'done').then(done).catch(console.error)
 

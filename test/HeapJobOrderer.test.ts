@@ -1,19 +1,19 @@
-import { Job } from '../src/Job'
-import { JobOrderer } from '../src/JobOrderer'
+import { NormalJob } from '../src/NormalJob'
+import { HeapJobOrderer } from '../src/HeapJobOrderer'
 
 /**
  * Testcase with 5 jobs.
  */
-test('JobOrderer', () => {
+test('HeapJobOrderer', () => {
 	// The names are untouched.
-	const job1: Job = new Job('yee1')
-	const job2: Job = new Job('yee2', [job1])
-	const job3: Job = new Job('yee', [job1])
-	const job4: Job = new Job('yee3', [job1, job2])
-	const job5: Job = new Job('yee4', [job4])
+	const job1: NormalJob = new NormalJob('yee1')
+	const job2: NormalJob = new NormalJob('yee2', [job1])
+	const job3: NormalJob = new NormalJob('yee', [job1])
+	const job4: NormalJob = new NormalJob('yee3', [job1, job2])
+	const job5: NormalJob = new NormalJob('yee4', [job4])
 
-	const jobs: Job[] = [job1, job2, job3, job4, job5]
-	const jobOrderer = new JobOrderer(jobs)
+	const jobs: NormalJob[] = [job1, job2, job3, job4, job5]
+	const jobOrderer = new HeapJobOrderer(jobs)
 
 	expect(jobOrderer.isDone()).toBe(false)
 
