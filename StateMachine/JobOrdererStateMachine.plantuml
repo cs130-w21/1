@@ -1,0 +1,7 @@
+@startuml JobOrdererStateMachine
+
+[*] --> Initialized
+Initialized --> Finished : something
+
+
+@enduml
