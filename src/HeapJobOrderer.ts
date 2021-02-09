@@ -1,5 +1,5 @@
-import { Job } from './Job'
 import { Heap } from 'heap-js'
+import { Job } from './Job'
 import { JobOrderer } from './JobOrderer'
 import assert = require('assert')
 
@@ -8,9 +8,12 @@ import assert = require('assert')
  */
 export class HeapJobOrderer implements JobOrderer {
 	private sourcesHeap: Heap<Job>
+
 	private nonSources: Set<Job> = new Set()
+
 	private inProgress: Set<Job> = new Set()
-	private jobToDependents: Map<Job, Set<Job>> = new Map()
+
+	private jobToDependents: Map<Job, Set<Job>> = new Map<Job, Set<Job>>()
 
 	/**
 	 * Create the JobOrderer and inform it of the jobs to manage.
@@ -107,7 +110,7 @@ export class HeapJobOrderer implements JobOrderer {
 
 		if (!dependents) {
 			throw new Error(
-				`We don't know about this job marked completed: ${completedJob}.`,
+				`We don't know about this job marked completed: ${completedJob.toString()}.`,
 			)
 		}
 
@@ -130,7 +133,7 @@ export class HeapJobOrderer implements JobOrderer {
 	 */
 	public reportFailedJob(failedJob: Job): void {
 		if (!this.inProgress.has(failedJob)) {
-			throw new Error(`We don't know about the job ${failedJob}.`)
+			throw new Error(`We don't know about the job ${failedJob.toString()}.`)
 		}
 
 		this.inProgress.delete(failedJob)

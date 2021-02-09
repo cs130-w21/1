@@ -71,7 +71,7 @@ export class Http2Client extends EventEmitter implements Client {
 
 		if (job && this.availableDaemons.size > 0) {
 			const daemon: ClientHttp2Session = this.availableDaemons.values().next()
-				.value
+				.value as ClientHttp2Session
 
 			assert(daemon, 'No available daemon found (logic error).')
 

@@ -5,6 +5,7 @@ import { Job } from './Job'
  */
 export class NormalJob implements Job {
 	public incompletePrerequisites: Set<NormalJob>
+
 	public name: string
 
 	/**

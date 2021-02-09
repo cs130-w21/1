@@ -24,7 +24,15 @@
 		"no-console": "off", // TODO enable.
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
-		"tsdoc/syntax": "error"
+		"tsdoc/syntax": "error",
+		"no-restricted-syntax": [
+			"error",
+			"ForInStatement",
+			"LabeledStatement",
+			"WithStatement"
+		],
+		"import/order": "off",
+		"no-return-assign": ["error", "except-parens"]
 	},
 	"env": {
 		"node": true,
