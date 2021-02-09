@@ -6,6 +6,21 @@ import { JobOrderer } from './JobOrderer'
 import assert = require('assert')
 
 /**
+ * String representation of the host and port together.
+ *
+ * @remarks
+ * Needed because IPv6 addresses must be bracketed to disambiguate colons.
+ *
+ * @param host - hostname or IP address
+ * @param port - port number
+ * @returns connection string suitable for a URL
+ */
+function hostAndPort(host: string, port: number): string {
+	const seg = host.indexOf(':') < 0 ? host : `[${host}]`
+	return `${seg}:${port}`
+}
+
+/**
  * A mock Junknet client using HTTP/2.
  * It distributes the given jobs among daemons it knows about.
 //  * @deprecated Implement a {@link Client} using SSH instead.
@@ -24,21 +39,6 @@ export class Http2Client extends EventEmitter implements Client {
 	}
 
 	/**
-	 * String representation of the host and port together.
-	 *
-	 * @remarks
-	 * Needed because IPv6 addresses must be bracketed to disambiguate colons.
-	 *
-	 * @param host - hostname or IP address
-	 * @param port - port number
-	 * @returns connection string suitable for a URL
-	 */
-	private static hostAndPort(host: string, port: number): string {
-		const seg = host.indexOf(':') < 0 ? host : `[${host}]`
-		return `${seg}:${port}`
-	}
-
-	/**
 	 * Add a new daemon to the swarm.
 	 * The client may now give jobs to this daemon.
 	 *
@@ -46,7 +46,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 * @param port - port number of daemon on the host
 	 */
 	public introduce(host: string, port: number): void {
-		const client = connect(`http://${Http2Client.hostAndPort(host, port)}`)
+		const client = connect(`http://${hostAndPort(host, port)}`)
 		client.on('error', (err) => this.emit('error', err))
 		this.setAvailableAndCheckJobs(client)
 	}

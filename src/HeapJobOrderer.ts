@@ -74,16 +74,6 @@ export class HeapJobOrderer implements JobOrderer {
 	}
 
 	/**
-	 * Returns the next job that the JobOrderer would choose to run.
-	 * If there is no job that can be run, returns null.
-	 *
-	 * @returns The next job that would be run.
-	 */
-	public peekNextJob(): Job | null {
-		return this.sourcesHeap.peek() || null
-	}
-
-	/**
 	 * Chooses the next job to run and returns it. Marks that job as in-progress.
 	 * If there is no job that can be run, returns null.
 	 *

@@ -18,7 +18,6 @@ test('HeapJobOrderer', () => {
 	expect(jobOrderer.isDone()).toBe(false)
 
 	// job1 is the only source.
-	expect(jobOrderer.peekNextJob()).toBe(job1)
 	expect(jobOrderer.popNextJob()).toBe(job1)
 
 	// Everything else depends on job1, but job1 is unfinished.
