@@ -32,24 +32,25 @@ export function createDaemon(): Server {
 	server.on('stream', (stream, headers) => {
 		const input = headers[':path']
 
-		if (input) {
-			const output = input.toUpperCase()
-			setTimeout(() => {
-				if (mockFailure()) {
-					stream.respond({ status: 400, 'content-type': 'text/plain' })
-					stream.end('failed')
-				} else {
-					stream.respond({
-						':status': 200,
-						'content-type': 'text/plain',
-					})
-					stream.end(output)
-				}
-			}, mockDelayMs())
-		} else {
+		if (!input) {
 			stream.respond({ status: 400, 'content-type': 'text/plain' })
 			stream.end('Missing :path header.')
+			return
 		}
+
+		const output = input.toUpperCase()
+		setTimeout(() => {
+			if (mockFailure()) {
+				stream.respond({ status: 400, 'content-type': 'text/plain' })
+				stream.end('failed')
+			} else {
+				stream.respond({
+					':status': 200,
+					'content-type': 'text/plain',
+				})
+				stream.end(output)
+			}
+		}, mockDelayMs())
 	})
 
 	return server
