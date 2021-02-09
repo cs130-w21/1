@@ -1,12 +1,17 @@
 {
 	"root": true,
 	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"project": "tsconfig.eslint.json"
+	},
 	"plugins": ["tsdoc"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:github/recommended",
 		"plugin:github/typescript",
+		"plugin:@typescript-eslint/recommended-requiring-type-checking",
+		"airbnb-typescript/base",
 		"plugin:promise/recommended",
 		"plugin:jest/recommended",
 		"plugin:jest/style",
@@ -17,7 +22,9 @@
 		"github/no-then": "off", // TODO enable.
 		"import/no-namespace": "off", // TODO enable.
 		"no-console": "off", // TODO enable.
-		"tsdoc/syntax": "warn"
+		"import/prefer-default-export": "off",
+		"import/no-default-export": "error",
+		"tsdoc/syntax": "error"
 	},
 	"env": {
 		"node": true,

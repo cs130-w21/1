@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
+import * as bonjour from 'bonjour'
+import { once } from 'events'
+
 import { supplyClient } from './ZeroconfClient'
 import { Client } from './Client'
 import { Http2Client } from './Http2Client'
 
-import * as bonjour from 'bonjour'
-import { once } from 'events'
 import { NormalJob } from './NormalJob'
 import { HeapJobOrderer } from './HeapJobOrderer'
 

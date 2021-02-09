@@ -1,4 +1,5 @@
 export * from './Constants'
+export * from './DaemonExec'
 export * from './Daemon'
 export * from './Client'
 export * from './Http2Client'
