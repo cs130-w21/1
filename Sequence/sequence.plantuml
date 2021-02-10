@@ -1,0 +1,67 @@
+@startuml
+actor User
+
+User -> Client: specified makefile, target, and options
+Client -> Client: ParseMakefile(makefile)
+
+Client -> JobOrderer **: JobOrderer(Jobs)
+
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon : doWork(subtarget,requiredFiles)
+activate Daemon 
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon2: doWork(subtarget,requiredFiles)
+activate Daemon2 
+
+Daemon -> Client : subtarget
+deactivate Daemon
+Client -> JobOrderer : reportCompletedJob(completedJob)
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon : doWork(subtarget,requiredFiles)
+activate Daemon 
+
+Daemon2 -> Client : subtarget
+deactivate Daemon2
+Client -> JobOrderer : reportCompletedJob(completedJob)
+
+Daemon -> Client : subtarget
+deactivate Daemon
+Client -> JobOrderer : reportCompletedJob(completedJob)
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : True
+deactivate JobOrderer
+
+Client -> User : target
+@enduml

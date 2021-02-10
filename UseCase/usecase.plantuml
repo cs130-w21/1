@@ -6,18 +6,14 @@ actor "Device Owner" as DevOwn
 
 package Junknet { 
 	usecase (Initiate a Job) as initiate
-	usecase (Monitor Job Progress) as monitor
 	usecase (Cancel Job) as cancel
         usecase (Start Daemon) as start
-        usecase (monitor resource usage) as resUsa
         usecase (Stop Daemon) as stop
 
 }
 
 developer --> initiate
-developer --> monitor
 developer --> cancel
 DevOwn --> start
-DevOwn --> resUsa
 DevOwn --> stop
 @enduml
