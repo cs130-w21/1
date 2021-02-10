@@ -21,9 +21,9 @@ function done() {
 
 const job3: NormalJob = new NormalJob('third')
 const job4: NormalJob = new NormalJob('fourth')
-const job2: NormalJob = new NormalJob('second', [job3])
-const job1: NormalJob = new NormalJob('first', [job4, job2])
-const job5: NormalJob = new NormalJob('fifth', [job1])
+const job2: NormalJob = new NormalJob('second', new Set([job3]))
+const job1: NormalJob = new NormalJob('first', new Set([job4, job2]))
+const job5: NormalJob = new NormalJob('fifth', new Set([job1]))
 
 const client: Client = new Http2Client(
 	new HeapJobOrderer([job1, job2, job3, job4, job5]),
