@@ -1,6 +1,7 @@
 export interface Job {
-	name: string
-	incompletePrerequisites: Set<Job>
+	getName(): string
+	getPrerequisitesIterable(): Iterable<Job>
 	isSource(): boolean
 	toString(): string
+	getNumPrerequisites(): number
 }

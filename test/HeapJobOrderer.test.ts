@@ -7,10 +7,10 @@ import { HeapJobOrderer } from '../src/HeapJobOrderer'
 test('HeapJobOrderer', () => {
 	// The names are untouched.
 	const job1: NormalJob = new NormalJob('yee1')
-	const job2: NormalJob = new NormalJob('yee2', [job1])
-	const job3: NormalJob = new NormalJob('yee', [job1])
-	const job4: NormalJob = new NormalJob('yee3', [job1, job2])
-	const job5: NormalJob = new NormalJob('yee4', [job4])
+	const job2: NormalJob = new NormalJob('yee2', new Set([job1]))
+	const job3: NormalJob = new NormalJob('yee', new Set([job1]))
+	const job4: NormalJob = new NormalJob('yee3', new Set([job1, job2]))
+	const job5: NormalJob = new NormalJob('yee4', new Set([job4]))
 
 	const rootJobs: NormalJob[] = [job3, job5]
 	const jobOrderer = new HeapJobOrderer(rootJobs)

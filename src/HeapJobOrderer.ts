@@ -15,6 +15,8 @@ export class HeapJobOrderer implements JobOrderer {
 
 	private jobToDependents: Map<Job, Set<Job>> = new Map<Job, Set<Job>>()
 
+	private jobToCompletedPrereqs: Map<Job, Set<Job>> = new Map<Job, Set<Job>>()
+
 	/**
 	 * Create the JobOrderer and inform it of the jobs to manage.
 	 *
@@ -51,7 +53,7 @@ export class HeapJobOrderer implements JobOrderer {
 			// Don't process the same node twice.
 			if (!seenSources.has(job) && !this.nonSources.has(job)) {
 				// Update job's prerequisites' 'dependents' fields.
-				for (const prerequisite of job.incompletePrerequisites) {
+				for (const prerequisite of job.getPrerequisitesIterable()) {
 					let dependents = this.jobToDependents.get(prerequisite)
 
 					if (!dependents) {
@@ -69,6 +71,9 @@ export class HeapJobOrderer implements JobOrderer {
 				} else {
 					this.nonSources.add(job)
 				}
+
+				// Initialization.
+				this.jobToCompletedPrereqs.set(job, new Set())
 			}
 		}
 	}
@@ -105,8 +110,15 @@ export class HeapJobOrderer implements JobOrderer {
 		}
 
 		for (const dependent of dependents) {
-			dependent.incompletePrerequisites.delete(completedJob)
-			if (dependent.isSource()) {
+			const dependentCompletedJobs = this.jobToCompletedPrereqs.get(dependent)
+
+			assert(
+				dependentCompletedJobs,
+				`Job ${completedJob.toString()} has dependent that we didn't process, which should be impossible.`,
+			)
+			dependentCompletedJobs.add(completedJob)
+
+			if (dependent.getNumPrerequisites() === dependentCompletedJobs.size) {
 				this.sourcesHeap.push(dependent)
 				this.nonSources.delete(dependent)
 			}

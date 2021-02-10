@@ -4,24 +4,32 @@ import { Job } from './Job'
  * A job for a Daemon to complete.
  */
 export class NormalJob implements Job {
-	public incompletePrerequisites: Set<NormalJob>
-
-	public name: string
-
 	/**
 	 * @param name - The job's name. Must be unique between jobs in the same dependency graph.
 	 * @param prerequisites - An optional array of jobs that must be completed before this job can start.
 	 */
-	constructor(name: string, prerequisites: NormalJob[] = []) {
-		this.name = name
-		this.incompletePrerequisites = new Set(prerequisites)
+	constructor(
+		private name: string,
+		private prerequisites: Set<Job> = new Set(),
+	) {}
+
+	public getName(): string {
+		return this.name
+	}
+
+	public getPrerequisitesIterable(): Iterable<Job> {
+		return this.prerequisites.values()
 	}
 
 	/**
 	 * @returns Whether this job has any incomplete prerequisites.
 	 */
 	public isSource(): boolean {
-		return this.incompletePrerequisites.size === 0
+		return this.prerequisites.size === 0
+	}
+
+	public getNumPrerequisites(): number {
+		return this.prerequisites.size
 	}
 
 	/**
@@ -30,14 +38,12 @@ export class NormalJob implements Job {
 	 * @returns This job's name.
 	 */
 	public toString(): string {
-		if (this.incompletePrerequisites.size === 0) {
-			return `Independent job ${this.name}.`
+		if (this.prerequisites.size === 0) {
+			return `Source job ${this.name}.`
 		}
 
-		return `Job "${this.name}" depending on ${Array.from(
-			this.incompletePrerequisites,
-		)
-			.map((prerequisite) => prerequisite.name)
+		return `Job "${this.name}" depending on ${Array.from(this.prerequisites)
+			.map((prerequisite) => prerequisite.getName())
 			.join(', ')}.`
 	}
 }
