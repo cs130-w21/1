@@ -66,8 +66,8 @@ interface DockerModemEvent{
 +id: string [1] {unique}
 }
 interface DockerModem{
-+followProgress(): void
-+demuxStream(): void
++followProgress(in stream: Stream): void
++demuxStream(in stream: Stream, out stdout: Stream, out stdout: Stream): void
 }
 DockerModem "1" --> "*" DockerModemEvent : uses
 interface VolumeDefinition{
@@ -77,17 +77,17 @@ interface VolumeDefinition{
 
 class Daemon{
 -docker: Docker = new Docker [1]
--containers: Container [*]
+-containers: Container [*] {unordered}
 +constructor(in docker:Docker)
 +createServer(): Server
 -ensureImageImport(in docker: Docker, in name: string, in onProgress: (in event: DockerModemEvent): void = undefined): Promise<void>
 -createContainer(in docker: Docker, in image: string, in command: string[], in volumePairs: VolumeDefinition[] = []): Promise<Container>
--attachStreams(in container: Container, in stdinStream: ReadableStream, in stdoutStream: WritableStream, in stderrStream: WritableStream): Promise<ReadWriteStream>
+-attachStreams(in container: Container, in stdin: Stream, out stdout: Stream, out stderr: Stream): Promise<Stream>
 -stopContainer(in container: Container): Promise<void>
 -removeContainer(in container: Container): Promise<void>
 }
 Daemon "1" --> "*" VolumeDefinition : uses
 Daemon "1" --> "*" DockerModem : uses
 
-Client "1" <-> "*" Daemon : communicates
+Client "*" <-> "*" Daemon : communicates
 @enduml
