@@ -1,9 +1,9 @@
 @startuml
+
 left to right direction
 
 actor Developer as developer
-actor "Device Owner" as DevOwn
-
+actor "Device Owner" as devOwn
 package Junknet { 
 	usecase (Initiate a Job) as initiate
 	usecase (Cancel Job) as cancel
