@@ -1,4 +1,11 @@
 @startuml
+
+/'
+This sequence diagram was created to emphasize that the client did not have to wait for
+one daemon to finish doing its work before assigning work to another daemon. Client will
+continuously give out jobs as long as there are daemons to do them.
+'/
+
 actor User
 
 User -> Client: specified makefile, target, and options
