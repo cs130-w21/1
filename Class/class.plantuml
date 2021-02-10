@@ -39,7 +39,7 @@ class HeapJobOrderer implements JobOrderer{
 + constructor(in rootJobs: Job[])
 }
 
-JobOrderer o-- Job
+JobOrderer "1" o-- "*" Job
 Client "1" --o "1" Controller
 
 interface Client{
@@ -57,28 +57,37 @@ class Http2Client extends EventEmitter implements Client {
 -assignJobToDaemon(in job: Job, in daemon: ClientHttp2Session): void
 }
 
-Client o-- JobOrderer
+Client "1" o-- "1" JobOrderer
 
-interface ContainerModem
-interface DockerModem
-interface VolumeDefinition
+interface DockerModemEvent{
++status: string [1]
++progressDetail: {current: number, total: number} [1]
++progress: string [1]
++id: string [1] {unique}
+}
+interface DockerModem{
++followProgress(): void
++demuxStream(): void
+}
+DockerModem "1" --> "*" DockerModemEvent : uses
+interface VolumeDefinition{
++fromPath: string [1]
++toPath: string [1]
+}
 
 class Daemon{
 -docker: Docker = new Docker [1]
 -containers: Container [*]
 +constructor(in docker:Docker)
 +createServer(): Server
-+listImages(): Promise<ImageInfo> {query}
-+listContainers(): Promise<ContainerInfo> {query}
-+importImage(in docker: Docker, in name: string): Promise<ReadWriteStream>
-+ensureImageImport(in docker: Docker, in name: string, in onProgress: function(in event: {string, {number,number}, string, string}): void = undefined): Promise<void>
-+createContainer(in docker: Docker, in image: string, in command: string[], in volumePairs: VolumeDefinition[] = []): Promise<Container>
-+attachStreams(in container: Container, in stdinStream: ReadableStream, in stdoutStream: WritableStream, in stderrStream: WritableStream): Promise<ReadWriteStream>
-+stopContainer(in container: Container): Promise<void>
-+removeContainer(in container: Container): Promise<void>
+-ensureImageImport(in docker: Docker, in name: string, in onProgress: (in event: DockerModemEvent): void = undefined): Promise<void>
+-createContainer(in docker: Docker, in image: string, in command: string[], in volumePairs: VolumeDefinition[] = []): Promise<Container>
+-attachStreams(in container: Container, in stdinStream: ReadableStream, in stdoutStream: WritableStream, in stderrStream: WritableStream): Promise<ReadWriteStream>
+-stopContainer(in container: Container): Promise<void>
+-removeContainer(in container: Container): Promise<void>
 }
 Daemon "1" --> "*" VolumeDefinition : uses
-Daemon "1" --> "*" ContainerModem : uses
 Daemon "1" --> "*" DockerModem : uses
+
 Client "1" <-> "*" Daemon : communicates
 @enduml
