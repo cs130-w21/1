@@ -1,0 +1,84 @@
+@startuml
+class Controller{
+- zeroconf: Bonjour [1]
+- client: Client [1]
+- browser: Browser [1]
+- jobs: Job [*]
+- parseJobs(in file: string): void
+-supplyClient(in bonjour: Bonjour, in client: Client): Browser
+-done(): void
+}
+
+interface Job{
++getName(): string {query}
++getPrerequisitesIterable: Iterable<Job> {query}
++isSource(): boolean {query}
++toString(): string {query}
++getNumPrerequisites(): number {query}
+}
+
+Job "*" --o "1" Controller
+
+class NormalJob implements Job{
++constructor(in name: string, in prerequisites: Set<Job> = new Set)
+}
+
+interface JobOrderer{
+- nonSources: Set<Job> [1] = new Set {ordered}
+- inProgress: Set<Job> [1] = new Set {ordered}
+- jobToDependents: Map<Job, Set<Job>> [1] = new Map<Job, Set<Job>> {unordered}
+- jobToCompletedPrereqs: Map<Job, Set<Job>> [1] = new Map<Job, Set<Job>> {unordered}
++popNextJob(): Job
++isDone(): boolean {query}
++reportFailedJob(in job: Job): void
++reportCompletedJob(in job: Job): void
+}
+
+class HeapJobOrderer implements JobOrderer{
+- sourcesHeap: Heap<Job> [1] {ordered}
++ constructor(in rootJobs: Job[])
+}
+
+JobOrderer o-- Job
+Client "1" --o "1" Controller
+
+interface Client{
+-job: JobOrderer [1]
++introduce(in host: string, in port: number): void
+}
+
+abstract class EventEmitter
+class Http2Client extends EventEmitter implements Client {
+-availableDaemons: Set<ClientHttpSession> [1] = new Set {ordered}
++constructor(in jobOrderer: JobOrderer)
+-setAvailableAndCheckJobs(in daemon: ClientHttp2Session): void
+-checkJobsAndAssign(): void
+-closeAllDaemonsAndFinish(): void
+-assignJobToDaemon(in job: Job, in daemon: ClientHttp2Session): void
+}
+
+Client o-- JobOrderer
+
+interface ContainerModem
+interface DockerModem
+interface VolumeDefinition
+
+class Daemon{
+-docker: Docker = new Docker [1]
+-containers: Container [*]
++constructor(in docker:Docker)
++createServer(): Server
++listImages(): Promise<ImageInfo> {query}
++listContainers(): Promise<ContainerInfo> {query}
++importImage(in docker: Docker, in name: string): Promise<ReadWriteStream>
++ensureImageImport(in docker: Docker, in name: string, in onProgress: function(in event: {string, {number,number}, string, string}): void = undefined): Promise<void>
++createContainer(in docker: Docker, in image: string, in command: string[], in volumePairs: VolumeDefinition[] = []): Promise<Container>
++attachStreams(in container: Container, in stdinStream: ReadableStream, in stdoutStream: WritableStream, in stderrStream: WritableStream): Promise<ReadWriteStream>
++stopContainer(in container: Container): Promise<void>
++removeContainer(in container: Container): Promise<void>
+}
+Daemon "1" --> "*" VolumeDefinition : uses
+Daemon "1" --> "*" ContainerModem : uses
+Daemon "1" --> "*" DockerModem : uses
+Client "1" <-> "*" Daemon : communicates
+@enduml
