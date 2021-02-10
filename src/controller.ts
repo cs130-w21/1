@@ -9,7 +9,7 @@ import { Http2Client } from './Http2Client'
 
 const zeroconf = bonjour()
 
-function done() {
+function clientDone() {
 	console.log('Finished')
 
 	// The mDNS socket apparently has no way to tell that it's not needed.
@@ -24,7 +24,7 @@ const client: Client = new Http2Client([
 	'first',
 ])
 client.on('progress', console.log)
-once(client, 'done').then(done).catch(console.error)
+once(client, 'done').then(clientDone).catch(console.error)
 
 const browser = supplyClient(zeroconf, client)
 browser.on('up', console.info)
