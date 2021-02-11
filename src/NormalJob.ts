@@ -4,14 +4,18 @@ import { Job } from './Job'
  * An implementation of {@link Job}.
  */
 export class NormalJob implements Job {
+	private prerequisites: Set<Job>
+
 	/**
 	 * @param name - The job's name. Must be unique between jobs in the same dependency graph.
 	 * @param prerequisites - An optional set containing all of this job's prerequisites. Defaults to no prerequisites.
 	 */
 	constructor(
 		private readonly name: string,
-		private readonly prerequisites: Set<Job> = new Set(),
-	) {}
+		prerequisites: Set<Job> = new Set(),
+	) {
+		this.prerequisites = new Set(prerequisites) // Make a copy so the caller can't directly access prerequisites. Encapsulation!
+	}
 
 	/**
 	 * @returns The job's name.
