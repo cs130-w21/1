@@ -9,6 +9,12 @@ class Controller{
 -done(): void
 }
 
+class Parser{
++ parseMakefile(in file: string): Job [*]
+}
+
+Controller "1" *-- "1" Parser
+
 interface Job{
 +getName(): string {query}
 +getPrerequisitesIterable: Iterable<Job> {query}
