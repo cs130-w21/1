@@ -12,9 +12,8 @@ state HasJob {
   Work --> Output : finished job
 }
 
-state "Advertising" as Ad
+state "Idle" as Ad
 state "Clean Up" as Clean
-state "Server Closed" as Closed
 
 [*] --> Ad : start Server
 Ad --> HasJob: received job
@@ -23,7 +22,6 @@ Output --> Ad : return output successfully
 HasJob --> Ad : client cancel job
 Ad --> Clean : close Server
 HasJob --> Clean : close server
-Clean --> Closed : daemon process exited
-Closed --> [*]
+Clean --> [*]
 
 @enduml
