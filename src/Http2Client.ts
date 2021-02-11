@@ -66,17 +66,23 @@ export class Http2Client extends EventEmitter implements Client {
 	 * Closes all daemons if all jobs are finished.
 	 */
 	private checkJobsAndAssign(): void {
-		const job = this.jobOrderer.popNextJob()
+		if (this.jobOrderer.isDone()) {
+			this.closeAllDaemonsAndFinish()
+			return
+		}
 
-		if (job && this.availableDaemons.size > 0) {
+		while (this.availableDaemons.size > 0) {
+			const job = this.jobOrderer.popNextJob()
+			if (!job) {
+				break
+			}
+
 			const daemon: ClientHttp2Session = this.availableDaemons.values().next()
 				.value as ClientHttp2Session
 
 			assert(daemon, 'No available daemon found (logic error).')
 
 			this.assignJobToDaemon(job, daemon)
-		} else if (this.jobOrderer.isDone()) {
-			this.closeAllDaemonsAndFinish()
 		}
 	}
 
