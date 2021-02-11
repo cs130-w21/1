@@ -66,6 +66,16 @@ Daemon2 -> Client : subtarget
 deactivate Daemon2
 Client -> JobOrderer : reportCompletedJob(completedJob)
 
+Client -> JobOrderer: isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer: popNextJob()
+activate JobOrderer
+JobOrderer -> Client : NULL
+deactivate JobOrderer
+
 Daemon -> Client : subtarget
 deactivate Daemon
 Client -> JobOrderer : reportCompletedJob(completedJob)
