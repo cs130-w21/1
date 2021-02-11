@@ -4,12 +4,13 @@
 	"parserOptions": {
 		"project": "tsconfig.eslint.json"
 	},
-	"plugins": ["@typescript-eslint", "jest", "tsdoc"],
+	"plugins": ["tsdoc"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:@typescript-eslint/recommended-requiring-type-checking",
 		"airbnb-typescript/base",
+		"plugin:promise/recommended",
 		"plugin:jest/recommended",
 		"plugin:jest/style",
 		"prettier",
@@ -17,7 +18,14 @@
 	],
 	"rules": {
 		"no-console": "off",
+		"no-restricted-syntax": "off",
 		"import/prefer-default-export": "off",
+		"import/no-default-export": "error",
+		"jest/consistent-test-it": "error",
+		"jest/no-hooks": "error",
+		"jest/prefer-spy-on": "error",
+		"jest/prefer-todo": "error",
+		"jest/require-top-level-describe": "error",
 		"tsdoc/syntax": "error"
 	},
 	"env": {

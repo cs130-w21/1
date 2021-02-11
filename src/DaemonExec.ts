@@ -1,23 +1,23 @@
 import * as Docker from 'dockerode'
 
-interface ContainerModem {
-	demuxStream(
-		stream: NodeJS.ReadWriteStream,
-		stdoutStream: NodeJS.WritableStream,
-		stderrStream: NodeJS.WritableStream,
-	): void
+interface DockerModemEvent {
+	status: string
+	progressDetail: { current: number; total: number }
+	progress: string
+	id: string
 }
 
 interface DockerModem {
 	followProgress(
 		stream: NodeJS.ReadableStream,
-		onFinished: (err?: Error) => Promise<void>,
-		onProgress?: (event: {
-			status: string
-			progressDetail: { current: number; total: number }
-			progress: string
-			id: string
-		}) => void,
+		onFinished: (err: Error, output: DockerModemEvent) => void,
+		onProgress?: (event: DockerModemEvent) => void,
+	): void
+
+	demuxStream(
+		stream: NodeJS.ReadWriteStream,
+		stdoutStream: NodeJS.WritableStream,
+		stderrStream: NodeJS.WritableStream,
 	): void
 }
 
@@ -63,38 +63,36 @@ export async function importImage(
 }
 
 /**
- * Imports an image if it does not exist and then calls callbacks for progress and finish events
+ * Imports an image if it does not exist, resolving when the image is imported.
  * @param docker - The docker daemon with which the image will be stored
  * @param name - The name of the image to pull
- * @param onFinished - a callback for when the image import is finished
  * @param onProgress - a callback for when the progress of the image import updates
  */
 export async function ensureImageImport(
 	docker: Docker,
 	name: string,
-	onFinished: (err?: Error) => Promise<void>,
-	onProgress?: (event: {
-		status: string
-		progressDetail: { current: number; total: number }
-		progress: string
-		id: string
-	}) => void,
+	onProgress?: (event: DockerModemEvent) => void,
 ): Promise<void> {
 	const images = await listImages(docker)
+	const imageExists = images.some((image) =>
+		image.RepoTags.some((el) => el === name),
+	)
 
-	if (
-		!images.some((e: Docker.ImageInfo) =>
-			e.RepoTags.some((el: string) => el === name),
-		)
-	) {
-		// if image is not fetched, fetch it (search only works if version is in image)
-		const stream = await importImage(docker, name)
-		const modem: DockerModem = docker.modem as DockerModem
-		modem.followProgress(stream, onFinished, onProgress)
-	} else {
-		// if image is fetched, just run command
-		await onFinished(undefined)
+	// if image is fetched, just run command
+	if (imageExists) {
+		return
 	}
+
+	// if image is not fetched, fetch it (search only works if version is in image)
+	const stream = await importImage(docker, name)
+	const modem = docker.modem as DockerModem
+	await new Promise((resolve, reject) => {
+		modem.followProgress(
+			stream,
+			(err, res) => (err ? reject(err) : resolve(res)),
+			onProgress,
+		)
+	})
 }
 
 /**
@@ -158,7 +156,7 @@ export async function attachStreams(
 		stdout: true,
 		stderr: true,
 	})
-	const modem: ContainerModem = container.modem as ContainerModem
+	const modem = container.modem as DockerModem
 	modem.demuxStream(stream, stdoutStream, stderrStream)
 	stdinStream.pipe(stream)
 	return stream
