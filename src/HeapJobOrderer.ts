@@ -7,6 +7,12 @@ import { JobOrderer } from './JobOrderer'
  * Manages a set of jobs that have to be run.
  */
 export class HeapJobOrderer implements JobOrderer {
+	/**
+	 * Holds all Jobs that are sources, meaning that they are runnable because they have no uncompleted prerequisistes.
+	 *
+	 * It's a Heap instead of a Set because we want to choose the source with the most dependents as the next Job to run.
+	 * The sorting function prioritizes Jobs by the number of dependents they have.
+	 */
 	private readonly sourcesHeap: Heap<Job> = new Heap((job1, job2) => {
 		const job1Dependents = this.jobToDependents.get(job1)
 		const job2Dependents = this.jobToDependents.get(job2)
@@ -19,15 +25,31 @@ export class HeapJobOrderer implements JobOrderer {
 		return job2Dependents.size - job1Dependents.size
 	})
 
+	/**
+	 * Holds all Jobs that aren't sources.
+	 */
 	private readonly nonSources: Set<Job> = new Set()
 
+	/**
+	 * Holds all source Jobs that have been requested via {@link popNextJob} but haven't yet been reported completed via {@link reportCompletedJob}.
+	 */
 	private readonly inProgress: Set<Job> = new Set()
 
+	/**
+	 * Maps each Job to its dependents. Used to update dependency graph.
+	 *
+	 * Job B's dependents include Job A if and only if Job A's prerequisites include Job B.
+	 */
 	private readonly jobToDependents: Map<Job, Set<Job>> = new Map<
 		Job,
 		Set<Job>
 	>()
 
+	/**
+	 * Maps each Job to its completed prerequisites.
+	 *
+	 * If a Job's prerequisites is equal to its completed prerequisites, then all of its prerequisites are completed and its ready to be run.
+	 */
 	private readonly jobToCompletedPrereqs: Map<Job, Set<Job>> = new Map<
 		Job,
 		Set<Job>
