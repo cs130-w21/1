@@ -8,9 +8,14 @@ continuously give out jobs as long as there are daemons to do them.
 
 actor User
 
-User -> Client: specified makefile, target, and options
-Client -> Client: ParseMakefile(makefile)
+User -> Controller: specified makefile, target, and options
 
+Controller -> Parser **: ParseMakefile(makefile)
+activate Parser
+Parser -> Controller : Jobs
+deactivate Parser
+Controller -> Client : (target, Jobs)
+activate Client
 Client -> JobOrderer **: JobOrderer(Jobs)
 
 
@@ -70,5 +75,7 @@ activate JobOrderer
 JobOrderer -> Client : True
 deactivate JobOrderer
 
-Client -> User : target
+Client -> Controller : target
+deactivate Client
+Controller -> User: target
 @enduml
