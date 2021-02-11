@@ -3,7 +3,7 @@
 left to right direction
 
 actor Developer as developer
-actor "Device Owner" as devOwn
+actor "Device Owner" as DevOwn
 package Junknet { 
 	usecase (Initiate a Job) as initiate
 	usecase (Cancel Job) as cancel
