@@ -6,11 +6,11 @@ import { Job } from './Job'
 export class NormalJob implements Job {
 	/**
 	 * @param name - The job's name. Must be unique between jobs in the same dependency graph.
-	 * @param prerequisites - An optional array of jobs that must be completed before this job can start.
+	 * @param prerequisites - An optional set containing all of this job's prerequisites. Defaults to no prerequisites.
 	 */
 	constructor(
-		private name: string,
-		private prerequisites: Set<Job> = new Set(),
+		private readonly name: string,
+		private readonly prerequisites: Set<Job> = new Set(),
 	) {}
 
 	public getName(): string {

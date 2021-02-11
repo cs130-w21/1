@@ -31,7 +31,6 @@
 			"LabeledStatement",
 			"WithStatement"
 		],
-		"import/order": "off",
 		"no-return-assign": ["error", "except-parens"]
 	},
 	"env": {

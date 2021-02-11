@@ -1,31 +1,32 @@
 import { NormalJob } from '../src/NormalJob'
 import { HeapJobOrderer } from '../src/HeapJobOrderer'
+import { Job } from '../src/Job'
 
 /**
  * Testcase with 5 jobs.
  */
 test('HeapJobOrderer', () => {
 	// The names are untouched.
-	const job1: NormalJob = new NormalJob('yee1')
-	const job2: NormalJob = new NormalJob('yee2', new Set([job1]))
-	const job3: NormalJob = new NormalJob('yee', new Set([job1]))
-	const job4: NormalJob = new NormalJob('yee3', new Set([job1, job2]))
-	const job5: NormalJob = new NormalJob('yee4', new Set([job4]))
+	const sourceJob: Job = new NormalJob('sourceJob')
+	const job2: Job = new NormalJob('yee2', new Set([sourceJob]))
+	const job3: Job = new NormalJob('yee', new Set([sourceJob]))
+	const job4: Job = new NormalJob('yee3', new Set([sourceJob, job2]))
+	const job5: Job = new NormalJob('yee4', new Set([job4]))
 
-	const rootJobs: NormalJob[] = [job3, job5]
+	const rootJobs: Job[] = [job3, job5]
 	const jobOrderer = new HeapJobOrderer(rootJobs)
 
 	expect(jobOrderer.isDone()).toBe(false)
 
-	// job1 is the only source.
-	expect(jobOrderer.popNextJob()).toBe(job1)
+	// sourceJob is the only source.
+	expect(jobOrderer.popNextJob()).toBe(sourceJob)
 
-	// Everything else depends on job1, but job1 is unfinished.
+	// Everything else depends on sourceJob, but sourceJob is unfinished.
 	expect(jobOrderer.popNextJob()).toBeNull()
 
-	// Once job1 is done, the next two Jobs are job2 and job3, in either order.
+	// Once sourceJob is done, the next two Jobs are job2 and job3, in either order.
 	// We use toContainEqual instead of toContain because the arrays themselves will be different, although the objects it contains will be identical.
-	jobOrderer.reportCompletedJob(job1)
+	jobOrderer.reportCompletedJob(sourceJob)
 	// TODO: create custom jest matcher to test unordered equality.
 	expect([
 		[job2, job3],

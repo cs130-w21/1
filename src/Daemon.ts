@@ -13,9 +13,9 @@ function mockDelayMs(): number {
 }
 
 /**
- * Has a {@link FAILURE_PROBABILITY}% chance of returning true.
+ * Has a {@link FAILURE_PROBABILITY} chance of returning true.
  *
- * @returns true {@link FAILURE_PROBABILITY}% of the time
+ * @returns true {@link FAILURE_PROBABILITY} of the time
  */
 function mockFailure(): boolean {
 	return Math.random() < FAILURE_PROBABILITY
@@ -41,7 +41,7 @@ export function createDaemon(): Server {
 		const output = input.toUpperCase()
 		setTimeout(() => {
 			if (mockFailure()) {
-				stream.respond({ status: 400, 'content-type': 'text/plain' })
+				stream.respond({ status: 500, 'content-type': 'text/plain' })
 				stream.end('failed')
 			} else {
 				stream.respond({

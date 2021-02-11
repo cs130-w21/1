@@ -1,9 +1,9 @@
 import { ClientHttp2Session, connect } from 'http2'
 import { EventEmitter } from 'events'
+import { strict as assert } from 'assert'
 import { Client } from './Client'
 import { JobOrderer } from './JobOrderer'
 import { Job } from './Job'
-import assert = require('assert')
 
 /**
  * String representation of the host and port together.
@@ -23,16 +23,15 @@ function hostAndPort(host: string, port: number): string {
 /**
  * A mock Junknet client using HTTP/2.
  * It distributes the given jobs among daemons it knows about.
-//  * @deprecated Implement a {@link Client} using SSH instead.
  */
 export class Http2Client extends EventEmitter implements Client {
-	private availableDaemons: Set<ClientHttp2Session> = new Set()
+	private readonly availableDaemons: Set<ClientHttp2Session> = new Set()
 
 	/**
-	 * Create a client whose responsibility is to finish the given jobs.
+	 * Create a client whose responsibility is to finish jobs.
 	 * It won't start until it knows about some daemons.
 	 *
-	 * @param jobs - array of the jobs in any order
+	 * @param jobOrderer - A JobOrderer managing the Jobs to complete.
 	 */
 	constructor(private jobOrderer: JobOrderer) {
 		super()
@@ -104,8 +103,9 @@ export class Http2Client extends EventEmitter implements Client {
 	 * @param daemon - The daemon to which to assign the job.
 	 */
 	private assignJobToDaemon(job: Job, daemon: ClientHttp2Session) {
+		this.availableDaemons.delete(daemon)
 		const request = daemon.request({ ':path': `/${job.getName()}` })
-		daemon.on('error', (err) => this.emit('error', err))
+		daemon.on('error', () => this.jobOrderer.reportFailedJob(job))
 
 		let data = ''
 		request.setEncoding('utf8')
@@ -118,7 +118,7 @@ export class Http2Client extends EventEmitter implements Client {
 				this.jobOrderer.reportCompletedJob(job)
 			}
 
-			this.emit('progress', job.toString(), data)
+			this.emit('progress', job, data)
 			this.setAvailableAndCheckJobs(daemon)
 		})
 	}

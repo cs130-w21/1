@@ -1,7 +1,7 @@
 import { Heap } from 'heap-js'
+import { strict as assert } from 'assert'
 import { Job } from './Job'
 import { JobOrderer } from './JobOrderer'
-import assert = require('assert')
 
 /**
  * Manages a set of jobs that have to be run.
@@ -9,13 +9,19 @@ import assert = require('assert')
 export class HeapJobOrderer implements JobOrderer {
 	private sourcesHeap: Heap<Job>
 
-	private nonSources: Set<Job> = new Set()
+	private readonly nonSources: Set<Job> = new Set()
 
-	private inProgress: Set<Job> = new Set()
+	private readonly inProgress: Set<Job> = new Set()
 
-	private jobToDependents: Map<Job, Set<Job>> = new Map<Job, Set<Job>>()
+	private readonly jobToDependents: Map<Job, Set<Job>> = new Map<
+		Job,
+		Set<Job>
+	>()
 
-	private jobToCompletedPrereqs: Map<Job, Set<Job>> = new Map<Job, Set<Job>>()
+	private readonly jobToCompletedPrereqs: Map<Job, Set<Job>> = new Map<
+		Job,
+		Set<Job>
+	>()
 
 	/**
 	 * Create the JobOrderer and inform it of the jobs to manage.
@@ -42,7 +48,7 @@ export class HeapJobOrderer implements JobOrderer {
 			this.jobToDependents.set(rootJob, new Set())
 		}
 
-		const queue: Job[] = rootJobs
+		const queue: Job[] = Array.from(rootJobs)
 		const seenSources: Set<Job> = new Set() // We use this because checking whether a heap has an element is O(n).
 
 		// BFS traverse dependency graph, starting with root nodes (the ultimate jobs).
