@@ -25,6 +25,8 @@ export function createDaemon(): net.Server {
 		//Specify port being listened on
 		}).listen(0, '127.0.0.1', function() {
   		console.log('Listening.');
+  		// Work-around
+  		(server as net.Server).listening = true;
 	});
 	
 	return server as net.Server;
