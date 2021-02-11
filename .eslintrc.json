@@ -4,12 +4,10 @@
 	"parserOptions": {
 		"project": "tsconfig.eslint.json"
 	},
-	"plugins": ["tsdoc"],
+	"plugins": ["tsdoc", "github"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
-		"plugin:github/recommended",
-		"plugin:github/typescript",
 		"plugin:@typescript-eslint/recommended-requiring-type-checking",
 		"airbnb-typescript/base",
 		"plugin:promise/recommended",
@@ -30,7 +28,8 @@
 			"LabeledStatement",
 			"WithStatement"
 		],
-		"no-return-assign": ["error", "except-parens"]
+		"no-return-assign": ["error", "except-parens"],
+		"github/array-foreach": ["error"]
 	},
 	"env": {
 		"node": true,
