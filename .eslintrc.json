@@ -20,7 +20,6 @@
 	],
 	"rules": {
 		"github/no-then": "off", // TODO enable.
-		"import/no-namespace": "off", // TODO enable.
 		"no-console": "off", // TODO enable.
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
