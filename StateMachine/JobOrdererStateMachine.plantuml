@@ -7,19 +7,18 @@ Initialized --> Ready: source jobs exist
 Initialized --> [*]: no source jobs exist /throw error
 
 Ready: do /wait for requests
-Ready --> CheckingJobs: Job requested
+Ready --> CheckingJobs: job requested
 Ready --> UpdatingJobs: job reported completed [job exists in graph]
 Ready --> UpdatingJobs: job reported failed [job exists in graph]
 
 CheckingJobs: do /search for runnable jobs
-CheckingJobs --> Ready: runnable Job found /return job
-CheckingJobs --> Ready: No runnable Job found /return null
+CheckingJobs --> Ready: runnable job found /return job
+CheckingJobs --> Ready: no runnable Job found /return null
 
 UpdatingJobs: do /update dependency tree
 UpdatingJobs --> Ready: not all jobs are done
 UpdatingJobs --> Finished: all jobs are done
 
 Finished: do /report finished if asked
-
 
 @enduml
