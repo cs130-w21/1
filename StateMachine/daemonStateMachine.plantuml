@@ -19,11 +19,11 @@ state "Server Closed" as Closed
 [*] --> Ad : start Server
 Ad --> HasJob: received job
 Trouble --> Ad : error unresolved
-Output --> Ad
-Work --> Ad : client cancel job
+Output --> Ad : return output successfully
+HasJob --> Ad : client cancel job
 Ad --> Clean : close Server
 HasJob --> Clean : close server
-Clean --> Closed
+Clean --> Closed : daemon process exited
 Closed --> [*]
 
 @enduml
