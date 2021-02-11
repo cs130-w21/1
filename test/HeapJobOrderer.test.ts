@@ -1,52 +1,81 @@
+import { strict as assert } from 'assert'
 import { NormalJob } from '../src/NormalJob'
 import { HeapJobOrderer } from '../src/HeapJobOrderer'
 import { Job } from '../src/Job'
+import { UnknownJobError } from '../src/UnkownJobError'
 
-/**
- * Testcase with 5 jobs.
- */
-test('HeapJobOrderer', () => {
-	// The names are untouched.
-	const sourceJob: Job = new NormalJob('sourceJob')
-	const job2: Job = new NormalJob('yee2', new Set([sourceJob]))
-	const job3: Job = new NormalJob('yee', new Set([sourceJob]))
-	const job4: Job = new NormalJob('yee3', new Set([sourceJob, job2]))
-	const job5: Job = new NormalJob('yee4', new Set([job4]))
+describe('HeapJobOrderer', () => {
+	it('correctly orders jobs', () => {
+		// The names are unused.
+		const sourceJob: Job = new NormalJob('sourceJob')
+		const intermediateJob1: Job = new NormalJob(
+			'intermediateJob1',
+			new Set([sourceJob]),
+		)
+		const intermediateJob2: Job = new NormalJob(
+			'intermediateJob2',
+			new Set([sourceJob, intermediateJob1]),
+		)
+		const rootJob1: Job = new NormalJob('rootJob1', new Set([sourceJob]))
+		const rootJob2: Job = new NormalJob('rootJob2', new Set([intermediateJob2]))
 
-	const rootJobs: Job[] = [job3, job5]
-	const jobOrderer = new HeapJobOrderer(rootJobs)
+		const rootJobs: Job[] = [rootJob1, rootJob2]
+		const jobOrderer = new HeapJobOrderer(rootJobs)
 
-	expect(jobOrderer.isDone()).toBe(false)
+		expect(jobOrderer.isDone()).toBe(false)
 
-	// sourceJob is the only source.
-	expect(jobOrderer.popNextJob()).toBe(sourceJob)
+		// sourceJob is the only source.
+		expect(jobOrderer.popNextJob()).toBe(sourceJob)
 
-	// Everything else depends on sourceJob, but sourceJob is unfinished.
-	expect(jobOrderer.popNextJob()).toBeNull()
+		// Everything else depends on sourceJob, but sourceJob is unfinished.
+		expect(jobOrderer.popNextJob()).toBeNull()
 
-	// Once sourceJob is done, the next two Jobs are job2 and job3, in either order.
-	// We use toContainEqual instead of toContain because the arrays themselves will be different, although the objects it contains will be identical.
-	jobOrderer.reportCompletedJob(sourceJob)
-	// TODO: create custom jest matcher to test unordered equality.
-	expect([
-		[job2, job3],
-		[job3, job2],
-	]).toContainEqual([jobOrderer.popNextJob(), jobOrderer.popNextJob()])
+		// Once sourceJob is done, the next two Jobs are intermediateJob1 and rootJob1, in either order.
+		// We use toContainEqual instead of toContain because the arrays themselves will be different, although the objects it contains will be identical.
+		jobOrderer.reportCompletedJob(sourceJob)
+		// TODO: create custom jest matcher to test unordered equality.
+		expect([
+			[intermediateJob1, rootJob1],
+			[rootJob1, intermediateJob1],
+		]).toContainEqual([jobOrderer.popNextJob(), jobOrderer.popNextJob()])
 
-	// Once job2 is done, the only available Job is job4.
-	jobOrderer.reportCompletedJob(job2)
-	expect(jobOrderer.popNextJob()).toBe(job4)
-	expect(jobOrderer.popNextJob()).toBeNull()
+		// Once intermediateJob1 is done, the only available Job is intermediateJob2.
+		jobOrderer.reportCompletedJob(intermediateJob1)
+		expect(jobOrderer.popNextJob()).toBe(intermediateJob2)
+		expect(jobOrderer.popNextJob()).toBeNull()
 
-	// Even if job3 is done, we still need job4 to finish before we can start job5.
-	jobOrderer.reportCompletedJob(job3)
-	expect(jobOrderer.popNextJob()).toBeNull()
+		// Even if rootJob1 is done, we still need intermediateJob2 to finish before we can start rootJob2.
+		jobOrderer.reportCompletedJob(rootJob1)
+		expect(jobOrderer.popNextJob()).toBeNull()
 
-	// Now that job4 is finished, we can start job5.
-	jobOrderer.reportCompletedJob(job4)
-	expect(jobOrderer.popNextJob()).toBe(job5)
+		// Now that intermediateJob2 is finished, we can start rootJob2.
+		jobOrderer.reportCompletedJob(intermediateJob2)
+		expect(jobOrderer.popNextJob()).toBe(rootJob2)
 
-	// Once job5 is done, we're done with all of our Jobs.
-	jobOrderer.reportCompletedJob(job5)
-	expect(jobOrderer.isDone()).toBe(true)
+		// Once rootJob2 is done, we're done with all of our Jobs.
+		jobOrderer.reportCompletedJob(rootJob2)
+		expect(jobOrderer.isDone()).toBe(true)
+	})
+
+	it('throws an Error when passed an unknown job', () => {
+		const jobOrderer = new HeapJobOrderer([])
+
+		expect(() => {
+			jobOrderer.reportFailedJob(new NormalJob('test job'))
+		}).toThrow(UnknownJobError)
+
+		expect(() => {
+			jobOrderer.reportCompletedJob(new NormalJob('test job'))
+		}).toThrow(UnknownJobError)
+	})
+
+	it('correctly reports whether it is done', () => {
+		const jobOrderer = new HeapJobOrderer([new NormalJob('')])
+
+		expect(jobOrderer.isDone()).toEqual(false)
+		const onlyJob = jobOrderer.popNextJob()
+		assert(onlyJob)
+		jobOrderer.reportCompletedJob(onlyJob)
+		expect(jobOrderer.isDone()).toEqual(true)
+	})
 })

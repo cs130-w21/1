@@ -2,6 +2,7 @@ import { Heap } from 'heap-js'
 import { strict as assert } from 'assert'
 import { Job } from './Job'
 import { JobOrderer } from './JobOrderer'
+import { UnknownJobError } from './UnkownJobError'
 
 /**
  * Manages a set of jobs that have to be run.
@@ -115,7 +116,9 @@ export class HeapJobOrderer implements JobOrderer {
 		const completedPrereqs = this.jobToCompletedPrereqs.get(job)
 
 		if (!completedPrereqs) {
-			throw new Error(`We don't know about this job: ${job.toString()}.`)
+			throw new UnknownJobError(
+				`We don't know about this job: ${job.toString()}.`,
+			)
 		}
 
 		return job.getNumPrerequisites() === completedPrereqs.size
@@ -147,7 +150,7 @@ export class HeapJobOrderer implements JobOrderer {
 		const dependents = this.jobToDependents.get(completedJob)
 
 		if (!dependents) {
-			throw new Error(
+			throw new UnknownJobError(
 				`We don't know about this job marked completed: ${completedJob.toString()}.`,
 			)
 		}
@@ -178,7 +181,9 @@ export class HeapJobOrderer implements JobOrderer {
 	 */
 	public reportFailedJob(failedJob: Job): void {
 		if (!this.inProgress.has(failedJob)) {
-			throw new Error(`We don't know about the job ${failedJob.toString()}.`)
+			throw new UnknownJobError(
+				`We don't know about the job ${failedJob.toString()}.`,
+			)
 		}
 
 		this.inProgress.delete(failedJob)
