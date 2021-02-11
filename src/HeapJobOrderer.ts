@@ -7,7 +7,17 @@ import { JobOrderer } from './JobOrderer'
  * Manages a set of jobs that have to be run.
  */
 export class HeapJobOrderer implements JobOrderer {
-	private sourcesHeap: Heap<Job>
+	private readonly sourcesHeap: Heap<Job> = new Heap((job1, job2) => {
+		const job1Dependents = this.jobToDependents.get(job1)
+		const job2Dependents = this.jobToDependents.get(job2)
+
+		assert(
+			job1Dependents && job2Dependents,
+			'Provided jobs are missing from map.',
+		)
+
+		return job2Dependents.size - job1Dependents.size
+	})
 
 	private readonly nonSources: Set<Job> = new Set()
 
@@ -30,19 +40,6 @@ export class HeapJobOrderer implements JobOrderer {
 	 * @param jobs - The jobs to manage. They must have correctly populated prerequisites fields.
 	 */
 	constructor(rootJobs: Job[]) {
-		// Initialize the sources heap with its sorting function.
-		this.sourcesHeap = new Heap((job1, job2) => {
-			const job1Dependents = this.jobToDependents.get(job1)
-			const job2Dependents = this.jobToDependents.get(job2)
-
-			assert(
-				job1Dependents && job2Dependents,
-				'Provided jobs are missing from map.',
-			)
-
-			return job2Dependents.size - job1Dependents.size
-		})
-
 		// Add all of the root jobs to dependents map.
 		for (const rootJob of rootJobs) {
 			this.jobToDependents.set(rootJob, new Set())
