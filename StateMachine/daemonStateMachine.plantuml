@@ -1,0 +1,29 @@
+@startuml
+
+
+state HasJob {
+  state "Do Work" as Work
+  state "Troubleshoot with Client" as Trouble
+  state "Return Output to Client" as Output
+
+  [*] --> Work
+  Work --> Trouble : error
+  Trouble --> Work : resolved error
+  Work --> Output : finished job
+}
+
+state "Advertising" as Ad
+state "Clean Up" as Clean
+state "Server Closed" as Closed
+
+[*] --> Ad : start Server
+Ad --> HasJob: received job
+Trouble --> Ad : error unresolved
+Output --> Ad
+Work --> Ad : client cancel job
+Ad --> Clean : close Server
+HasJob --> Clean : close server
+Clean --> Closed
+Closed --> [*]
+
+@enduml
