@@ -2,8 +2,8 @@
 |Controller|
 start
 :Receive Makefile;
-|Client|
 :Parse Makefile;
+|Client|
 :Sort Makefile;
 repeat
 	repeat
