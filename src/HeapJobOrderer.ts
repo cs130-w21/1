@@ -90,7 +90,7 @@ export class HeapJobOrderer implements JobOrderer {
 					queue.push(prerequisite)
 				}
 
-				if (job.isSource()) {
+				if (job.getNumPrerequisites() === 0) {
 					this.sourcesHeap.push(job)
 					seenSources.add(job)
 				} else {
@@ -101,6 +101,24 @@ export class HeapJobOrderer implements JobOrderer {
 				this.jobToCompletedPrereqs.set(job, new Set())
 			}
 		}
+	}
+
+	/**
+	 * Checks whether the given job is a source.
+	 *
+	 * A job is a source if all of its prerequisites are completed.
+	 *
+	 * @param job - The job to check.
+	 * @returns Whether the given job is a source.
+	 */
+	private jobIsSource(job: Job): boolean {
+		const completedPrereqs = this.jobToCompletedPrereqs.get(job)
+
+		if (!completedPrereqs) {
+			throw new Error(`We don't know about this job: ${job.toString()}.`)
+		}
+
+		return job.getNumPrerequisites() === completedPrereqs.size
 	}
 
 	/**
@@ -164,7 +182,10 @@ export class HeapJobOrderer implements JobOrderer {
 		}
 
 		this.inProgress.delete(failedJob)
-		assert(failedJob.isSource())
+		assert(
+			this.jobIsSource(failedJob),
+			`Job ${failedJob.toString()} was reported failed and was in the inProgress set, but it still has unfinished prerequisites. It probably should not have been run.`,
+		)
 		this.sourcesHeap.push(failedJob)
 	}
 

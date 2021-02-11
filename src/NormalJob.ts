@@ -1,7 +1,7 @@
 import { Job } from './Job'
 
 /**
- * A job for a Daemon to complete.
+ * An implementation of {@link Job}.
  */
 export class NormalJob implements Job {
 	/**
@@ -13,21 +13,25 @@ export class NormalJob implements Job {
 		private readonly prerequisites: Set<Job> = new Set(),
 	) {}
 
+	/**
+	 * @returns The job's name.
+	 */
 	public getName(): string {
 		return this.name
 	}
 
+	/**
+	 * Uses Set's native values() function to get an iterable of prerequisites.
+	 *
+	 * @returns An iterable that iterates over the prerequisites Set.
+	 */
 	public getPrerequisitesIterable(): Iterable<Job> {
 		return this.prerequisites.values()
 	}
 
 	/**
-	 * @returns Whether this job has any incomplete prerequisites.
+	 * Returns the number of prerequisites using Set's native size property.
 	 */
-	public isSource(): boolean {
-		return this.prerequisites.size === 0
-	}
-
 	public getNumPrerequisites(): number {
 		return this.prerequisites.size
 	}
