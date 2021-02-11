@@ -13,7 +13,7 @@ import { Job } from './Job'
 
 const zeroconf = bonjour()
 
-function done() {
+function clientDone() {
 	console.log('Finished')
 
 	// The mDNS socket apparently has no way to tell that it's not needed.
@@ -28,7 +28,7 @@ const job5: Job = new NormalJob('fifth', new Set([job1]))
 
 const client: Client = new Http2Client(new HeapJobOrderer([job5]))
 client.on('progress', console.log)
-once(client, 'done').then(done).catch(console.error)
+once(client, 'done').then(clientDone).catch(console.error)
 
 const browser = supplyClient(zeroconf, client)
 browser.on('up', console.info)
