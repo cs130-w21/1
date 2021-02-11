@@ -5,6 +5,7 @@ start
 :Parse Makefile;
 |Client|
 :Sort Makefile;
+fork
 repeat
 	repeat
 		:Search Available Daemons;
@@ -17,6 +18,18 @@ repeat
 	:Send Commands;
 	->Files, Target;
 	|Daemons|
+	:Receive Commands;
+|Client|
+repeat while(more commands?) is (yes)
+->no;
+:Close Connections;
+fork again
+|Daemons|
+repeat
+	repeat
+	:Wait for command;
+		repeat while(no commands?) is (yes)
+	->no;
 	:Execute Command;
 	if (success?) then (yes)
 		:Send Result;
@@ -26,8 +39,11 @@ repeat
 	->files, streams, messages;
 	|Client|
 	:Process Results;
-repeat while(more commands?) is (yes)
+|Daemons|
+repeat while (connection up?) is (yes)
 ->no;
+|Client|
+end fork
 |Controller|
 :Notify User;
 stop
