@@ -91,7 +91,7 @@ var utils = ssh2.utils;
 export function createDaemon(): Server {
 
 	// Create server object
-	const server = new Server({
+	const server = new ssh2.Server({
 		// Host key, for SSH verification
 		hostKeys: [fs.readFileSync('host.key')]
 	});
