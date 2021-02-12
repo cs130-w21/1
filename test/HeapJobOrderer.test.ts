@@ -2,7 +2,7 @@ import { strict as assert } from 'assert'
 import { NormalJob } from '../src/NormalJob'
 import { HeapJobOrderer } from '../src/HeapJobOrderer'
 import { Job } from '../src/Job'
-import { UnknownJobError } from '../src/UnkownJobError'
+import { UnknownJobError } from '../src/UnknownJobError'
 
 describe('HeapJobOrderer', () => {
 	it('correctly orders jobs', () => {

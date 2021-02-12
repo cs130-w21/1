@@ -2,7 +2,7 @@ import { Heap } from 'heap-js'
 import { strict as assert } from 'assert'
 import { Job } from './Job'
 import { JobOrderer } from './JobOrderer'
-import { UnknownJobError } from './UnkownJobError'
+import { UnknownJobError } from './UnknownJobError'
 
 /**
  * Manages a set of jobs that have to be run.
@@ -47,13 +47,13 @@ export class HeapJobOrderer implements JobOrderer {
 	>()
 
 	/**
-	 * Maps each Job to its completed prerequisites.
+	 * Maps each Job to the number of its completed prerequisites (how many of its prerequisite Jobs have been reported completed).
 	 *
-	 * If a Job's prerequisites is equal to its completed prerequisites, then all of its prerequisites are completed and its ready to be run.
+	 * If the number of a Job's prerequisites is equal to the number of its completed prerequisites, then all of its prerequisites are completed and it's ready to be run.
 	 */
-	private readonly jobToCompletedPrereqs: Map<Job, Set<Job>> = new Map<
+	private readonly jobToNumCompletedPrereqs: Map<Job, number> = new Map<
 		Job,
-		Set<Job>
+		number
 	>()
 
 	/**
@@ -99,7 +99,7 @@ export class HeapJobOrderer implements JobOrderer {
 				}
 
 				// Initialization.
-				this.jobToCompletedPrereqs.set(job, new Set())
+				this.jobToNumCompletedPrereqs.set(job, 0)
 			}
 		}
 	}
@@ -113,15 +113,15 @@ export class HeapJobOrderer implements JobOrderer {
 	 * @returns Whether the given job is a source.
 	 */
 	private jobIsSource(job: Job): boolean {
-		const completedPrereqs = this.jobToCompletedPrereqs.get(job)
+		const numCompletedPrereqs = this.jobToNumCompletedPrereqs.get(job)
 
-		if (!completedPrereqs) {
+		if (numCompletedPrereqs === undefined) {
 			throw new UnknownJobError(
 				`We don't know about this job: ${job.toString()}.`,
 			)
 		}
 
-		return job.getNumPrerequisites() === completedPrereqs.size
+		return job.getNumPrerequisites() === numCompletedPrereqs
 	}
 
 	/**
@@ -156,15 +156,20 @@ export class HeapJobOrderer implements JobOrderer {
 		}
 
 		for (const dependent of dependents) {
-			const dependentCompletedJobs = this.jobToCompletedPrereqs.get(dependent)
+			const dependentNumCompletedJobs = this.jobToNumCompletedPrereqs.get(
+				dependent,
+			)
 
 			assert(
-				dependentCompletedJobs,
+				dependentNumCompletedJobs !== undefined,
 				`Job ${completedJob.toString()} has dependent that we didn't process, which should be impossible.`,
 			)
-			dependentCompletedJobs.add(completedJob)
+			this.jobToNumCompletedPrereqs.set(
+				dependent,
+				dependentNumCompletedJobs + 1,
+			)
 
-			if (dependent.getNumPrerequisites() === dependentCompletedJobs.size) {
+			if (dependent.getNumPrerequisites() === dependentNumCompletedJobs + 1) {
 				this.sourcesHeap.push(dependent)
 				this.nonSources.delete(dependent)
 			}

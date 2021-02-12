@@ -3,14 +3,17 @@ import { NormalJob } from '../src/NormalJob'
 
 describe('NormalJob', () => {
 	it('returns the correct name', () => {
-		const job = new NormalJob('jobName')
-		expect(job.getName()).toEqual('jobName')
+		const expectedName = 'jobName'
+		const job = new NormalJob(expectedName)
+		expect(job.getName()).toEqual(expectedName)
 	})
 
-	it('returns the correct number of prerequisites', () => {
+	it('returns the correct number of prerequisites for sources', () => {
 		const sourceJob = new NormalJob('', new Set([]))
 		expect(sourceJob.getNumPrerequisites()).toEqual(0)
+	})
 
+	it('returns the correct number of prerequisites for nonsources', () => {
 		const nonsourceJob = new NormalJob(
 			'',
 			new Set([new NormalJob(''), new NormalJob(''), new NormalJob('')]),
