@@ -111,9 +111,9 @@ export async function createContainer(
 ): Promise<Docker.Container> {
 	// make volumes in form accepted by createContainer
 	const volumeJson: { [volume: string]: Record<string, never> } = {}
-	Object.values(volumePairs).forEach((value) => {
+	for (const value of Object.values(volumePairs)) {
 		volumeJson[value.toPath] = {}
-	})
+	}
 	const volumeArray = volumePairs.map((el) => `${el.fromPath}:${el.toPath}`)
 
 	// create container

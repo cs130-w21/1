@@ -1,7 +1,9 @@
 import { ClientHttp2Session, connect } from 'http2'
 import { EventEmitter } from 'events'
-
-import { Client, Job } from './Client'
+import { strict as assert } from 'assert'
+import { Client } from './Client'
+import { JobOrderer } from './JobOrderer'
+import { Job } from './Job'
 
 /**
  * String representation of the host and port together.
@@ -21,16 +23,17 @@ function hostAndPort(host: string, port: number): string {
 /**
  * A mock Junknet client using HTTP/2.
  * It distributes the given jobs among daemons it knows about.
- * @deprecated Implement a {@link Client} using SSH instead.
  */
 export class Http2Client extends EventEmitter implements Client {
+	private readonly availableDaemons: Set<ClientHttp2Session> = new Set()
+
 	/**
-	 * Create a client whose responsibility is to finish the given jobs.
+	 * Create a client whose responsibility is to finish jobs.
 	 * It won't start until it knows about some daemons.
 	 *
-	 * @param queue - array of jobs in reverse order
+	 * @param jobOrderer - A JobOrderer managing the Jobs to complete.
 	 */
-	constructor(private readonly queue: Job[]) {
+	constructor(private jobOrderer: JobOrderer) {
 		super()
 	}
 
@@ -40,38 +43,89 @@ export class Http2Client extends EventEmitter implements Client {
 	 *
 	 * @param host - hostname or IP address of daemon
 	 * @param port - port number of daemon on the host
-	 * @override
 	 */
-	introduce(host: string, port: number): void {
+	public introduce(host: string, port: number): void {
 		const client = connect(`http://${hostAndPort(host, port)}`)
 		client.on('error', (err) => this.emit('error', err))
-		this.available(client)
+		this.setAvailableAndCheckJobs(client)
 	}
 
 	/**
-	 * Drive the given daemon, by providing it with one task at a time in an async loop.
+	 * Mark the daemon as available.
+	 * Then calls function to check if there are any doable jobs.
 	 *
-	 * @param client - a HTTP/2 client connected to a daemon.
+	 * @param daemon - The daemon that is available.
 	 */
-	private available(client: ClientHttp2Session): void {
-		const job = this.queue.pop()
-		if (!job) {
-			client.close(() => this.emit('done'))
+	private setAvailableAndCheckJobs(daemon: ClientHttp2Session): void {
+		this.availableDaemons.add(daemon)
+		this.checkJobsAndAssign()
+	}
+
+	/**
+	 * Tries to assign the next available job to a daemon.
+	 * Closes all daemons if all jobs are finished.
+	 */
+	private checkJobsAndAssign(): void {
+		if (this.jobOrderer.isDone()) {
+			this.closeAllDaemonsAndFinish()
 			return
 		}
 
-		const req = client.request({ ':path': `/${job}` })
-		client.on('error', (err) => this.emit('error', err))
+		while (this.availableDaemons.size > 0) {
+			const job = this.jobOrderer.popNextJob()
+			if (!job) {
+				break
+			}
+
+			const daemon: ClientHttp2Session = this.availableDaemons.values().next()
+				.value as ClientHttp2Session
+
+			assert(daemon, 'No available daemon found (logic error).')
+
+			this.assignJobToDaemon(job, daemon)
+		}
+	}
+
+	/**
+	 * Closes all daemons.
+	 * Emits 'done' once all daemons are closed.
+	 */
+	private closeAllDaemonsAndFinish() {
+		for (const daemon of this.availableDaemons) {
+			daemon.close(() => {
+				this.availableDaemons.delete(daemon)
+				if (this.availableDaemons.size === 0) {
+					this.emit('done')
+				}
+			})
+		}
+	}
+
+	/**
+	 * Asks the daemon to work on the job.
+	 * Sends HTTP request and handles response.
+	 *
+	 * @param job - The job to assign.
+	 * @param daemon - The daemon to which to assign the job.
+	 */
+	private assignJobToDaemon(job: Job, daemon: ClientHttp2Session) {
+		this.availableDaemons.delete(daemon)
+		const request = daemon.request({ ':path': `/${job.getName()}` })
+		daemon.on('error', () => this.jobOrderer.reportFailedJob(job))
 
 		let data = ''
-		req.setEncoding('utf8')
-		req.on('data', (chunk) => {
-			data += chunk
-		})
+		request.setEncoding('utf8')
+		request.on('data', (chunk) => (data += chunk))
 
-		req.on('end', () => {
+		request.on('end', () => {
+			if (data === 'failed') {
+				this.jobOrderer.reportFailedJob(job)
+			} else {
+				this.jobOrderer.reportCompletedJob(job)
+			}
+
 			this.emit('progress', job, data)
-			this.available(client)
+			this.setAvailableAndCheckJobs(daemon)
 		})
 	}
 }
