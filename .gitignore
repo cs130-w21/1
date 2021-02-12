@@ -1,6 +1,7 @@
 node_modules
 dist
 docs
+coverage
 
 .DS_Store
 *.sw?

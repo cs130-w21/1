@@ -78,4 +78,13 @@ describe('HeapJobOrderer', () => {
 		jobOrderer.reportCompletedJob(onlyJob)
 		expect(jobOrderer.isDone()).toEqual(true)
 	})
+
+	it('reschedules failed jobs', () => {
+		const jobOrderer = new HeapJobOrderer([new NormalJob('')])
+		const toFail = jobOrderer.popNextJob()
+		assert(toFail)
+
+		jobOrderer.reportFailedJob(toFail)
+		expect(jobOrderer.popNextJob()).toBe(toFail)
+	})
 })
