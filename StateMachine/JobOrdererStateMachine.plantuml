@@ -2,22 +2,22 @@
 
 [*] --> Initialized
 
-Initialized: entry [root jobs provided] /create dependency graph
-Initialized --> Ready: source jobs exist
-Initialized --> [*]: no source jobs exist /throw error
+Initialized: entry [root jobs provided]
+Initialized: do /BFS using root jobs to initialize sources, nonSources, and inProgress
+Initialized --> Ready: sources.length > 0
+Initialized --> [*]: sources.length == 0 /throw error
 
 Ready: do /wait for requests
 Ready --> CheckingJobs: job requested
-Ready --> UpdatingJobs: job reported completed [job exists in graph]
-Ready --> UpdatingJobs: job reported failed [job exists in graph]
+Ready --> UpdatingJobs: job reported completed [job exists in graph] /remove job from inProgress and update its dependents in nonSources
+Ready --> UpdatingJobs: job reported failed [job exists in graph] /move job from inProgress to sources
 
-CheckingJobs: do /search for runnable jobs
-CheckingJobs --> Ready: runnable job found /return job
-CheckingJobs --> Ready: no runnable Job found /return null
+CheckingJobs: do /check sources for runnable jobs
+CheckingJobs --> Ready: sources contains runnable job /return job
+CheckingJobs --> Ready: sources does not contain runnable Job /return null
 
-UpdatingJobs: do /update dependency tree
-UpdatingJobs --> Ready: not all jobs are done
-UpdatingJobs --> Finished: all jobs are done
+UpdatingJobs --> Ready: not all jobs are done [sources, nonSources, or inProgress is not empty]
+UpdatingJobs --> Finished: all jobs are done [sources, nonSources, and inProgress are empty]
 
 Finished: do /report finished if asked
 
