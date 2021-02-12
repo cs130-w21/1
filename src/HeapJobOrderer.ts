@@ -14,7 +14,7 @@ export class HeapJobOrderer implements JobOrderer {
 	 * It's a Heap instead of a Set because we want to choose the source with the most dependents as the next Job to run.
 	 * The sorting function prioritizes Jobs by the number of dependents they have.
 	 */
-	private readonly sourcesHeap: Heap<Job> = new Heap((job1, job2) => {
+	private readonly sources: Heap<Job> = new Heap((job1, job2) => {
 		const job1Dependents = this.jobToDependents.get(job1)
 		const job2Dependents = this.jobToDependents.get(job2)
 
@@ -68,8 +68,13 @@ export class HeapJobOrderer implements JobOrderer {
 			this.jobToDependents.set(rootJob, new Set())
 		}
 
+		// Holds the queue of Jobs we will process during the BFS.
 		const queue: Job[] = Array.from(rootJobs)
-		const seenSources: Set<Job> = new Set() // We use this because checking whether a heap has an element is O(n).
+
+		// We use this set to store source Jobs that we have already traversed in our BFS.
+		// Using this set improves efficiency because checking whether a heap has an element is O(n) but checking a Set is O(1).
+		// We don't need one for the non-sources because we already keep them in the set nonSources.
+		const sourcesHelperSet: Set<Job> = new Set()
 
 		// BFS traverse dependency graph, starting with root nodes (the ultimate jobs).
 		while (queue.length) {
@@ -77,7 +82,7 @@ export class HeapJobOrderer implements JobOrderer {
 			assert(job, 'Queue with nonzero length should have returned object.')
 
 			// Don't process the same node twice.
-			if (!seenSources.has(job) && !this.nonSources.has(job)) {
+			if (!sourcesHelperSet.has(job) && !this.nonSources.has(job)) {
 				// Update job's prerequisites' 'dependents' fields.
 				for (const prerequisite of job.getPrerequisitesIterable()) {
 					let dependents = this.jobToDependents.get(prerequisite)
@@ -92,8 +97,8 @@ export class HeapJobOrderer implements JobOrderer {
 				}
 
 				if (job.getNumPrerequisites() === 0) {
-					this.sourcesHeap.push(job)
-					seenSources.add(job)
+					this.sources.push(job)
+					sourcesHelperSet.add(job)
 				} else {
 					this.nonSources.add(job)
 				}
@@ -131,7 +136,7 @@ export class HeapJobOrderer implements JobOrderer {
 	 * @returns The next job to run.
 	 */
 	public popNextJob(): Job | null {
-		const nextJob = this.sourcesHeap.pop()
+		const nextJob = this.sources.pop()
 
 		if (nextJob) {
 			this.inProgress.add(nextJob)
@@ -170,7 +175,7 @@ export class HeapJobOrderer implements JobOrderer {
 			)
 
 			if (dependent.getNumPrerequisites() === dependentNumCompletedJobs + 1) {
-				this.sourcesHeap.push(dependent)
+				this.sources.push(dependent)
 				this.nonSources.delete(dependent)
 			}
 		}
@@ -196,7 +201,7 @@ export class HeapJobOrderer implements JobOrderer {
 			this.jobIsSource(failedJob),
 			`Job ${failedJob.toString()} was reported failed and was in the inProgress set, but it still has unfinished prerequisites. It probably should not have been run.`,
 		)
-		this.sourcesHeap.push(failedJob)
+		this.sources.push(failedJob)
 	}
 
 	/**
@@ -204,7 +209,7 @@ export class HeapJobOrderer implements JobOrderer {
 	 */
 	public isDone(): boolean {
 		return !(
-			this.sourcesHeap.length ||
+			this.sources.length ||
 			this.nonSources.size ||
 			this.inProgress.size
 		)
