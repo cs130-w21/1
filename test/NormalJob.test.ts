@@ -36,13 +36,8 @@ describe('NormalJob', () => {
 			new NormalJob('2'),
 			new NormalJob('3'),
 		])
-
 		const job = new NormalJob('job', prerequisites)
 
-		for (const prerequisite of job.getPrerequisitesIterable()) {
-			prerequisites.delete(prerequisite)
-		}
-
-		expect(prerequisites.size).toEqual(0)
+		expect(new Set(job.getPrerequisitesIterable())).toEqual(prerequisites)
 	})
 })
