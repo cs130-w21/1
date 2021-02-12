@@ -17,7 +17,6 @@
 		"prettier/@typescript-eslint"
 	],
 	"rules": {
-		"github/no-then": "off", // TODO enable.
 		"no-console": "off", // TODO enable.
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
