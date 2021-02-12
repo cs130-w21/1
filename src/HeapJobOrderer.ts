@@ -119,13 +119,10 @@ export class HeapJobOrderer implements JobOrderer {
 	 */
 	private jobIsSource(job: Job): boolean {
 		const numCompletedPrereqs = this.jobToNumCompletedPrereqs.get(job)
-
-		if (numCompletedPrereqs === undefined) {
-			throw new UnknownJobError(
-				`We don't know about this job: ${job.toString()}.`,
-			)
-		}
-
+		assert(
+			numCompletedPrereqs !== undefined,
+			`We don't know about this job: ${job.toString()}.`,
+		)
 		return job.getNumPrerequisites() === numCompletedPrereqs
 	}
 
