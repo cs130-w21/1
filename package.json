@@ -7,18 +7,18 @@
     "dist",
     "docs"
   ],
-  "main": "dist",
-  "types": "dist",
+  "main": "dist/src",
+  "types": "dist/src",
   "bin": {
-    "junknetd": "dist/server.js",
-    "junknet-make": "dist/controller.js"
+    "junknetd": "dist/bin/server.js",
+    "junknet-make": "dist/bin/controller.js"
   },
   "repository": "github:cs130-w21/1",
   "scripts": {
     "prepare": "tsc",
     "postprepare": "typedoc",
-    "start": "tsnd src/programs/server.ts",
-    "cli": "ts-node src/programs/controller.ts",
+    "start": "tsnd bin/server.ts",
+    "cli": "ts-node bin/controller.ts",
     "fix": "eslint --fix .",
     "postfix": "prettier -w .",
     "pretest": "eslint .",
