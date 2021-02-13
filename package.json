@@ -17,8 +17,8 @@
   "scripts": {
     "prepare": "tsc",
     "postprepare": "typedoc",
-    "start": "tsnd src/server.ts",
-    "cli": "ts-node src/controller.ts",
+    "start": "tsnd src/programs/server.ts",
+    "cli": "ts-node src/programs/controller.ts",
     "fix": "eslint --fix .",
     "postfix": "prettier -w .",
     "pretest": "eslint .",

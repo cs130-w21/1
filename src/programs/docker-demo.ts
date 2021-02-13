@@ -10,7 +10,7 @@ import {
 	createContainer,
 	attachStreams,
 	removeContainer,
-} from './DaemonExec'
+} from '../Daemon/DaemonExec'
 
 // needs docker to already be running
 const docker = new Docker()

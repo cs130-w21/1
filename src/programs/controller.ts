@@ -3,13 +3,13 @@
 import * as bonjour from 'bonjour'
 import { once } from 'events'
 
-import { supplyClient } from './ZeroconfClient'
-import { Client } from './Client'
-import { Http2Client } from './Http2Client'
+import { supplyClient } from '../Zeroconf/ZeroconfClient'
+import { Client } from '../Client/Client'
+import { Http2Client } from '../Client/Http2Client'
 
-import { NormalJob } from './NormalJob'
-import { HeapJobOrderer } from './HeapJobOrderer'
-import { Job } from './Job'
+import { NormalJob } from '../Job/NormalJob'
+import { HeapJobOrderer } from '../JobOrderer/HeapJobOrderer'
+import { Job } from '../Job/Job'
 
 const zeroconf = bonjour()
 
