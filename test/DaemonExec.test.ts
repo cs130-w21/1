@@ -8,12 +8,11 @@ import { tmpdir } from 'os'
 import {
 	VolumeDefinition,
 	listImages,
-	//        listContainers,
-	//        importImage,
+	listContainers,
 	ensureImageImport,
 	createContainer,
 	attachStreams,
-	//        stopContainer,
+	stopContainer,
 	removeContainer,
 } from '../src/Daemon/DaemonExec'
 
@@ -77,6 +76,28 @@ describe('DaemonExec', () => {
 		const original = await fs.readFile('package.json')
 		const copy = await fs.readFile(target)
 		expect(original).toEqual(copy)
+		await removeContainer(container)
+	})
+	it('stops a specified container', async () => {
+		await ensureImageImport(docker, 'ubuntu:18.04')
+		const container: Docker.Container = await createContainer(
+			docker,
+			'ubuntu:18.04',
+			['/bin/cat', '/dev/urandom'],
+			[],
+		)
+		await container.start()
+		const containers: Docker.ContainerInfo[] = await listContainers(docker)
+		expect(
+			containers.some((cont: Docker.ContainerInfo) => cont.Id === container.id),
+		).toBeTruthy()
+		await stopContainer(container)
+		const containerInfos: Docker.ContainerInfo[] = await listContainers(docker)
+		expect(
+			containerInfos.some(
+				(cont: Docker.ContainerInfo) => cont.Id === container.id,
+			),
+		).toBeFalsy()
 		await removeContainer(container)
 	})
 })
