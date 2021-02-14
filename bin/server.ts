@@ -4,9 +4,7 @@ import * as bonjour from 'bonjour'
 import { AddressInfo } from 'net'
 import { hostname } from 'os'
 
-import { publishServer } from './ZeroconfDaemon'
-import { createDaemon } from './Daemon'
-import { SERVICE_TYPE } from './Constants'
+import { SERVICE_TYPE, publishServer, createDaemon } from '../src'
 
 const zeroconf = bonjour()
 

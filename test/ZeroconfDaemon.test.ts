@@ -4,7 +4,7 @@ import { AddressInfo, Server } from 'net'
 import { EventEmitter } from 'events'
 
 import { SERVICE_TYPE } from '../src/Constants'
-import { publishServer } from '../src/ZeroconfDaemon'
+import { publishServer } from '../src/Zeroconf/ZeroconfDaemon'
 
 const MOCK_SERVICE_NAME = 'Junknet Unit Test'
 

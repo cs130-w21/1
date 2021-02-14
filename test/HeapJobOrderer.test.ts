@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert'
-import { NormalJob } from '../src/NormalJob'
-import { HeapJobOrderer } from '../src/HeapJobOrderer'
-import { Job } from '../src/Job'
-import { UnknownJobError } from '../src/UnknownJobError'
+import { NormalJob } from '../src/Job/NormalJob'
+import { HeapJobOrderer } from '../src/JobOrderer/HeapJobOrderer'
+import { Job } from '../src/Job/Job'
+import { UnknownJobError } from '../src/JobOrderer/UnknownJobError'
 
 describe('HeapJobOrderer', () => {
 	it('correctly orders jobs', () => {

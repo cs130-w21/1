@@ -1,4 +1,4 @@
-import { Job } from './Job'
+import { Job } from '../Job/Job'
 
 /**
  * Orders Jobs in a valid topological sort.
