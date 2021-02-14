@@ -1,0 +1,24 @@
+@startuml
+
+left to right direction
+
+actor Developer as developer
+actor "Device Owner" as DevOwn
+package Junknet { 
+	usecase (Initiate a Job) as initiate
+	usecase (Monitor Job Progress) as monitor
+	usecase (Cancel Job) as cancel
+	usecase (Start Daemon) as start
+	usecase (Stop Daemon) as stop
+	usecase (Join Junknet Network) as join_network
+	usecase (Leave Junknet Network) as leave_network
+}
+
+developer --> initiate
+developer --> cancel
+developer --> monitor
+DevOwn --> start
+DevOwn --> stop
+start .> join_network : includes
+stop .> leave_network : includes
+@enduml
