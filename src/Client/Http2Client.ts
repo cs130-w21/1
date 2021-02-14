@@ -2,8 +2,8 @@ import { ClientHttp2Session, connect } from 'http2'
 import { EventEmitter } from 'events'
 import { strict as assert } from 'assert'
 import { Client } from './Client'
-import { JobOrderer } from './JobOrderer'
-import { Job } from './Job'
+import { JobOrderer } from '../JobOrderer/JobOrderer'
+import { Job } from '../Job/Job'
 
 /**
  * String representation of the host and port together.

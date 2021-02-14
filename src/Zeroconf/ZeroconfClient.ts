@@ -1,7 +1,7 @@
 import { Bonjour, Browser } from 'bonjour'
 
-import { Client } from './Client'
-import { SERVICE_TYPE } from './Constants'
+import { Client } from '../Client/Client'
+import { SERVICE_TYPE } from '../Constants'
 
 /**
  * Start supplying a Junknet client with new remote daemons discovered via Zeroconf.

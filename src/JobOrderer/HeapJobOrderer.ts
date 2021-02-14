@@ -1,6 +1,6 @@
 import { Heap } from 'heap-js'
 import { strict as assert } from 'assert'
-import { Job } from './Job'
+import { Job } from '../Job/Job'
 import { JobOrderer } from './JobOrderer'
 import { UnknownJobError } from './UnknownJobError'
 
