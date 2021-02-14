@@ -9,7 +9,7 @@ import {
 	//        attachStreams,
 	//        stopContainer,
 	//        removeContainer,
-} from '../src/DaemonExec'
+} from '../src/Daemon/DaemonExec'
 
 const docker = new Docker()
 jest.setTimeout(300000)
