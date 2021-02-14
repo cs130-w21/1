@@ -4,7 +4,7 @@
 	"parserOptions": {
 		"project": "tsconfig.eslint.json"
 	},
-	"plugins": ["tsdoc"],
+	"plugins": ["tsdoc", "github"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
@@ -17,16 +17,22 @@
 		"prettier/@typescript-eslint"
 	],
 	"rules": {
-		"no-console": "off",
-		"no-restricted-syntax": "off",
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
+		"tsdoc/syntax": "error",
+		"no-restricted-syntax": [
+			"error",
+			"ForInStatement",
+			"LabeledStatement",
+			"WithStatement"
+		],
+		"no-return-assign": ["error", "except-parens"],
+		"github/array-foreach": ["error"],
 		"jest/consistent-test-it": "error",
 		"jest/no-hooks": "error",
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
-		"jest/require-top-level-describe": "error",
-		"tsdoc/syntax": "error"
+		"jest/require-top-level-describe": "error"
 	},
 	"env": {
 		"node": true,

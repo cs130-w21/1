@@ -1,0 +1,19 @@
+@startuml
+|Client|
+start 
+:Generate needed information;
+:Open SSH client; 
+:connect with Daemon;
+:Send job number, Docker image, Makefile Name/Contents, Input files and Metadata to Daemon;
+|Daemon|
+:Parse information sent from Client via SSH;
+:Run jobs as specified;
+if (Job Failed?) then 
+:Send return code and STDERR to client via SSH;
+|Client|
+stop
+else (Job Succeeded)
+:Send return code, output files, and STDOUT to client via SSH;
+|Client|
+stop
+@enduml

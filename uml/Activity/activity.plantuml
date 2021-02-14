@@ -1,0 +1,50 @@
+@startuml
+|Controller|
+start
+:Receive Makefile;
+:Parse Makefile;
+|Client|
+:Sort Makefile;
+fork
+repeat
+	repeat
+		:Search Available Daemons;
+		|Daemons|
+		:Reply Available;
+		|Client|
+	repeat while(daemons available?) is (no)
+	->yes;
+	:Divide Work;
+	:Send Commands;
+	->Files, Target;
+	|Daemons|
+	:Receive Commands;
+|Client|
+repeat while(more commands?) is (yes)
+->no;
+:Close Connections;
+fork again
+|Daemons|
+repeat
+	repeat
+	:Wait for command;
+		repeat while(no commands?) is (yes)
+	->no;
+	:Execute Command;
+	if (success?) then (yes)
+		:Send Result;
+	else (no)
+		:Send Failure;
+	endif
+	->files, streams, messages;
+	|Client|
+	:Process Results;
+|Daemons|
+repeat while (connection up?) is (yes)
+->no;
+|Client|
+end fork
+|Controller|
+:Notify User;
+stop
+@enduml

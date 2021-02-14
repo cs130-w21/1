@@ -3,9 +3,14 @@
 import * as bonjour from 'bonjour'
 import { once } from 'events'
 
-import { supplyClient } from './ZeroconfClient'
-import { Client } from './Client'
-import { Http2Client } from './Http2Client'
+import {
+	supplyClient,
+	Client,
+	Http2Client,
+	NormalJob,
+	HeapJobOrderer,
+	Job,
+} from '../src'
 
 const zeroconf = bonjour()
 
@@ -16,13 +21,13 @@ function clientDone() {
 	zeroconf.destroy()
 }
 
-const client: Client = new Http2Client([
-	'fifth',
-	'fourth',
-	'third',
-	'second',
-	'first',
-])
+const job3: Job = new NormalJob('third')
+const job4: Job = new NormalJob('fourth')
+const job2: Job = new NormalJob('second', new Set([job3]))
+const job1: Job = new NormalJob('first', new Set([job4, job2]))
+const job5: Job = new NormalJob('fifth', new Set([job1]))
+
+const client: Client = new Http2Client(new HeapJobOrderer([job5]))
 client.on('progress', console.log)
 once(client, 'done').then(clientDone).catch(console.error)
 

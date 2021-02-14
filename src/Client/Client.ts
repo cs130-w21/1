@@ -1,13 +1,7 @@
 // Override for eslint-plugin-import older than v2.22.0:
 // eslint-disable-next-line import/no-extraneous-dependencies
 import TypedEmitter from 'typed-emitter'
-
-/**
- * Representation of a single job to be executed.
- * Obviously, in the future this will not just be a string.
- * @experimental
- */
-export type Job = string
+import { Job } from '../Job/Job'
 
 /**
  * Representation of the output of a single job.

@@ -1,0 +1,91 @@
+@startuml
+
+/'
+This sequence diagram was created to emphasize that the client did not have to wait for
+one daemon to finish doing its work before assigning work to another daemon. Client will
+continuously give out jobs as long as there are daemons to do them.
+'/
+
+actor User
+
+User -> Controller: specified makefile, target, and options
+
+Controller -> Parser **: ParseMakefile(makefile)
+activate Parser
+Parser -> Controller : Jobs
+deactivate Parser
+Controller -> Client : (target, Jobs)
+activate Client
+Client -> JobOrderer **: JobOrderer(Jobs)
+
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon : doWork(subtarget,requiredFiles)
+activate Daemon 
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon2: doWork(subtarget,requiredFiles)
+activate Daemon2 
+
+Daemon -> Client : subtarget
+deactivate Daemon
+Client -> JobOrderer : reportCompletedJob(completedJob)
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon : doWork(subtarget,requiredFiles)
+activate Daemon 
+
+Daemon2 -> Client : subtarget
+deactivate Daemon2
+Client -> JobOrderer : reportCompletedJob(completedJob)
+
+Client -> JobOrderer: isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer: popNextJob()
+activate JobOrderer
+JobOrderer -> Client : NULL
+deactivate JobOrderer
+
+Daemon -> Client : subtarget
+deactivate Daemon
+Client -> JobOrderer : reportCompletedJob(completedJob)
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : True
+deactivate JobOrderer
+
+Client -> Controller : target
+deactivate Client
+Controller -> User: target
+@enduml
