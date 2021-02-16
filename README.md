@@ -1,7 +1,6 @@
 # Junknet
 
-[![Build Status](https://travis-ci.com/cs130-w21/1.svg?branch=master)](https://travis-ci.com/cs130-w21/1)
-[![Release](https://img.shields.io/github/v/release/cs130-w21/1?label=release)](https://github.com/cs130-w21/1/releases/latest)
+Zero-config distributed parallel processing. Junknet can parallelize your existing Makefiles among any number of machines on your LAN.
 
 # Developer's Guide
 
