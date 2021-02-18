@@ -86,7 +86,13 @@ describe('DaemonExec', () => {
 		errorFile = resolve(directory, 'error')
 		const stderrStream: NodeJS.WritableStream = createWriteStream(errorFile)
 
-		await attachStreams(container, process.stdin, stdoutStream, stderrStream)
+		const stream = await attachStreams(
+			container,
+			process.stdin,
+			stdoutStream,
+			stderrStream,
+		)
+		expect(stream).toBeDefined()
 	})
 
 	it('runs a specified container', async () => {
@@ -104,7 +110,11 @@ describe('DaemonExec', () => {
 
 		const error = await fs.readFile(errorFile)
 		expect(Buffer.byteLength(error)).toEqual(0)
+	})
+
+	it('removes a specified container', async () => {
 		await removeContainer(container)
+		await expect(container.start()).rejects.toThrow()
 	})
 
 	it('stops a specified container', async () => {
