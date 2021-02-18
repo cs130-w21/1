@@ -28,11 +28,9 @@ jest.setTimeout(300000)
 describe('DaemonExec', () => {
 	it('pulls a specified image', async () => {
 		await ensureImageImport(docker, testImage)
-		const imageInfos: Docker.ImageInfo[] = await listImages(docker)
+		const imageInfos = await listImages(docker)
 		expect(
-			imageInfos.some((info: Docker.ImageInfo) =>
-				info.RepoTags.some((tag: string) => tag === testImage),
-			),
+			imageInfos.some((info) => info.RepoTags.some((tag) => tag === testImage)),
 		).toBeTruthy()
 	})
 	it('creates a specified container', async () => {
@@ -40,7 +38,7 @@ describe('DaemonExec', () => {
 		const volume: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
-		const container: Docker.Container = await createContainer(
+		const container = await createContainer(
 			docker,
 			testImage,
 			['/bin/ls', '/test'],
@@ -55,7 +53,7 @@ describe('DaemonExec', () => {
 		const volume: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
-		const container: Docker.Container = await createContainer(
+		const container = await createContainer(
 			docker,
 			testImage,
 			['/bin/cat', '/test/package.json'],
@@ -81,24 +79,20 @@ describe('DaemonExec', () => {
 	})
 	it('stops a specified container', async () => {
 		await ensureImageImport(docker, testImage)
-		const container: Docker.Container = await createContainer(
+		const container = await createContainer(
 			docker,
 			testImage,
 			['/bin/cat', '/dev/urandom'],
 			[],
 		)
 		await container.start()
-		const containers: Docker.ContainerInfo[] = await listContainers(docker)
+		const containersBefore = await listContainers(docker)
 		expect(
-			containers.some((cont: Docker.ContainerInfo) => cont.Id === container.id),
+			containersBefore.some((cont) => cont.Id === container.id),
 		).toBeTruthy()
 		await stopContainer(container)
-		const containerInfos: Docker.ContainerInfo[] = await listContainers(docker)
-		expect(
-			containerInfos.some(
-				(cont: Docker.ContainerInfo) => cont.Id === container.id,
-			),
-		).toBeFalsy()
+		const containersAfter = await listContainers(docker)
+		expect(containersAfter.some((cont) => cont.Id === container.id)).toBeFalsy()
 		await removeContainer(container)
 	})
 })
