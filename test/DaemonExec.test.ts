@@ -27,6 +27,8 @@ const bogusImage = 'lskjflskjflsdkfjslkfjsdlfsdjflksdj'
 
 describe('DaemonExec', () => {
 	let container: Docker.Container
+	let directory: string
+	let target: string
 
 	it('pulls a new image', async () => {
 		const initialInfos = await listImages(docker)
@@ -73,12 +75,14 @@ describe('DaemonExec', () => {
 		expect(container.id).toBeDefined()
 	})
 
-	it('runs a specified container', async () => {
-		const directory = await fs.mkdtemp(join(tmpdir(), 'test'))
-		const target = resolve(directory, 'package.json')
+	it('attaches streams to a specified container', async () => {
+		directory = await fs.mkdtemp(join(tmpdir(), 'test'))
+		target = resolve(directory, 'package.json')
 		const stdoutStream: NodeJS.WritableStream = createWriteStream(target)
 		await attachStreams(container, process.stdin, stdoutStream, process.stderr)
+	})
 
+	it('runs a specified container', async () => {
 		await container.start()
 		const data: ExpectedStatus = await (container.wait() as Promise<ExpectedStatus>)
 		expect(data).toBeDefined()
