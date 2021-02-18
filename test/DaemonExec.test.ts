@@ -24,11 +24,13 @@ interface ExpectedStatus {
 const docker = new Docker()
 const testImage = 'ubuntu:18.04'
 const bogusImage = 'lskjflskjflsdkfjslkfjsdlfsdjflksdj'
+const inputFile = 'package.json'
 
 describe('DaemonExec', () => {
 	let container: Docker.Container
 	let directory: string
-	let target: string
+	let outputFile: string
+	let errorFile: string
 
 	it('pulls a new image', async () => {
 		const initialInfos = await listImages(docker)
@@ -68,7 +70,7 @@ describe('DaemonExec', () => {
 		container = await createContainer(
 			docker,
 			testImage,
-			['/bin/cat', '/test/package.json'],
+			['/bin/cat', `/test/${inputFile}`],
 			volumes,
 		)
 		expect(container).toBeDefined()
@@ -77,9 +79,14 @@ describe('DaemonExec', () => {
 
 	it('attaches streams to a specified container', async () => {
 		directory = await fs.mkdtemp(join(tmpdir(), 'test'))
-		target = resolve(directory, 'package.json')
-		const stdoutStream: NodeJS.WritableStream = createWriteStream(target)
-		await attachStreams(container, process.stdin, stdoutStream, process.stderr)
+
+		outputFile = resolve(directory, inputFile)
+		const stdoutStream: NodeJS.WritableStream = createWriteStream(outputFile)
+
+		errorFile = resolve(directory, 'error')
+		const stderrStream: NodeJS.WritableStream = createWriteStream(errorFile)
+
+		await attachStreams(container, process.stdin, stdoutStream, stderrStream)
 	})
 
 	it('runs a specified container', async () => {
@@ -88,10 +95,15 @@ describe('DaemonExec', () => {
 		expect(data).toBeDefined()
 		expect(data.Error).toBeNull()
 		expect(data.StatusCode).toBe(0)
+	})
 
-		const original = await fs.readFile('package.json')
-		const copy = await fs.readFile(target)
+	it('writes the correct data to the streams', async () => {
+		const original = await fs.readFile(inputFile)
+		const copy = await fs.readFile(outputFile)
 		expect(original).toEqual(copy)
+
+		const error = await fs.readFile(errorFile)
+		expect(Buffer.byteLength(error)).toEqual(0)
 		await removeContainer(container)
 	})
 
