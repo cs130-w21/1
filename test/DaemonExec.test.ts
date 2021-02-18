@@ -46,6 +46,7 @@ describe('DaemonExec', () => {
 
 		await ensureImageImport(docker, testImage)
 		const newInfos = await listImages(docker)
+
 		expect(
 			newInfos.some((info) => info.RepoTags.some((tag) => tag === testImage)),
 		).toBeTruthy()
@@ -54,6 +55,7 @@ describe('DaemonExec', () => {
 	it('pulls an existing image', async () => {
 		await ensureImageImport(docker, testImage)
 		const newInfos = await listImages(docker)
+
 		expect(
 			newInfos.some((info) => info.RepoTags.some((tag) => tag === testImage)),
 		).toBeTruthy()
@@ -65,7 +67,6 @@ describe('DaemonExec', () => {
 
 	it('creates a specified container', async () => {
 		container = await createContainer(docker, testImage, ['/bin/cat'], [])
-		expect(container).toBeDefined()
 		expect(container.id).toBeDefined()
 	})
 
@@ -91,8 +92,9 @@ describe('DaemonExec', () => {
 
 	it('runs a specified container', async () => {
 		await container.start()
+
 		const data: ExpectedStatus = await (container.wait() as Promise<ExpectedStatus>)
-		expect(data).toBeDefined()
+
 		expect(data.Error).toBeNull()
 		expect(data.StatusCode).toBe(0)
 	})
@@ -115,6 +117,7 @@ describe('DaemonExec', () => {
 		const volumes: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
+
 		const volumeContainer = await createContainer(
 			docker,
 			testImage,
@@ -152,16 +155,19 @@ describe('DaemonExec', () => {
 			['/bin/cat', '/dev/urandom'],
 			[],
 		)
+
 		await unendingContainer.start()
 		const containersBefore = await listContainers(docker)
 		expect(
 			containersBefore.some((cont) => cont.Id === unendingContainer.id),
 		).toBeTruthy()
+
 		await stopContainer(unendingContainer)
 		const containersAfter = await listContainers(docker)
 		expect(
 			containersAfter.some((cont) => cont.Id === unendingContainer.id),
 		).toBeFalsy()
+
 		await removeContainer(unendingContainer)
 	}, 60000)
 })
