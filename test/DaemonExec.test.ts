@@ -1,6 +1,6 @@
 import * as Docker from 'dockerode'
 
-import { promises as fs, createWriteStream, mkdtempSync } from 'fs'
+import { promises as fs, createWriteStream } from 'fs'
 
 import { resolve, join } from 'path'
 
@@ -23,44 +23,64 @@ interface ExpectedStatus {
 
 const docker = new Docker()
 const testImage = 'ubuntu:18.04'
-jest.setTimeout(300000)
 
 describe('DaemonExec', () => {
-	it('pulls a specified image', async () => {
+	it('pulls a new image', async () => {
+		const initialInfos = await listImages(docker)
+		if (
+			initialInfos.some((info) =>
+				info.RepoTags.some((tag) => tag === testImage),
+			)
+		) {
+			// if image is already imported, remove it
+			const image = docker.getImage(testImage)
+			await image.remove()
+		}
+
 		await ensureImageImport(docker, testImage)
-		const imageInfos = await listImages(docker)
+		const newInfos = await listImages(docker)
 		expect(
-			imageInfos.some((info) => info.RepoTags.some((tag) => tag === testImage)),
+			newInfos.some((info) => info.RepoTags.some((tag) => tag === testImage)),
+		).toBeTruthy()
+	}, 60000)
+
+	it('pulls an existing image', async () => {
+		await ensureImageImport(docker, testImage)
+		const newInfos = await listImages(docker)
+		expect(
+			newInfos.some((info) => info.RepoTags.some((tag) => tag === testImage)),
 		).toBeTruthy()
 	})
+
 	it('creates a specified container', async () => {
-		const volume: VolumeDefinition[] = [
+		const volumes: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
 		const container = await createContainer(
 			docker,
 			testImage,
 			['/bin/ls', '/test'],
-			volume,
+			volumes,
 		)
 		expect(container).toBeDefined()
 		expect(container.id).toBeDefined()
 		await removeContainer(container)
 	})
+
 	it('runs a specified container', async () => {
-		const volume: VolumeDefinition[] = [
+		const volumes: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
 		const container = await createContainer(
 			docker,
 			testImage,
 			['/bin/cat', '/test/package.json'],
-			volume,
+			volumes,
 		)
 		expect(container).toBeDefined()
 		expect(container.id).toBeDefined()
 
-		const directory = mkdtempSync(join(tmpdir(), 'test'))
+		const directory = await fs.mkdtemp(join(tmpdir(), 'test'))
 		const target = resolve(directory, 'package.json')
 		const stdoutStream: NodeJS.WritableStream = createWriteStream(target)
 
@@ -75,6 +95,7 @@ describe('DaemonExec', () => {
 		expect(original).toEqual(copy)
 		await removeContainer(container)
 	})
+
 	it('stops a specified container', async () => {
 		const container = await createContainer(
 			docker,
@@ -91,5 +112,5 @@ describe('DaemonExec', () => {
 		const containersAfter = await listContainers(docker)
 		expect(containersAfter.some((cont) => cont.Id === container.id)).toBeFalsy()
 		await removeContainer(container)
-	})
+	}, 60000)
 })
