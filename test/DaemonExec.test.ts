@@ -141,6 +141,8 @@ describe('DaemonExec', () => {
 
 		const error = await fs.readFile(errorFile)
 		expect(Buffer.byteLength(error)).toEqual(0)
+
+		await removeContainer(volumeContainer)
 	})
 
 	it('stops a specified container', async () => {
