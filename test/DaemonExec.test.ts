@@ -34,7 +34,6 @@ describe('DaemonExec', () => {
 		).toBeTruthy()
 	})
 	it('creates a specified container', async () => {
-		await ensureImageImport(docker, testImage)
 		const volume: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
@@ -49,7 +48,6 @@ describe('DaemonExec', () => {
 		await removeContainer(container)
 	})
 	it('runs a specified container', async () => {
-		await ensureImageImport(docker, testImage)
 		const volume: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
@@ -78,7 +76,6 @@ describe('DaemonExec', () => {
 		await removeContainer(container)
 	})
 	it('stops a specified container', async () => {
-		await ensureImageImport(docker, testImage)
 		const container = await createContainer(
 			docker,
 			testImage,
