@@ -26,6 +26,8 @@ const testImage = 'ubuntu:18.04'
 const bogusImage = 'lskjflskjflsdkfjslkfjsdlfsdjflksdj'
 
 describe('DaemonExec', () => {
+	let container: Docker.Container
+
 	it('pulls a new image', async () => {
 		const initialInfos = await listImages(docker)
 		if (
@@ -61,22 +63,7 @@ describe('DaemonExec', () => {
 		const volumes: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
-		const container = await createContainer(
-			docker,
-			testImage,
-			['/bin/ls', '/test'],
-			volumes,
-		)
-		expect(container).toBeDefined()
-		expect(container.id).toBeDefined()
-		await removeContainer(container)
-	})
-
-	it('runs a specified container', async () => {
-		const volumes: VolumeDefinition[] = [
-			{ fromPath: process.cwd(), toPath: '/test' },
-		]
-		const container = await createContainer(
+		container = await createContainer(
 			docker,
 			testImage,
 			['/bin/cat', '/test/package.json'],
@@ -84,17 +71,20 @@ describe('DaemonExec', () => {
 		)
 		expect(container).toBeDefined()
 		expect(container.id).toBeDefined()
+	})
 
+	it('runs a specified container', async () => {
 		const directory = await fs.mkdtemp(join(tmpdir(), 'test'))
 		const target = resolve(directory, 'package.json')
 		const stdoutStream: NodeJS.WritableStream = createWriteStream(target)
-
 		await attachStreams(container, process.stdin, stdoutStream, process.stderr)
+
 		await container.start()
 		const data: ExpectedStatus = await (container.wait() as Promise<ExpectedStatus>)
 		expect(data).toBeDefined()
 		expect(data.Error).toBeNull()
 		expect(data.StatusCode).toBe(0)
+
 		const original = await fs.readFile('package.json')
 		const copy = await fs.readFile(target)
 		expect(original).toEqual(copy)
@@ -102,20 +92,22 @@ describe('DaemonExec', () => {
 	})
 
 	it('stops a specified container', async () => {
-		const container = await createContainer(
+		const unendingContainer = await createContainer(
 			docker,
 			testImage,
 			['/bin/cat', '/dev/urandom'],
 			[],
 		)
-		await container.start()
+		await unendingContainer.start()
 		const containersBefore = await listContainers(docker)
 		expect(
-			containersBefore.some((cont) => cont.Id === container.id),
+			containersBefore.some((cont) => cont.Id === unendingContainer.id),
 		).toBeTruthy()
-		await stopContainer(container)
+		await stopContainer(unendingContainer)
 		const containersAfter = await listContainers(docker)
-		expect(containersAfter.some((cont) => cont.Id === container.id)).toBeFalsy()
-		await removeContainer(container)
+		expect(
+			containersAfter.some((cont) => cont.Id === unendingContainer.id),
+		).toBeFalsy()
+		await removeContainer(unendingContainer)
 	}, 60000)
 })
