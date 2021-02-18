@@ -22,26 +22,27 @@ interface ExpectedStatus {
 }
 
 const docker = new Docker()
+const testImage = 'ubuntu:18.04'
 jest.setTimeout(300000)
 
 describe('DaemonExec', () => {
 	it('pulls a specified image', async () => {
-		await ensureImageImport(docker, 'ubuntu:18.04')
+		await ensureImageImport(docker, testImage)
 		const imageInfos: Docker.ImageInfo[] = await listImages(docker)
 		expect(
 			imageInfos.some((info: Docker.ImageInfo) =>
-				info.RepoTags.some((tag: string) => tag === 'ubuntu:18.04'),
+				info.RepoTags.some((tag: string) => tag === testImage),
 			),
 		).toBeTruthy()
 	})
 	it('creates a specified container', async () => {
-		await ensureImageImport(docker, 'ubuntu:18.04')
+		await ensureImageImport(docker, testImage)
 		const volume: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
 		const container: Docker.Container = await createContainer(
 			docker,
-			'ubuntu:18.04',
+			testImage,
 			['/bin/ls', '/test'],
 			volume,
 		)
@@ -50,13 +51,13 @@ describe('DaemonExec', () => {
 		await removeContainer(container)
 	})
 	it('runs a specified container', async () => {
-		await ensureImageImport(docker, 'ubuntu:18.04')
+		await ensureImageImport(docker, testImage)
 		const volume: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
 		]
 		const container: Docker.Container = await createContainer(
 			docker,
-			'ubuntu:18.04',
+			testImage,
 			['/bin/cat', '/test/package.json'],
 			volume,
 		)
@@ -79,10 +80,10 @@ describe('DaemonExec', () => {
 		await removeContainer(container)
 	})
 	it('stops a specified container', async () => {
-		await ensureImageImport(docker, 'ubuntu:18.04')
+		await ensureImageImport(docker, testImage)
 		const container: Docker.Container = await createContainer(
 			docker,
-			'ubuntu:18.04',
+			testImage,
 			['/bin/cat', '/dev/urandom'],
 			[],
 		)
