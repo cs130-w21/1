@@ -1,6 +1,6 @@
 import * as Docker from 'dockerode'
 
-import { promises as fs, createWriteStream } from 'fs'
+import { promises as fs, createReadStream, createWriteStream } from 'fs'
 
 import { resolve, join } from 'path'
 
@@ -64,21 +64,15 @@ describe('DaemonExec', () => {
 	})
 
 	it('creates a specified container', async () => {
-		const volumes: VolumeDefinition[] = [
-			{ fromPath: process.cwd(), toPath: '/test' },
-		]
-		container = await createContainer(
-			docker,
-			testImage,
-			['/bin/cat', `/test/${inputFile}`],
-			volumes,
-		)
+		container = await createContainer(docker, testImage, ['/bin/cat'], [])
 		expect(container).toBeDefined()
 		expect(container.id).toBeDefined()
 	})
 
 	it('attaches streams to a specified container', async () => {
 		directory = await fs.mkdtemp(join(tmpdir(), 'test'))
+
+		const stdinStream: NodeJS.ReadableStream = createReadStream(inputFile)
 
 		outputFile = resolve(directory, inputFile)
 		const stdoutStream: NodeJS.WritableStream = createWriteStream(outputFile)
@@ -88,7 +82,7 @@ describe('DaemonExec', () => {
 
 		const stream = await attachStreams(
 			container,
-			process.stdin,
+			stdinStream,
 			stdoutStream,
 			stderrStream,
 		)
@@ -115,6 +109,38 @@ describe('DaemonExec', () => {
 	it('removes a specified container', async () => {
 		await removeContainer(container)
 		await expect(container.start()).rejects.toThrow()
+	})
+
+	it('creates containers with correct volumes', async () => {
+		const volumes: VolumeDefinition[] = [
+			{ fromPath: process.cwd(), toPath: '/test' },
+		]
+		const volumeContainer = await createContainer(
+			docker,
+			testImage,
+			['/bin/cat', `/test/${inputFile}`],
+			volumes,
+		)
+
+		const stdoutStream: NodeJS.WritableStream = createWriteStream(outputFile)
+		const stderrStream: NodeJS.WritableStream = createWriteStream(errorFile)
+
+		await attachStreams(
+			volumeContainer,
+			process.stdin,
+			stdoutStream,
+			stderrStream,
+		)
+
+		await volumeContainer.start()
+		await volumeContainer.wait()
+
+		const original = await fs.readFile(inputFile)
+		const copy = await fs.readFile(outputFile)
+		expect(original).toEqual(copy)
+
+		const error = await fs.readFile(errorFile)
+		expect(Buffer.byteLength(error)).toEqual(0)
 	})
 
 	it('stops a specified container', async () => {
