@@ -23,6 +23,7 @@ interface ExpectedStatus {
 
 const docker = new Docker()
 const testImage = 'ubuntu:18.04'
+const bogusImage = 'lskjflskjflsdkfjslkfjsdlfsdjflksdj'
 
 describe('DaemonExec', () => {
 	it('pulls a new image', async () => {
@@ -50,6 +51,10 @@ describe('DaemonExec', () => {
 		expect(
 			newInfos.some((info) => info.RepoTags.some((tag) => tag === testImage)),
 		).toBeTruthy()
+	})
+
+	it('fails pulling a nonexistent image', async () => {
+		await expect(ensureImageImport(docker, bogusImage)).rejects.toThrow()
 	})
 
 	it('creates a specified container', async () => {
