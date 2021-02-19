@@ -23,7 +23,8 @@
     "postfix": "prettier -w .",
     "pretest": "eslint .",
     "test": "jest",
-    "posttest": "prettier -c ."
+    "posttest": "prettier -c .",
+    "test:dev": "npm run test -- --selectProjects unit"
   },
   "devDependencies": {
     "@types/bonjour": "^3.5.8",

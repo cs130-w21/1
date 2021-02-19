@@ -1,6 +1,18 @@
 {
-	"preset": "ts-jest",
-	"testEnvironment": "node",
+	"projects": [
+		{
+			"displayName": "unit",
+			"preset": "ts-jest",
+			"testEnvironment": "node",
+			"testMatch": ["<rootDir>/test/unit/**"]
+		},
+		{
+			"displayName": "integ",
+			"preset": "ts-jest",
+			"testEnvironment": "node",
+			"testMatch": ["<rootDir>/test/integ/**"]
+		}
+	],
 	"collectCoverage": true,
 	"collectCoverageFrom": ["src/**"],
 	"errorOnDeprecated": true
