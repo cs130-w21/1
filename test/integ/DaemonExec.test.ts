@@ -14,7 +14,7 @@ import {
 	attachStreams,
 	stopContainer,
 	removeContainer,
-} from '../src/Daemon/DaemonExec'
+} from '../../src/Daemon/DaemonExec'
 
 interface ExpectedStatus {
 	Error: unknown
