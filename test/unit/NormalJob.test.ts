@@ -1,5 +1,5 @@
-import { Job } from '../src/Job/Job'
-import { NormalJob } from '../src/Job/NormalJob'
+import { Job } from '../../src/Job/Job'
+import { NormalJob } from '../../src/Job/NormalJob'
 
 describe('NormalJob', () => {
 	it('returns the correct name', () => {
