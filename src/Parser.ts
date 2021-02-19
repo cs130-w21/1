@@ -11,9 +11,9 @@ export interface JunknetArguments {
  * @param argv - the invoking process's command-line arguments.
  * @returns JunknetInterface object containing option values.
  */
-export function interpret_argv(argv: readonly string[]): JunknetArguments {
+export function interpretArgv(argv: readonly string[]): JunknetArguments {
 	// Use only the first two elements; Node.js appends extra elements to process.argv.
-	const yargs_argv = yargs(argv.slice(2)).options({
+	const yargsArgv = yargs(argv.slice(2)).options({
 		makefile: {
 			alias: 'f',
 			type: 'string',
@@ -34,7 +34,7 @@ export function interpret_argv(argv: readonly string[]): JunknetArguments {
 	}).argv
 
 	return {
-		makefile: yargs_argv.makefile,
-		docker_image: yargs_argv['docker-image'],
+		makefile: yargsArgv.makefile,
+		docker_image: yargsArgv['docker-image'],
 	}
 }
