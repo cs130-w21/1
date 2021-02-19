@@ -1,6 +1,6 @@
 {
 	"entryPoints": "src",
+	"exclude": "src/index.ts",
 	"includeVersion": true,
-	"readme": "CONTRIBUTING.md",
 	"listInvalidSymbolLinks": true
 }

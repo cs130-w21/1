@@ -1,6 +1,6 @@
 {
   "name": "junknet",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Zero-config distributed parallel processing",
   "license": "Apache-2.0",
   "files": [
@@ -23,7 +23,8 @@
     "postfix": "prettier -w .",
     "pretest": "eslint .",
     "test": "jest",
-    "posttest": "prettier -c ."
+    "posttest": "prettier -c .",
+    "test:local": "npm run test -- --runInBand --selectProjects unit"
   },
   "devDependencies": {
     "@types/bonjour": "^3.5.8",
