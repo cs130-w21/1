@@ -4,7 +4,7 @@
 	"parserOptions": {
 		"project": "tsconfig.json"
 	},
-	"plugins": ["tsdoc", "github"],
+	"plugins": ["tsdoc", "unicorn"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
@@ -25,7 +25,7 @@
 			"WithStatement"
 		],
 		"no-return-assign": ["error", "except-parens"],
-		"github/array-foreach": ["error"],
+		"unicorn/no-array-for-each": "error",
 		"jest/consistent-test-it": "error",
 		"jest/no-hooks": "error",
 		"jest/prefer-spy-on": "error",
