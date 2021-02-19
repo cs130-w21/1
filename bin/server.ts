@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import * as bonjour from 'bonjour'
+import bonjour from 'bonjour'
 import { AddressInfo } from 'net'
 import { hostname } from 'os'
 

@@ -27,6 +27,7 @@
     "test:local": "npm run test -- --runInBand --selectProjects unit"
   },
   "devDependencies": {
+    "@tsconfig/node14": "^1.0.0",
     "@types/bonjour": "^3.5.8",
     "@types/dockerode": "^3.2.1",
     "@types/node": "^14.14.21",

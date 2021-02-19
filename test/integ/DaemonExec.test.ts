@@ -1,4 +1,4 @@
-import * as Docker from 'dockerode'
+import Docker from 'dockerode'
 
 import { promises as fs, createReadStream, createWriteStream } from 'fs'
 
