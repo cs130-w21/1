@@ -1,0 +1,24 @@
+@startuml JobOrdererStateMachine
+
+[*] --> Initialized
+
+Initialized: entry [root jobs provided]
+Initialized: do /BFS using root jobs to initialize sources, nonSources, and inProgress
+Initialized --> Ready: sources.length > 0
+Initialized --> [*]: sources.length == 0 /throw error
+
+Ready: do /wait for requests
+Ready --> CheckingJobs: job requested
+Ready --> UpdatingJobs: job reported completed [job exists in graph]\n/remove job from inProgress and update its dependents in nonSources
+Ready --> UpdatingJobs: job reported failed [job exists in graph]\n/move job from inProgress to sources
+
+CheckingJobs: do /check sources for runnable jobs
+CheckingJobs --> Ready: sources contains runnable job /return job
+CheckingJobs --> Ready: sources does not contain runnable Job\n/return null
+
+UpdatingJobs --> Ready: not all jobs are done\n[sources, nonSources, or inProgress is not empty]
+UpdatingJobs --> Finished: all jobs are done\n[sources, nonSources, and inProgress are empty]
+
+Finished: do /report finished if asked
+
+@enduml

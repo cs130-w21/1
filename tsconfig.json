@@ -19,5 +19,5 @@
 		"emitDecoratorMetadata": true,
 		"forceConsistentCasingInFileNames": true
 	},
-	"include": ["src/**/*"]
+	"include": ["src/**/*", "bin/**/*"]
 }

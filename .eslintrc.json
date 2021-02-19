@@ -1,17 +1,38 @@
 {
 	"root": true,
 	"parser": "@typescript-eslint/parser",
-	"plugins": ["@typescript-eslint", "jest", "tsdoc"],
+	"parserOptions": {
+		"project": "tsconfig.eslint.json"
+	},
+	"plugins": ["tsdoc", "github"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
+		"plugin:@typescript-eslint/recommended-requiring-type-checking",
+		"airbnb-typescript/base",
+		"plugin:promise/recommended",
 		"plugin:jest/recommended",
 		"plugin:jest/style",
 		"prettier",
 		"prettier/@typescript-eslint"
 	],
 	"rules": {
-		"tsdoc/syntax": "warn"
+		"import/prefer-default-export": "off",
+		"import/no-default-export": "error",
+		"tsdoc/syntax": "error",
+		"no-restricted-syntax": [
+			"error",
+			"ForInStatement",
+			"LabeledStatement",
+			"WithStatement"
+		],
+		"no-return-assign": ["error", "except-parens"],
+		"github/array-foreach": ["error"],
+		"jest/consistent-test-it": "error",
+		"jest/no-hooks": "error",
+		"jest/prefer-spy-on": "error",
+		"jest/prefer-todo": "error",
+		"jest/require-top-level-describe": "error"
 	},
 	"env": {
 		"node": true,

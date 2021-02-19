@@ -1,0 +1,59 @@
+@startuml
+/'
+This sequence diagram was created to show the course of action when there is an error
+that the Daemon encounters when performing the job.
+'/
+
+actor User
+
+User -> Controller: specified makefile, target, and options
+
+Controller -> Parser **: ParseMakefile(makefile)
+activate Parser
+Parser -> Controller : Jobs
+deactivate Parser
+Controller -> Client : (target, Jobs)
+activate Client
+Client -> JobOrderer **: JobOrderer(Jobs)
+
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon : doWork(subtarget,requiredFiles)
+activate Daemon 
+
+
+Client -> JobOrderer : isDone()
+activate JobOrderer
+JobOrderer -> Client : False
+deactivate JobOrderer
+
+
+Client -> JobOrderer : popNextJob()
+activate JobOrderer
+JobOrderer -> Client : nextJob
+deactivate JobOrderer
+
+Client -> Daemon2 : doWork(subtarget,requiredFiles)
+activate Daemon2
+
+Daemon -> Client : error
+deactivate Daemon
+Client -> JobOrderer : reportFailedJob(Job)
+
+Client -> Daemon2: cancelJob()
+deactivate Daemon2
+
+
+Client -> Controller : error
+deactivate Client
+Controller -> User: error
+@enduml
