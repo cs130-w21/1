@@ -28,7 +28,7 @@ const inputFile = 'package.json'
 
 describe('DaemonExec', () => {
 	let container: Docker.Container
-	let directory: string
+	let tempDir: string
 	let outputFile: string
 	let errorFile: string
 
@@ -71,14 +71,16 @@ describe('DaemonExec', () => {
 	})
 
 	it('attaches streams to a specified container', async () => {
-		directory = await fs.mkdtemp(join(tmpdir(), 'test'))
+		// inputs package.json to stdin, gets stdout and stderr in temp directory
+
+		tempDir = await fs.mkdtemp(join(tmpdir(), 'test'))
 
 		const stdinStream: NodeJS.ReadableStream = createReadStream(inputFile)
 
-		outputFile = resolve(directory, inputFile)
+		outputFile = resolve(tempDir, inputFile)
 		const stdoutStream: NodeJS.WritableStream = createWriteStream(outputFile)
 
-		errorFile = resolve(directory, 'error')
+		errorFile = resolve(tempDir, 'error')
 		const stderrStream: NodeJS.WritableStream = createWriteStream(errorFile)
 
 		const stream = await attachStreams(
@@ -90,7 +92,7 @@ describe('DaemonExec', () => {
 		expect(stream).toBeDefined()
 	})
 
-	it('runs a specified container', async () => {
+	it('runs a specified container and gives an end status', async () => {
 		await container.start()
 
 		const data: ExpectedStatus = await (container.wait() as Promise<ExpectedStatus>)
@@ -113,42 +115,32 @@ describe('DaemonExec', () => {
 		await expect(container.start()).rejects.toThrow()
 	})
 
-	it('creates containers with correct volumes', async () => {
+	it('creates and runs containers with volumes and gives correct outputs', async () => {
+		// make volumes from current directory and temporary directory
 		const volumes: VolumeDefinition[] = [
 			{ fromPath: process.cwd(), toPath: '/test' },
+			{ fromPath: tempDir, toPath: '/test2' },
 		]
 
 		const volumeContainer = await createContainer(
 			docker,
 			testImage,
-			['/bin/cat', `/test/${inputFile}`],
+			['/bin/cp', `/test/${inputFile}`, `/test2/${inputFile}`],
 			volumes,
-		)
-
-		const stdoutStream: NodeJS.WritableStream = createWriteStream(outputFile)
-		const stderrStream: NodeJS.WritableStream = createWriteStream(errorFile)
-
-		await attachStreams(
-			volumeContainer,
-			process.stdin,
-			stdoutStream,
-			stderrStream,
 		)
 
 		await volumeContainer.start()
 		await volumeContainer.wait()
 
+		// volumes should have the correct files copied over
 		const original = await fs.readFile(inputFile)
-		const copy = await fs.readFile(outputFile)
+		const copy = await fs.readFile(resolve(tempDir, inputFile))
 		expect(original).toEqual(copy)
-
-		const error = await fs.readFile(errorFile)
-		expect(Buffer.byteLength(error)).toEqual(0)
 
 		await removeContainer(volumeContainer)
 	})
 
-	it('stops a specified container', async () => {
+	it('detects and stops a running container', async () => {
 		const unendingContainer = await createContainer(
 			docker,
 			testImage,
@@ -156,12 +148,14 @@ describe('DaemonExec', () => {
 			[],
 		)
 
+		// start the containers and see if detected
 		await unendingContainer.start()
 		const containersBefore = await listContainers(docker)
 		expect(
 			containersBefore.some((cont) => cont.Id === unendingContainer.id),
 		).toBeTruthy()
 
+		// stop the container and see if detected
 		await stopContainer(unendingContainer)
 		const containersAfter = await listContainers(docker)
 		expect(
