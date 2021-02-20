@@ -107,7 +107,7 @@ export async function createContainer(
 	docker: Docker,
 	image: string,
 	command: string[],
-	volumePairs: VolumeDefinition[] = [],
+	volumePairs: VolumeDefinition[],
 ): Promise<Docker.Container> {
 	// make volumes in form accepted by createContainer
 	const volumeJson: { [volume: string]: Record<string, never> } = {}
