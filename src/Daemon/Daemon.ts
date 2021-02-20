@@ -1,28 +1,41 @@
-/* Imports for SSH 'server implementation */
-import * as ssh2 from 'ssh2'
 import * as net from 'net'
-import * as fs from 'fs'
+import { Connection, Server, Session } from 'ssh2'
+import { readFileSync } from 'fs'
+
+const RUN_JOB_CMD = 'run-job'
+const HOST_KEY_PATH = 'host.key'
+
+function handleSession(session: Session): void {
+	session.on('exec', (accept, reject, info) => {
+		if (info.command !== RUN_JOB_CMD) {
+			reject?.()
+			return
+		}
+
+		// @types/ssh2 is incomplete; accept is only defined if the client wants a response
+		if (accept) {
+			const channel = accept()
+			channel.write('Hello world!\n')
+			channel.exit(42)
+			channel.end()
+		}
+	})
+}
+
+function handleClient(client: Connection): void {
+	client.on('authentication', (ctx) => ctx.accept())
+	client.on('ready', () => {
+		client.on('session', (accept) => handleSession(accept()))
+	})
+}
 
 export function createDaemon(): net.Server {
-	// Create server object
-	const server = new ssh2.Server(
-		// SSH authentication information
-		{ hostKeys: [fs.readFileSync('host.key')] },
-		// Handle client
-		(client: ssh2.Connection) => {
-			// Successful connection
-			console.log('Hello World! Client connected!')
+	const server = new Server({ hostKeys: [readFileSync(HOST_KEY_PATH)] })
+	server.on('connection', handleClient)
 
-			// Client authentication (Currently dummy)
-			client.on('authentication', (ctx: ssh2.AuthContext) => {
-				ctx.accept()
-			})
-			// Specify port being listened on
-		},
-	).listen(0, '127.0.0.1', () => {
-		console.log('Listening.')
-		// Work-around
-		;(server as net.Server).listening = true
+	// ssh2 v0.8.9 doesn't know about net.Server.listening
+	server.on('listening', function workaround(this: net.Server) {
+		this.listening = true
 	})
 
 	return server as net.Server
