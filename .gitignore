@@ -9,5 +9,6 @@ coverage
 *.key
 *.pub
 
+.vscode/settings.json
 .DS_Store
 *.sw?
