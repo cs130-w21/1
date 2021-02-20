@@ -2,12 +2,6 @@
 import * as ssh2 from 'ssh2'
 import * as net from 'net'
 import * as fs from 'fs'
-/* Variables for hostkeys */
-// var crypto = require('crypto');
-// var inspect = require('util').inspect;
-
-// var ssh2 = require('ssh2');
-// var utils = ssh2.utils;
 
 export function createDaemon(): net.Server {
 	// Create server object
