@@ -1,7 +1,8 @@
-import * as net from 'net'
 import { Server, ServerConfig, Session } from 'ssh2'
 
-import { parseJobRequest } from '../Network/JobRequest'
+import * as net from 'net'
+
+import { parseJobRequest } from '../Network'
 import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'

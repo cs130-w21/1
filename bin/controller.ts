@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import bonjour from 'bonjour'
+
 import { once } from 'events'
 
 import {

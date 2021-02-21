@@ -1,10 +1,9 @@
 import Dockerode from 'dockerode'
-
 import { ServerChannel } from 'ssh2'
 
 import { attachStreams, createContainer } from './DaemonExec'
 import { RunJob } from './RunJob'
-import { JobRequest } from '../Network/JobRequest'
+import { JobRequest } from '../Network'
 
 function argvForMake(target: string): string[] {
 	return ['make', target]
