@@ -5,7 +5,8 @@ import Dockerode from 'dockerode'
 import { parseJobRequest } from './JobRequest'
 import { runJob } from './RunJob'
 
-const EXEC_FAIL_SIG = 'USR1'
+const EXEC_FAIL_SIG = 'USR2'
+const EXEC_FAIL_MSG = 'Failed to start job execution.'
 
 /**
  * Service a Junknet client's requests, such as running jobs and transferring artifacts.
@@ -26,10 +27,12 @@ function handleSession(docker: Dockerode, session: Session): void {
 			return
 		}
 
+		console.log(request)
+
 		const channel = accept()
-		runJob(docker, request, channel).catch((e) => {
-			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-			channel.exit(EXEC_FAIL_SIG, false, `${e}`)
+		runJob(docker, request, channel).catch((e: Error) => {
+			channel.stderr.end(`${e.name}: ${e.message}\n`)
+			channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
 			channel.end()
 		})
 	})

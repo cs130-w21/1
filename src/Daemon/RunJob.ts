@@ -17,7 +17,7 @@ export async function runJob(
 	const container = await createContainer(
 		docker,
 		request.image,
-		argvForMake(request.target),
+		argvForMake(request.target), // TODO: run the command, not just print it
 		[], // TODO: obviously Make doesn't work without its Makefile
 	)
 	await attachStreams(container, channel, channel, channel.stderr)
