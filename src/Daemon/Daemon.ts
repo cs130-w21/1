@@ -2,7 +2,7 @@ import * as net from 'net'
 import { Server, ServerConfig, Session } from 'ssh2'
 import Dockerode from 'dockerode'
 
-import { parseJobRequest } from './JobRequest'
+import { parseJobRequest } from '../Network/JobRequest'
 import { runJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'

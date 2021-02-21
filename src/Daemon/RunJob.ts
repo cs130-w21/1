@@ -2,7 +2,7 @@ import Dockerode from 'dockerode'
 import { ServerChannel } from 'ssh2'
 
 import { attachStreams, createContainer } from './DaemonExec'
-import { JobRequest } from './JobRequest'
+import { JobRequest } from '../Network/JobRequest'
 
 function argvForMake(target: string): string[] {
 	return ['make', target]
