@@ -3,7 +3,7 @@ import { Bonjour, Service } from 'bonjour'
 import { AddressInfo, Server } from 'net'
 import { EventEmitter } from 'events'
 
-import { SERVICE_TYPE } from '../../src/Constants'
+import { SERVICE_TYPE } from '../../src/Zeroconf/Constants'
 import { publishServer } from '../../src/Zeroconf/ZeroconfDaemon'
 
 const MOCK_SERVICE_NAME = 'Junknet Unit Test'
