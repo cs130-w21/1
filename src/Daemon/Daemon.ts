@@ -2,7 +2,7 @@ import { Server, ServerConfig, Session } from 'ssh2'
 
 import * as net from 'net'
 
-import { parseJobRequest } from '../Network'
+import { JobRequest, parse } from '../Network'
 import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
@@ -21,7 +21,7 @@ function handleSession(runJob: RunJob, session: Session): void {
 			return
 		}
 
-		const request = parseJobRequest(info.command)
+		const request = parse(JobRequest, info.command)
 		if (!request) {
 			reject()
 			return

@@ -1,15 +1,13 @@
-import { parseJobRequest } from '../../src/Network/JobRequest'
+import { parse } from '../../src/Network/Parse'
+import { JobRequest } from '../../src/Network/JobRequest'
 
-describe('parseJobRequest', () => {
+describe('parse', () => {
 	it('accepts a valid job request', () => {
 		// Arrange
-		const valid = {
-			image: 'alpine:latest',
-			target: 'all',
-		}
+		const valid = { image: 'alpine:latest', target: 'all' }
 
 		// Act
-		const parsed = parseJobRequest(JSON.stringify(valid))
+		const parsed = parse(JobRequest, JSON.stringify(valid))
 
 		// Assert
 		expect(parsed).toStrictEqual(valid)
@@ -21,8 +19,8 @@ describe('parseJobRequest', () => {
 		const badType = { image: 'alpine:latest', target: 420.69 }
 
 		// Act
-		const missingParsed = parseJobRequest(JSON.stringify(missing))
-		const badTypeParsed = parseJobRequest(JSON.stringify(badType))
+		const missingParsed = parse(JobRequest, JSON.stringify(missing))
+		const badTypeParsed = parse(JobRequest, JSON.stringify(badType))
 
 		// Assert
 		expect(missingParsed).toBeUndefined()
@@ -34,7 +32,7 @@ describe('parseJobRequest', () => {
 		const bogus = 'hello world!'
 
 		// Act
-		const parsed = parseJobRequest(bogus)
+		const parsed = parse(JobRequest, bogus)
 
 		// Assert
 		expect(parsed).toBeUndefined()
