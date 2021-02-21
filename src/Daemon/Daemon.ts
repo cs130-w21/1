@@ -1,12 +1,8 @@
 import * as net from 'net'
-import { Server, ServerChannel, ServerConfig, Session } from 'ssh2'
+import { Server, ServerConfig, Session } from 'ssh2'
 
-import { JobRequest, parseJobRequest } from '../Network/JobRequest'
-
-export type RunJob = (
-	request: JobRequest,
-	channel: ServerChannel,
-) => Promise<void>
+import { parseJobRequest } from '../Network/JobRequest'
+import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
 const EXEC_FAIL_MSG = 'Failed to start job execution.'
