@@ -1,12 +1,10 @@
 import * as net from 'net'
-import { Server, Session } from 'ssh2'
+import { Server, ServerConfig, Session } from 'ssh2'
 import Dockerode from 'dockerode'
-import { readFileSync } from 'fs'
 
 import { parseJobRequest } from './JobRequest'
 import { runJob } from './RunJob'
 
-const HOST_KEY_PATH = 'host.key'
 const EXEC_FAIL_SIG = 'USR1'
 
 function handleSession(docker: Dockerode, session: Session): void {
@@ -32,8 +30,11 @@ function handleSession(docker: Dockerode, session: Session): void {
 	})
 }
 
-export function createDaemon(docker: Dockerode): net.Server {
-	const server = new Server({ hostKeys: [readFileSync(HOST_KEY_PATH)] })
+export function createDaemon(
+	docker: Dockerode,
+	hostKeys: ServerConfig['hostKeys'],
+): net.Server {
+	const server = new Server({ hostKeys })
 	server.on('connection', (client) => {
 		client.on('authentication', (ctx) => ctx.accept())
 		client.on('ready', () => {
