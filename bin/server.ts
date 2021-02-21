@@ -36,6 +36,8 @@ async function start(): Promise<void> {
 		.strict()
 
 	const daemon = createDaemon(new Dockerode(), argv.h)
+	daemon.on('error', console.error)
+	daemon.on('connection', (_, ...info) => console.log(...info))
 	daemon.listen(argv.p)
 
 	await once(daemon, 'listening')
@@ -48,7 +50,7 @@ async function start(): Promise<void> {
 		`${hostname()}'s Junknet Server #${addr.port}`,
 		daemon,
 	)
-	console.log(service)
+	console.info(service)
 }
 
 start().catch(console.error)

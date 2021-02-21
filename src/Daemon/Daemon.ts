@@ -7,6 +7,11 @@ import { runJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR1'
 
+/**
+ * Service a Junknet client's requests, such as running jobs and transferring artifacts.
+ * @param docker - A connected Dockerode client.
+ * @param session - A new incoming SSH session.
+ */
 function handleSession(docker: Dockerode, session: Session): void {
 	session.on('exec', (accept, reject, info) => {
 		// `accept` and `reject` are only defined if the client wants a response
@@ -30,6 +35,17 @@ function handleSession(docker: Dockerode, session: Session): void {
 	})
 }
 
+/**
+ * Create a Junknet daemon implemented over SSH.
+ *
+ * @remarks
+ * - It's important to listen for the 'error' event, as the default behavior is to stop serving.
+ * - SSH keys may be generated via `ssh-keygen` from OpenSSH.
+ *
+ * @param docker - A connected Dockerode client.
+ * @param hostKeys - Private SSH keys to authenticate this daemon to clients.
+ * @returns The daemon as a Server.
+y */
 export function createDaemon(
 	docker: Dockerode,
 	hostKeys: ServerConfig['hostKeys'],
