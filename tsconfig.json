@@ -4,12 +4,7 @@
 		"outDir": "dist",
 		"composite": true,
 		"sourceMap": true,
-		"declarationMap": true,
-		"noFallthroughCasesInSwitch": true,
-		"noImplicitReturns": true,
-		"noUncheckedIndexedAccess": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true
+		"declarationMap": true
 	},
 	"include": ["src/**/*", "bin/**/*"]
 }
