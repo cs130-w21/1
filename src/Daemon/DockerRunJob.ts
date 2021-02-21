@@ -9,6 +9,12 @@ function argvForMake(target: string): string[] {
 	return ['make', target]
 }
 
+/**
+ * Factory for making a job runner using Docker.
+ * The daemon would use this to know how to run a job.
+ * @param docker - A connected Dockerode client.
+ * @returns A job runner that uses Docker.
+ */
 export function dockerRunJob(docker: Dockerode): RunJob {
 	return async (request: JobRequest, channel: ServerChannel) => {
 		await docker.pull(request.image)

@@ -43,10 +43,10 @@ function handleSession(runJob: RunJob, session: Session): void {
  * - It's important to listen for the 'error' event, as the default behavior is to stop serving.
  * - SSH keys may be generated via `ssh-keygen` from OpenSSH.
  *
- * @param docker - A connected Dockerode client.
+ * @param runJob - A job-running strategy, invoked when a client requests a job.
  * @param hostKeys - Private SSH keys to authenticate this daemon to clients.
  * @returns The daemon as a Server.
-y */
+ */
 export function createDaemon(
 	runJob: RunJob,
 	hostKeys: ServerConfig['hostKeys'],
