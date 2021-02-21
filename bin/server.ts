@@ -36,7 +36,11 @@ async function start(): Promise<void> {
 		.strict()
 
 	const runJob = dockerRunJob(new Dockerode())
-	const daemon = createDaemon(runJob, argv.h)
+	const daemon = createDaemon((request, channel) => {
+		console.log(request)
+		return runJob(request, channel)
+	}, argv.h)
+
 	daemon.on('error', console.error)
 	daemon.on('connection', (_, ...info) => console.log(...info))
 	daemon.listen(argv.p)

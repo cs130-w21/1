@@ -26,9 +26,6 @@ function handleSession(runJob: RunJob, session: Session): void {
 			return
 		}
 
-		// TODO: move logging into RunJob implementations
-		console.log(request)
-
 		const channel = accept()
 		runJob(request, channel).catch((e: Error) => {
 			channel.stderr.end(`${e.name}: ${e.message}\n`)
