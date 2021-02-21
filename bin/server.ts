@@ -9,7 +9,7 @@ import { hostname } from 'os'
 import { readFileSync } from 'fs'
 import { once } from 'events'
 
-import { SERVICE_TYPE, publishServer, createDaemon } from '../src'
+import { SERVICE_TYPE, publishServer, createDaemon, dockerRunJob } from '../src'
 
 async function start(): Promise<void> {
 	/**
@@ -35,7 +35,11 @@ async function start(): Promise<void> {
 		})
 		.strict()
 
-	const daemon = createDaemon(new Dockerode(), argv.h)
+	const docker = new Dockerode()
+	const daemon = createDaemon(
+		(request, channel) => dockerRunJob(docker, request, channel),
+		argv.h,
+	)
 	daemon.on('error', console.error)
 	daemon.on('connection', (_, ...info) => console.log(...info))
 	daemon.listen(argv.p)

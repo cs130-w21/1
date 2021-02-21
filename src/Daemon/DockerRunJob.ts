@@ -8,7 +8,7 @@ function argvForMake(target: string): string[] {
 	return ['make', target]
 }
 
-export async function runJob(
+export async function dockerRunJob(
 	docker: Dockerode,
 	request: JobRequest,
 	channel: ServerChannel,

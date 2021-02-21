@@ -1,9 +1,12 @@
 import * as net from 'net'
-import { Server, ServerConfig, Session } from 'ssh2'
-import Dockerode from 'dockerode'
+import { Server, ServerChannel, ServerConfig, Session } from 'ssh2'
 
-import { parseJobRequest } from '../Network/JobRequest'
-import { runJob } from './RunJob'
+import { JobRequest, parseJobRequest } from '../Network/JobRequest'
+
+export type RunJob = (
+	request: JobRequest,
+	channel: ServerChannel,
+) => Promise<void>
 
 const EXEC_FAIL_SIG = 'USR2'
 const EXEC_FAIL_MSG = 'Failed to start job execution.'
@@ -13,7 +16,7 @@ const EXEC_FAIL_MSG = 'Failed to start job execution.'
  * @param docker - A connected Dockerode client.
  * @param session - A new incoming SSH session.
  */
-function handleSession(docker: Dockerode, session: Session): void {
+function handleSession(runJob: RunJob, session: Session): void {
 	session.on('exec', (accept, reject, info) => {
 		// `accept` and `reject` are only defined if the client wants a response
 		// For Junknet, it doesn't make sense to run a job without a client waiting for it.
@@ -27,10 +30,11 @@ function handleSession(docker: Dockerode, session: Session): void {
 			return
 		}
 
+		// TODO: move logging into RunJob implementations
 		console.log(request)
 
 		const channel = accept()
-		runJob(docker, request, channel).catch((e: Error) => {
+		runJob(request, channel).catch((e: Error) => {
 			channel.stderr.end(`${e.name}: ${e.message}\n`)
 			channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
 			channel.end()
@@ -50,14 +54,14 @@ function handleSession(docker: Dockerode, session: Session): void {
  * @returns The daemon as a Server.
 y */
 export function createDaemon(
-	docker: Dockerode,
+	runJob: RunJob,
 	hostKeys: ServerConfig['hostKeys'],
 ): net.Server {
 	const server = new Server({ hostKeys })
 	server.on('connection', (client) => {
 		client.on('authentication', (ctx) => ctx.accept())
 		client.on('ready', () => {
-			client.on('session', (accept) => handleSession(docker, accept()))
+			client.on('session', (accept) => handleSession(runJob, accept()))
 		})
 	})
 
