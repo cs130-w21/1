@@ -10,14 +10,20 @@ describe('HeapJobOrderer', () => {
 		const sourceJob: Job = new NormalJob('sourceJob')
 		const intermediateJob1: Job = new NormalJob(
 			'intermediateJob1',
+			[''],
 			new Set([sourceJob]),
 		)
 		const intermediateJob2: Job = new NormalJob(
 			'intermediateJob2',
+			[''],
 			new Set([sourceJob, intermediateJob1]),
 		)
-		const rootJob1: Job = new NormalJob('rootJob1', new Set([sourceJob]))
-		const rootJob2: Job = new NormalJob('rootJob2', new Set([intermediateJob2]))
+		const rootJob1: Job = new NormalJob('rootJob1', [''], new Set([sourceJob]))
+		const rootJob2: Job = new NormalJob(
+			'rootJob2',
+			[''],
+			new Set([intermediateJob2]),
+		)
 
 		const rootJobs: Job[] = [rootJob1, rootJob2]
 		const jobOrderer = new HeapJobOrderer(rootJobs)

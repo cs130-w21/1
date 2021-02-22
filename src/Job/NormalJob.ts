@@ -7,11 +7,12 @@ export class NormalJob implements Job {
 	private prerequisites: Set<Job>
 
 	/**
-	 * @param name - The job's name. Must be unique between jobs in the same dependency graph.
+	 * @param target - The job's name. Must be unique between jobs in the same dependency graph.
 	 * @param prerequisites - An optional set containing all of this job's prerequisites. Defaults to no prerequisites.
 	 */
 	constructor(
-		private readonly name: string,
+		private readonly target: string,
+		private readonly commands: string[] = [],
 		prerequisites: Set<Job> = new Set(),
 	) {
 		this.prerequisites = new Set(prerequisites) // Make a copy so the caller can't directly access prerequisites. Encapsulation!
@@ -20,8 +21,8 @@ export class NormalJob implements Job {
 	/**
 	 * @returns The job's name.
 	 */
-	public getName(): string {
-		return this.name
+	public getTarget(): string {
+		return this.target
 	}
 
 	/**
@@ -47,11 +48,15 @@ export class NormalJob implements Job {
 	 */
 	public toString(): string {
 		if (this.prerequisites.size === 0) {
-			return `Source job ${this.name}.`
+			return `Source job ${this.target}.`
 		}
 
-		return `Job "${this.name}" depending on ${Array.from(this.prerequisites)
-			.map((prerequisite) => prerequisite.getName())
+		return `Job "${this.target}" depending on ${Array.from(this.prerequisites)
+			.map((prerequisite) => prerequisite.getTarget())
 			.join(', ')}.`
+	}
+
+	public getCommands(): string[] {
+		return this.commands
 	}
 }

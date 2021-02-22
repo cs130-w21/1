@@ -3,14 +3,13 @@
  */
 export interface Job {
 	/**
-	 * Get this job's name.
+	 * Get this job's target.
 	 *
-	 * This method may be removed in the future because Jobs may no longer have names.
+	 * The target is the resulting file.
 	 *
-	 * @experimental
-	 * @returns This job's name.
+	 * @returns This target.
 	 */
-	getName(): string
+	getTarget(): string
 
 	/**
 	 * Gets this Job's prerequisites as an iterable.
@@ -27,4 +26,9 @@ export interface Job {
 	 * @returns The number of prerequisites.
 	 */
 	getNumPrerequisites(): number
+
+	/**
+	 * Returns the commands to run (in-order and synchronously) that will result.
+	 */
+	getCommands(): string[]
 }

@@ -110,7 +110,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 */
 	private assignJobToDaemon(job: Job, daemon: ClientHttp2Session) {
 		this.availableDaemons.delete(daemon)
-		const request = daemon.request({ ':path': `/${job.getName()}` })
+		const request = daemon.request({ ':path': `/${job.getTarget()}` })
 		daemon.on('error', () => this.jobOrderer.reportFailedJob(job))
 
 		let data = ''

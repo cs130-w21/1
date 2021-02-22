@@ -32,7 +32,8 @@
 		"jest/no-hooks": "error",
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
-		"jest/require-top-level-describe": "error"
+		"jest/require-top-level-describe": "error",
+		"prefer-destructuring": ["error", { "array": false }]
 	},
 	"env": {
 		"node": true,
