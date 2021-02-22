@@ -1,4 +1,4 @@
-import { parse } from '../../src/Network/Parse'
+import { parse } from '../../src/Network/NetParse'
 import { JobRequest } from '../../src/Network/JobRequest'
 
 describe('parse', () => {

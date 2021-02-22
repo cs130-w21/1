@@ -1,2 +1,2 @@
-export * from './Parse'
+export * from './NetParse'
 export * from './JobRequest'
