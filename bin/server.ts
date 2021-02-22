@@ -11,10 +11,14 @@ import { once } from 'events'
 
 import { SERVICE_TYPE, publishServer, createDaemon, dockerRunJob } from '../src'
 
-async function start(): Promise<void> {
-	// Modeled after sshd(8) where possible, see https://man.openbsd.org/sshd.
-	const { argv: opts } = yargs(process.argv.slice(2))
-		// yargs missing feature: why not auto generate the usage string, like Python argparse???
+interface DaemonOptions {
+	hostKeys: Buffer[]
+	port: number
+}
+
+// Modeled after sshd(8) where possible, see https://man.openbsd.org/sshd.
+const parseOptions: (argv: string[]) => DaemonOptions = (argv) =>
+	yargs(argv)
 		.usage('Usage: $0 [-p <num>] [-h <key>]...')
 		.example('$0 -p 22', 'Pretend to be SSH.')
 		.example(
@@ -42,11 +46,14 @@ async function start(): Promise<void> {
 			default: 0,
 			// yargs bug: an option passed multiple times automatically becomes an array.
 			coerce: (number: number | number[]) =>
-				Array.isArray(number) ? number.pop() : number,
+				Array.isArray(number) ? (number.pop() as number) : number,
 		})
 		// yargs bug: strict by itself doesn't prevent unwanted positional arguments.
 		.demandCommand(0, 0)
-		.strict()
+		.strict().argv
+
+async function start(): Promise<void> {
+	const opts = parseOptions(process.argv.slice(2))
 
 	const runJob = dockerRunJob(new Dockerode())
 	const daemon = createDaemon((request, channel) => {
