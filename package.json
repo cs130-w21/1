@@ -1,11 +1,11 @@
 {
   "name": "junknet",
   "version": "0.1.0",
-  "description": "Zero-config distributed parallel processing",
+  "description": "Zero-config distributed parallel processing.",
   "license": "Apache-2.0",
   "files": [
     "dist",
-    "docs"
+    "!**/*.tsbuildinfo"
   ],
   "main": "dist/src",
   "types": "dist/src",
@@ -15,8 +15,7 @@
   },
   "repository": "github:cs130-w21/1",
   "scripts": {
-    "prepare": "tsc",
-    "postprepare": "typedoc",
+    "prepare": "typedoc --emit",
     "start": "tsnd bin/server.ts",
     "cli": "ts-node bin/controller.ts",
     "fix": "eslint --fix .",
