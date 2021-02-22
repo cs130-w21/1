@@ -13,8 +13,7 @@
 		"plugin:promise/recommended",
 		"plugin:jest/recommended",
 		"plugin:jest/style",
-		"prettier",
-		"prettier/@typescript-eslint"
+		"prettier"
 	],
 	"rules": {
 		"import/prefer-default-export": "off",
