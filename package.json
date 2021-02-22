@@ -13,7 +13,10 @@
     "junknetd": "dist/bin/server.js",
     "junknet-make": "dist/bin/controller.js"
   },
-  "repository": "github:cs130-w21/1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cs130-w21/1.git"
+  },
   "scripts": {
     "prepare": "typedoc --emit",
     "start": "tsnd bin/server.ts",
