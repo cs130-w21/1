@@ -2,6 +2,9 @@
 
 Zero-config distributed parallel processing. Junknet can parallelize your existing Makefiles among any number of machines on your LAN.
 
+## Prerequisites
+- [Docker](https://www.docker.com)
+
 ## Developer's Guide
 
 The [NPM scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) you'll use most are listed below. They operate on the TypeScript source code, so there is no separate <q>build step</q> to worry about.
