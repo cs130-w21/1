@@ -18,14 +18,14 @@
     "url": "https://github.com/cs130-w21/1.git"
   },
   "scripts": {
-    "prepare": "typedoc --emit",
+    "prepack": "tsc",
     "start": "tsnd bin/server.ts",
     "cli": "ts-node bin/controller.ts",
     "fix": "eslint --fix .",
     "postfix": "prettier -w .",
-    "pretest": "eslint .",
+    "pretest": "tsc --noEmit",
     "test": "jest",
-    "posttest": "prettier -c .",
+    "posttest": "eslint . && prettier -c .",
     "test:local": "npm run test -- --runInBand --selectProjects unit"
   },
   "devDependencies": {

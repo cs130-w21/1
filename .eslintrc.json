@@ -2,7 +2,7 @@
 	"root": true,
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
-		"project": "tsconfig.eslint.json"
+		"project": "tsconfig.json"
 	},
 	"plugins": ["tsdoc", "github"],
 	"extends": [
@@ -18,7 +18,6 @@
 	"rules": {
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
-		"tsdoc/syntax": "error",
 		"no-restricted-syntax": [
 			"error",
 			"ForInStatement",
@@ -31,10 +30,10 @@
 		"jest/no-hooks": "error",
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
-		"jest/require-top-level-describe": "error"
+		"jest/require-top-level-describe": "error",
+		"tsdoc/syntax": "error"
 	},
 	"env": {
-		"node": true,
-		"browser": false
+		"node": true
 	}
 }
