@@ -1,5 +1,5 @@
 import { Job } from '../../src/Job/Job'
-import { makefileTraceToJobTree } from '../../src/MakefileTraceToJobTree'
+import { makefileTraceToJobTree } from '../../src/Controller/MakefileTraceToJobTree'
 
 describe('Deserializer', () => {
 	it('correctly constructs DAG #1', () => {

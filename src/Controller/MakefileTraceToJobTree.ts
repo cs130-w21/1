@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert'
-import { Job } from './Job/Job'
-import { NormalJob } from './Job/NormalJob'
+import { Job } from '../Job/Job'
+import { NormalJob } from '../Job/NormalJob'
 
 interface JobAndDependency {
 	job: Job
