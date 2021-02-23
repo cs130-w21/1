@@ -19,7 +19,7 @@
   },
   "scripts": {
     "docs": "typedoc",
-    "prepack": "tsc",
+    "prepack": "git clean -fX dist && tsc --project tsconfig.dist.json",
     "start": "tsnd bin/server.ts",
     "cli": "ts-node bin/controller.ts",
     "fix": "eslint --fix .",
