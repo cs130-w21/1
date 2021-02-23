@@ -3,6 +3,7 @@ import * as yargs from 'yargs'
 export interface JunknetArguments {
 	makefile: string
 	docker_image: string
+	target: string | null
 }
 
 /**
@@ -14,27 +15,33 @@ export interface JunknetArguments {
 export function interpretArgv(argv: readonly string[]): JunknetArguments {
 	// Use only the first two elements; Node.js appends extra elements to process.argv.
 	const yargsArgv = yargs(argv.slice(2)).options({
-		makefile: {
-			alias: 'f',
+		m: {
+			alias: 'makefile',
 			type: 'string',
 			default: 'Makefile',
 			desc: 'The Makefile to process',
 		},
-		'docker-image': {
-			alias: 'i',
+		d: {
+			alias: 'docker_image',
 			type: 'string',
 			default: 'ubuntu:18.04',
 			desc: 'The Docker Image to run',
 		},
-		target: {
-			alias: 't',
+		t: {
+			alias: 'target',
 			type: 'string',
 			desc: 'The Makefile target to build',
 		},
 	}).argv
 
+	let target = null; 
+	if (yargsArgv.t !== undefined) { 
+		target = yargsArgv.t; 
+	}
+
 	return {
-		makefile: yargsArgv.makefile,
-		docker_image: yargsArgv['docker-image'],
+		makefile: yargsArgv.m,
+		docker_image: yargsArgv.d,
+		target,
 	}
 }
