@@ -18,6 +18,7 @@
     "url": "https://github.com/cs130-w21/1.git"
   },
   "scripts": {
+    "docs": "typedoc",
     "prepack": "tsc",
     "start": "tsnd bin/server.ts",
     "cli": "ts-node bin/controller.ts",
