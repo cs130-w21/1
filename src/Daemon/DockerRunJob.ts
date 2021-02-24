@@ -1,6 +1,7 @@
 import Dockerode from 'dockerode'
 
 import { attachStreams, createContainer, ensureImageImport } from './DaemonExec'
+import { ContainerWaitOK } from './DockerAPI'
 import { RunJob } from './RunJob'
 
 /**
@@ -29,8 +30,16 @@ export function dockerRunJob(docker: Dockerode): RunJob {
 		)
 		await attachStreams(container, channel, channel, channel.stderr)
 		await container.start()
-		await container.wait()
-		// TODO: inspect container for exit code, then send it over the channel
+
+		const status = (await container.wait()) as ContainerWaitOK
+		if (status.Error) {
+			// TODO: find out what kinds of situations this can happen in.
+			// TODO: if it's not exceptional, notify the client instead of dropping the session.
+			throw new Error(status.Error.Message)
+		}
+
+		channel.exit(status.StatusCode)
+		channel.end()
 
 		// TODO: set HostConfig.AutoRemove upon construction, rather than manually removing
 		await container.remove()

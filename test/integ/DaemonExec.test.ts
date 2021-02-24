@@ -15,11 +15,7 @@ import {
 	stopContainer,
 	removeContainer,
 } from '../../src/Daemon/DaemonExec'
-
-interface ExpectedStatus {
-	Error: unknown
-	StatusCode: number
-}
+import { ContainerWaitOK } from '../../src/Daemon/DockerAPI'
 
 const DOCKER = new Docker()
 const TEST_IMAGE = 'ubuntu:18.04'
@@ -98,7 +94,7 @@ describe('DaemonExec', () => {
 	it('runs a specified container and gives an end status', async () => {
 		await container.start()
 
-		const data: ExpectedStatus = await (container.wait() as Promise<ExpectedStatus>)
+		const data = (await container.wait()) as ContainerWaitOK
 
 		expect(data.Error).toBeNull()
 		expect(data.StatusCode).toBe(0)
