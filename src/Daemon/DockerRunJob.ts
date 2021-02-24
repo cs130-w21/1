@@ -1,7 +1,7 @@
 import Dockerode from 'dockerode'
 import { ServerChannel } from 'ssh2'
 
-import { attachStreams, createContainer } from './DaemonExec'
+import { attachStreams, createContainer, ensureImageImport } from './DaemonExec'
 import { RunJob } from './RunJob'
 import { JobRequest } from '../Network'
 
@@ -17,7 +17,7 @@ function argvForMake(target: string): string[] {
  */
 export function dockerRunJob(docker: Dockerode): RunJob {
 	return async (request: JobRequest, channel: ServerChannel) => {
-		await docker.pull(request.image)
+		await ensureImageImport(docker, request.image)
 		const container = await createContainer(
 			docker,
 			request.image,
