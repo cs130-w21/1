@@ -9,7 +9,12 @@ import { hostname } from 'os'
 import { readFileSync } from 'fs'
 import { once } from 'events'
 
-import { SERVICE_TYPE, publishServer, createDaemon, dockerRunJob } from '../src'
+import {
+	SERVICE_TYPE,
+	publishServer,
+	createSSHDaemon,
+	dockerRunJob,
+} from '../src'
 
 interface DaemonOptions {
 	hostKeys: Buffer[]
@@ -56,7 +61,7 @@ async function start(): Promise<void> {
 	const opts = parseOptions(process.argv.slice(2))
 
 	const runJob = dockerRunJob(new Dockerode())
-	const daemon = createDaemon((request, channel) => {
+	const daemon = createSSHDaemon((request, channel) => {
 		console.log(request)
 		return runJob(request, channel)
 	}, opts.hostKeys)

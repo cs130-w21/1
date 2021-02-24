@@ -47,7 +47,7 @@ function handleSession(runJob: RunJob, session: Session): void {
  * @param hostKeys - Private SSH keys to authenticate this daemon to clients.
  * @returns The daemon as a Server.
  */
-export function createDaemon(
+export function createSSHDaemon(
 	runJob: RunJob,
 	hostKeys: ServerConfig['hostKeys'],
 ): net.Server {

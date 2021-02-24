@@ -1,6 +1,6 @@
 // This is just a brainstorm where I tried to be as thorough as possible.
 // Some of these are more important than others; it would take too long to implement them all.
-describe('Daemon', () => {
+describe('SSHDaemon', () => {
 	it.todo('can be constructed')
 	it.todo('can start listening')
 	it.todo('ignores bogus data sent to socket')
