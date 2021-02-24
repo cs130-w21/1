@@ -1,6 +1,8 @@
 import Dockerode, { Container } from 'dockerode'
 import { ServerChannel } from 'ssh2'
 
+import { strict as assert } from 'assert'
+
 import { mock } from 'jest-mock-extended'
 import { mocked } from 'ts-jest/utils'
 
@@ -31,7 +33,7 @@ describe('dockerRunJob', () => {
 	const goodExit: ContainerWaitOK = Object.freeze({ StatusCode: 42 })
 	const badExit: ContainerWaitOK = Object.freeze({
 		StatusCode: NaN,
-		Error: { Message: 'UNKNOWN FAILURE' },
+		Error: Object.freeze({ Message: 'UNKNOWN FAILURE' }),
 	})
 	container.wait.mockResolvedValue(goodExit)
 
@@ -80,6 +82,7 @@ describe('dockerRunJob', () => {
 		const promise = runJob(REQUEST, channel)
 
 		// Assert
-		return expect(promise).rejects.toThrow()
+		assert(badExit.Error)
+		return expect(promise).rejects.toThrow(badExit.Error.Message)
 	})
 })

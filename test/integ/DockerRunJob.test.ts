@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+
 import Dockerode from 'dockerode'
 import { ServerChannel } from 'ssh2'
 
@@ -17,17 +19,26 @@ const MAKE_EXIT_CODE = 2
 const MAKE_STDOUT = ''
 const MAKE_STDERR = `make: *** No rule to make target '${REQUEST.target}'.  Stop.\n`
 
+/**
+ * Mock Readable and Writeable stream that records all activity.
+ */
 class SpyDuplex extends Duplex {
-	askedForBytes = 0
-
+	/**
+	 * All chunks written to this stream, in order.
+	 */
 	recvChunks: Buffer[] = []
 
-	// eslint-disable-next-line no-underscore-dangle, class-methods-use-this
-	_read(size: number) {
-		this.askedForBytes += size
-	}
+	/**
+	 * Never have any data available to read.
+	 * @override
+	 */
+	// eslint-disable-next-line class-methods-use-this
+	_read() {}
 
-	// eslint-disable-next-line no-underscore-dangle
+	/**
+	 * Store all chunks written to this stream as Buffers.
+	 * @override
+	 */
 	_write(
 		chunk: string | Buffer,
 		encoding: BufferEncoding,
