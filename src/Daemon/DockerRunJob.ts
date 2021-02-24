@@ -31,5 +31,8 @@ export function dockerRunJob(docker: Dockerode): RunJob {
 		await container.start()
 		await container.wait()
 		// TODO: inspect container for exit code, then send it over the channel
+
+		// TODO: set HostConfig.AutoRemove upon construction, rather than manually removing
+		await container.remove()
 	}
 }
