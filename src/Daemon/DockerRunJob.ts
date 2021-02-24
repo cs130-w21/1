@@ -1,10 +1,13 @@
 import Dockerode from 'dockerode'
-import { ServerChannel } from 'ssh2'
 
 import { attachStreams, createContainer, ensureImageImport } from './DaemonExec'
 import { RunJob } from './RunJob'
-import { JobRequest } from '../Network'
 
+/**
+ * Get an argv array for invoking Make for the given target.
+ * @param target - The Makefile target name that should run.
+ * @returns An array that can be passed to `exec(3)`.
+ */
 function argvForMake(target: string): string[] {
 	return ['make', target]
 }
@@ -16,12 +19,12 @@ function argvForMake(target: string): string[] {
  * @returns A job runner that uses Docker.
  */
 export function dockerRunJob(docker: Dockerode): RunJob {
-	return async (request: JobRequest, channel: ServerChannel) => {
+	return async (request, channel) => {
 		await ensureImageImport(docker, request.image)
 		const container = await createContainer(
 			docker,
 			request.image,
-			argvForMake(request.target), // TODO: run the command, not just print it
+			argvForMake(request.target),
 			[], // TODO: obviously Make doesn't work without its Makefile
 		)
 		await attachStreams(container, channel, channel, channel.stderr)
