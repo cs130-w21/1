@@ -16,7 +16,7 @@ import { JobRequest } from '../../src/Network'
 jest.mock('../../src/Daemon/DaemonExec')
 
 const REQUEST: JobRequest = Object.freeze({
-	image: 'buildpack-deps:buster',
+	image: 'buildpack-deps:bullseye',
 	target: 'all',
 })
 
@@ -29,6 +29,10 @@ describe('dockerRunJob', () => {
 	mocked(createContainer).mockResolvedValue(container)
 
 	const goodExit: ContainerWaitOK = Object.freeze({ StatusCode: 42 })
+	const badExit: ContainerWaitOK = Object.freeze({
+		StatusCode: NaN,
+		Error: { Message: 'UNKNOWN FAILURE' },
+	})
 	container.wait.mockResolvedValue(goodExit)
 
 	// Act
@@ -66,5 +70,16 @@ describe('dockerRunJob', () => {
 	it('cleans up the container', () => {
 		// Assert
 		expect(container.remove).toHaveBeenCalled()
+	})
+
+	it('fails if the container fails', () => {
+		// Arrange
+		container.wait.mockResolvedValue(badExit)
+
+		// Act
+		const promise = runJob(REQUEST, channel)
+
+		// Assert
+		return expect(promise).rejects.toThrow()
 	})
 })
