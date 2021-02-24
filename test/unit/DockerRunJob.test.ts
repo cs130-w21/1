@@ -1,42 +1,70 @@
-import Dockerode, { Container, ImageInfo } from 'dockerode'
-import { mock } from 'jest-mock-extended'
+import Dockerode, { Container } from 'dockerode'
 import { ServerChannel } from 'ssh2'
-import { ContainerWaitOK } from '../../src/Daemon/DockerAPI'
 
+import { mock } from 'jest-mock-extended'
+import { mocked } from 'ts-jest/utils'
+
+import {
+	ensureImageImport,
+	createContainer,
+	attachStreams,
+} from '../../src/Daemon/DaemonExec'
+import { ContainerWaitOK } from '../../src/Daemon/DockerAPI'
 import { dockerRunJob } from '../../src/Daemon/DockerRunJob'
 import { JobRequest } from '../../src/Network'
 
+jest.mock('../../src/Daemon/DaemonExec')
+
 const REQUEST: JobRequest = Object.freeze({
-	image: 'buildpack-deps',
+	image: 'buildpack-deps:buster',
 	target: 'all',
 })
 
 describe('dockerRunJob', () => {
+	// Arrange
 	const docker = mock<Dockerode>()
 	const channel = mock<ServerChannel>()
 
-	// Always pretend the image already exists
-	const imageInfo = mock<ImageInfo>({ RepoTags: [REQUEST.image] })
-	docker.listImages.mockResolvedValue([imageInfo])
-
 	const container = mock<Container>({ modem: { demuxStream: jest.fn() } })
-	docker.createContainer.mockResolvedValue(container)
+	mocked(createContainer).mockResolvedValue(container)
 
-	it.todo('pulls the image')
+	const goodExit: ContainerWaitOK = Object.freeze({ StatusCode: 42 })
+	container.wait.mockResolvedValue(goodExit)
 
-	it('creates a new container', async () => {
-		// Arrange
-		const exitStatus: ContainerWaitOK = Object.freeze({ StatusCode: 42 })
-		container.wait.mockResolvedValue(exitStatus)
+	// Act
+	const runJob = dockerRunJob(docker)
+	beforeAll(() => runJob(REQUEST, channel))
 
-		// Act
-		await dockerRunJob(docker)(REQUEST, channel)
-
+	it('pulls the image using a tested method', () => {
 		// Assert
-		expect(docker.createContainer).toHaveBeenCalled()
+		expect(ensureImageImport).toHaveBeenCalledTimes(1)
+		expect(ensureImageImport).toHaveBeenCalledWith(docker, REQUEST.image)
 	})
 
-	it.todo('attaches streams to container')
-	it.todo('outputs exit status of container')
-	it.todo('cleans up the container')
+	it('creates a new container using a tested method', () => {
+		// Assert
+		expect(createContainer).toHaveBeenCalledTimes(1)
+		expect(createContainer).toHaveBeenCalledWith(
+			docker,
+			REQUEST.image,
+			expect.anything(),
+			expect.anything(),
+		)
+	})
+
+	it('attaches streams to container using a tested method', () => {
+		// Assert
+		expect(attachStreams).toHaveBeenCalled()
+	})
+
+	it('outputs exit status of container and ends channel', () => {
+		// Assert
+		expect(channel.exit).toHaveBeenCalledWith(goodExit.StatusCode)
+		expect(channel.end).toHaveBeenCalled()
+	})
+
+	it('cleans up the container', () => {
+		// Assert
+		expect(container.remove).toHaveBeenCalled()
+	})
 })
