@@ -27,7 +27,6 @@
 		"no-return-assign": ["error", "except-parens"],
 		"unicorn/no-array-for-each": "error",
 		"jest/consistent-test-it": "error",
-		"jest/no-hooks": "error",
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
 		"jest/require-top-level-describe": "error",
