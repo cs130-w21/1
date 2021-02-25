@@ -1,6 +1,6 @@
 {
 	"entryPoints": "src",
-	"exclude": "src/index.ts",
+	"exclude": "**/index.ts",
 	"includeVersion": true,
 	"listInvalidSymbolLinks": true
 }
