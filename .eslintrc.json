@@ -26,6 +26,8 @@
 		],
 		"no-return-assign": ["error", "except-parens"],
 		"unicorn/no-array-for-each": "error",
+		"promise/catch-or-return": "off",
+		"promise/always-return": "off",
 		"jest/consistent-test-it": "error",
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
