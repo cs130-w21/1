@@ -19,6 +19,7 @@
     "postprepare": "typedoc",
     "start": "tsnd bin/server.ts",
     "cli": "ts-node bin/controller.ts",
+    "setup": "ts-node bin/setup.ts",
     "fix": "eslint --fix .",
     "postfix": "prettier -w .",
     "pretest": "eslint .",

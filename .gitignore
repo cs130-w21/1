@@ -9,6 +9,9 @@ coverage
 *.key
 *.pub
 
+# musl repository
+musl-cross
+
 .vscode/settings.json
 .DS_Store
 *.sw?
