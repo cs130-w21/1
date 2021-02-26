@@ -3,11 +3,10 @@ import { EventEmitter } from 'events'
 import { Client } from './Client'
 import { JobOrderer } from '../JobOrderer/JobOrderer'
 import { Job } from '../Job/Job'
-import { createHttp2Connection } from './Http2Connection'
-import { Connection } from './Connection'
+import { ConnectionFactory, Connection } from './Connection'
 
 /**
- * A mock Junknet client using HTTP/2.
+ * A Junknet client implementation using a provided connection factory.
  * It distributes the given jobs among daemons it knows about.
  */
 export class Http2Client extends EventEmitter implements Client {
@@ -19,7 +18,10 @@ export class Http2Client extends EventEmitter implements Client {
 	 *
 	 * @param jobOrderer - A JobOrderer managing the Jobs to complete.
 	 */
-	constructor(private jobOrderer: JobOrderer) {
+	constructor(
+		private readonly connect: ConnectionFactory,
+		private readonly jobOrderer: JobOrderer,
+	) {
 		super()
 	}
 
@@ -31,7 +33,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 * @param port - port number of daemon on the host
 	 */
 	public introduce(host: string, port: number): void {
-		createHttp2Connection(host, port)
+		this.connect(host, port)
 			.then((client) => this.setAvailableAndCheckJobs(client))
 			.catch((err) => this.emit('error', err))
 	}
@@ -78,7 +80,7 @@ export class Http2Client extends EventEmitter implements Client {
 
 	/**
 	 * Asks the daemon to work on the job.
-	 * Sends HTTP request and handles response.
+	 * Sends network request and handles response.
 	 *
 	 * @param job - The job to assign.
 	 * @param daemon - The daemon to which to assign the job.
