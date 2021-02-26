@@ -7,6 +7,7 @@ import { once } from 'events'
 import {
 	supplyClient,
 	Client,
+	createHttp2Connection,
 	Http2Client,
 	NormalJob,
 	HeapJobOrderer,
@@ -28,7 +29,10 @@ const job2: Job = new NormalJob('second', new Set([job3]))
 const job1: Job = new NormalJob('first', new Set([job4, job2]))
 const job5: Job = new NormalJob('fifth', new Set([job1]))
 
-const client: Client = new Http2Client(new HeapJobOrderer([job5]))
+const client: Client = new Http2Client(
+	createHttp2Connection,
+	new HeapJobOrderer([job5]),
+)
 client.on('progress', console.log)
 once(client, 'done').then(clientDone).catch(console.error)
 

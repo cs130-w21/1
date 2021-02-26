@@ -31,6 +31,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 *
 	 * @param host - hostname or IP address of daemon
 	 * @param port - port number of daemon on the host
+	 * @override
 	 */
 	public introduce(host: string, port: number): void {
 		this.connect(host, port)
