@@ -29,7 +29,6 @@
 		"no-return-assign": ["error", "except-parens"],
 		"github/array-foreach": ["error"],
 		"jest/consistent-test-it": "error",
-		"jest/no-hooks": "error",
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
 		"jest/require-top-level-describe": "error",

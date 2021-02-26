@@ -2,6 +2,9 @@
 
 Zero-config distributed parallel processing. Junknet can parallelize your existing Makefiles among any number of machines on your LAN.
 
+## Prerequisites
+- [Docker](https://www.docker.com)
+
 ## Developer's Guide
 
 The [NPM scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) you'll use most are listed below. They operate on the TypeScript source code, so there is no separate <q>build step</q> to worry about.
@@ -11,6 +14,7 @@ The [NPM scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) you'll use mo
 - `fix`: Try to automatically fix linting issues (but not everything can be auto-fixed) and run the formatter.
 - `postfix`: Just run the formatter by itself.
 - `test`: Run the linter, unit and integration tests, and format checker. This is exactly what CI/CD does, so if you have all external dependencies set up, it's a good idea to run this before you push.
+    - You must have Docker running when you run `test`.
 - `test:local`: Like `test`, but skip integration tests. Always run this locally and make sure it passes before you commit.
 
 ### For packaging

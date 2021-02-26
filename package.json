@@ -27,9 +27,11 @@
     "test:local": "npm run test -- --runInBand --selectProjects unit"
   },
   "devDependencies": {
+    "@tsconfig/node14": "^1.0.0",
     "@types/bonjour": "^3.5.8",
     "@types/dockerode": "^3.2.1",
     "@types/node": "^14.14.21",
+    "@types/ssh2": "^0.5.46",
     "@types/yargs": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
@@ -53,7 +55,10 @@
   "dependencies": {
     "bonjour": "^3.5.0",
     "dockerode": "^3.2.1",
+    "fp-ts": "^2.9.5",
     "heap-js": "^2.1.4",
+    "io-ts": "^2.2.14",
+    "ssh2": "^0.8.9",
     "yargs": "^16.2.0"
   }
 }
