@@ -15,7 +15,7 @@ import {
 
 const zeroconf = bonjour()
 
-function clientDone() {
+function clientDone(): void {
 	console.log('Finished')
 
 	// The mDNS socket apparently has no way to tell that it's not needed.
