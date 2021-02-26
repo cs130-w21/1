@@ -28,8 +28,19 @@ const job1: Job = new NormalJob('first', new Set([job4, job2]))
 const job5: Job = new NormalJob('fifth', new Set([job1]))
 
 const client: Client = new Http2Client(new HeapJobOrderer([job5]))
-client.on('progress', console.log)
+client.on('progress', (FinishedJob) => {
+	console.log(`${FinishedJob.getName()} completed\n`)
+})
 once(client, 'done').then(clientDone).catch(console.error)
+
+process.on('SIGINT', () => {
+	console.log('\nClosing Daemons\n')
+
+	client.closeAllDaemonsAndFinish()
+
+	console.log('Exit Process\n')
+	process.exit()
+})
 
 const browser = supplyClient(zeroconf, client)
 browser.on('up', console.info)

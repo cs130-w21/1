@@ -90,7 +90,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 * Closes all daemons.
 	 * Emits 'done' once all daemons are closed.
 	 */
-	private closeAllDaemonsAndFinish() {
+	public closeAllDaemonsAndFinish(): void {
 		for (const daemon of this.availableDaemons) {
 			daemon.close(() => {
 				this.availableDaemons.delete(daemon)
