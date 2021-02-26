@@ -14,25 +14,27 @@ export interface JunknetArguments {
  */
 export function interpretArgv(argv: readonly string[]): JunknetArguments {
 	// Use only the first two elements; Node.js appends extra elements to process.argv.
-	const yargsArgv = yargs(argv.slice(2)).options({
-		f: {
-			alias: 'makefile',
-			type: 'string',
-			default: 'Makefile',
-			desc: 'The Makefile to process',
-		},
-		i: {
-			alias: 'docker_image',
-			type: 'string',
-			default: 'ubuntu:18.04',
-			desc: 'The Docker Image to run',
-		},
-		t: {
-			alias: 'target',
-			type: 'string',
-			desc: 'The Makefile target to build',
-		},
-	}).argv
+	const yargsArgv = yargs(argv.slice(2))
+		.options({
+			f: {
+				alias: 'makefile',
+				type: 'string',
+				default: 'Makefile',
+				desc: 'The Makefile to process',
+			},
+			i: {
+				alias: 'docker-image',
+				type: 'string',
+				default: 'ubuntu:18.04',
+				desc: 'The Docker Image to run',
+			},
+			t: {
+				alias: 'target',
+				type: 'string',
+				desc: 'The Makefile target to build',
+			},
+		})
+		.strict().argv
 
 	let target = null
 	if (yargsArgv.t !== undefined) {
