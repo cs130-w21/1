@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { strict as assert } from 'assert'
+
 import { Client } from './Client'
 import { JobOrderer } from '../JobOrderer/JobOrderer'
 import { Job } from '../Job/Job'
@@ -53,18 +53,15 @@ export class Http2Client extends EventEmitter implements Client {
 	 */
 	private checkJobsAndAssign(): void {
 		if (this.jobOrderer.isDone()) {
-			this.closeAllDaemonsAndFinish()
+			this.closeAllDaemonsAndFinish().catch((err) => this.emit('error', err))
 			return
 		}
 
-		while (this.availableDaemons.size > 0) {
+		for (const daemon of this.availableDaemons) {
 			const job = this.jobOrderer.popNextJob()
 			if (!job) {
 				break
 			}
-
-			const daemon = this.availableDaemons.values().next().value as Connection
-			assert(daemon, 'No available daemon found (logic error).')
 
 			this.assignJobToDaemon(job, daemon)
 		}
@@ -74,18 +71,9 @@ export class Http2Client extends EventEmitter implements Client {
 	 * Closes all daemons.
 	 * Emits 'done' once all daemons are closed.
 	 */
-	private closeAllDaemonsAndFinish(): void {
-		for (const daemon of this.availableDaemons) {
-			daemon
-				.end()
-				.then(() => {
-					this.availableDaemons.delete(daemon)
-					if (this.availableDaemons.size === 0) {
-						this.emit('done')
-					}
-				})
-				.catch((err) => this.emit('error', err))
-		}
+	private async closeAllDaemonsAndFinish(): Promise<void> {
+		await Promise.all([...this.availableDaemons].map((daemon) => daemon.end()))
+		this.emit('done')
 	}
 
 	/**
@@ -102,8 +90,10 @@ export class Http2Client extends EventEmitter implements Client {
 			.then((data) => {
 				this.jobOrderer.reportCompletedJob(job)
 				this.emit('progress', job, data)
+				return null // For linter rule promise/always-return.
 			})
 			.catch(() => this.jobOrderer.reportFailedJob(job))
-			.finally(() => this.setAvailableAndCheckJobs(daemon))
+			.then(() => this.setAvailableAndCheckJobs(daemon))
+			.catch((err) => this.emit('error', err))
 	}
 }
