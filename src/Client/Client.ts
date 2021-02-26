@@ -1,14 +1,17 @@
-// Override for eslint-plugin-import older than v2.22.0:
 // eslint-disable-next-line import/no-extraneous-dependencies
 import TypedEmitter from 'typed-emitter'
+
 import { Job } from '../Job/Job'
 
 /**
  * Representation of the output of a single job.
- * Obviously, in the future this will not just be a string.
  * @experimental
  */
-export type JobResult = string
+export interface JobResult {
+	status: number
+	stdout: NodeJS.ReadableStream
+	stderr: NodeJS.ReadableStream
+}
 
 /**
  * Model for events emitted by {@link Client}.

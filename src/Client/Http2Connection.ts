@@ -1,5 +1,6 @@
 import { connect } from 'http2'
 import { once } from 'events'
+import { Readable } from 'stream'
 
 import { ConnectionFactory } from './Connection'
 import { Job } from '../Job/Job'
@@ -39,13 +40,17 @@ export const createHttp2Connection: ConnectionFactory = async (host, port) => {
 			let data = ''
 			request.setEncoding('utf8')
 			request.on('data', (chunk) => (data += chunk))
-
 			await once(request, 'end')
-			if (data === 'failed') {
-				throw new Error()
-			}
 
-			return data
+			return {
+				status: +(data === 'failed'),
+				stdout: new Readable({
+					read(): void {
+						this.push(data)
+					},
+				}),
+				stderr: new Readable(),
+			}
 		},
 
 		async end(): Promise<void> {

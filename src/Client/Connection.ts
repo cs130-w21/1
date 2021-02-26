@@ -16,12 +16,10 @@ export type ConnectionFactory = (
  * Wrapper for a connection to a Daemon.
  */
 export interface Connection {
-	// TODO: be more specific about the return value.
-	// Differentiate failure of the underlying command, docker error, or network error.
 	/**
 	 * Run the requested job on the connected daemon.
 	 * @param request - A description of the job to be run.
-	 * @returns Resolve with the result of the job, or reject with a reason for failure.
+	 * @returns Resolve with the result of the completed job, or reject with some {@link Error}.
 	 */
 	run(request: Job): Promise<JobResult>
 
