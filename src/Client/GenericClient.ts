@@ -9,7 +9,7 @@ import { ConnectionFactory, Connection } from './Connection'
  * A Junknet client implementation using a provided connection factory.
  * It distributes the given jobs among daemons it knows about.
  */
-export class Http2Client extends EventEmitter implements Client {
+export class GenericClient extends EventEmitter implements Client {
 	private readonly availableDaemons: Set<Connection> = new Set()
 
 	/**
