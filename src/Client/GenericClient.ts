@@ -2,7 +2,10 @@ import { EventEmitter } from 'events'
 
 import { Client, JobResult } from './Client'
 import { JobOrderer } from '../JobOrderer/JobOrderer'
-import { IterableJobOrderer } from '../JobOrderer/IterableJobOrderer'
+import {
+	IterableJobOrderer,
+	StopJobOrdererIteration,
+} from '../JobOrderer/IterableJobOrderer'
 import { Job } from '../Job/Job'
 import { ConnectionFactory, Connection } from './Connection'
 
@@ -19,7 +22,8 @@ export class GenericClient extends EventEmitter implements Client {
 	 * Create a client whose responsibility is to finish jobs.
 	 * It won't start until it knows about some daemons.
 	 *
-	 * @param orderer - A JobOrderer managing the Jobs to complete.
+	 * @param connect - A connection factory compatible with the daemons you will use.
+	 * @param orderer - A job orderer that tracks the jobs to be completed.
 	 */
 	constructor(connect: ConnectionFactory, orderer: JobOrderer) {
 		super()
@@ -45,6 +49,7 @@ export class GenericClient extends EventEmitter implements Client {
 	/**
 	 * Notify the caller of completion.
 	 * It's safe to call this multiple times.
+	 *
 	 * @param success - Whether the overall operation succeeded.
 	 */
 	private finish(success: boolean): void {
@@ -54,10 +59,11 @@ export class GenericClient extends EventEmitter implements Client {
 	}
 
 	/**
-	 * Mark the daemon as available.
-	 * Then calls function to check if there are any doable jobs.
+	 * An agent that claims jobs and runs them using the given daemon.
+	 * It closes the connection and cleans up resources before resolving.
 	 *
 	 * @param daemon - The daemon that is available.
+	 * @returns Asynchronously, when there are no more remaining jobs.
 	 */
 	private async daemonThread(daemon: Connection): Promise<void> {
 		try {
@@ -65,6 +71,10 @@ export class GenericClient extends EventEmitter implements Client {
 				await this.assignJobToDaemon(job, daemon)
 			}
 			this.finish(true)
+		} catch (err: unknown) {
+			if (!(err instanceof StopJobOrdererIteration)) {
+				throw err
+			}
 		} finally {
 			await daemon.end()
 		}
