@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events'
 
-import { Client } from './Client'
+import { Client, JobResult } from './Client'
 import { JobOrderer } from '../JobOrderer/JobOrderer'
+import { IterableJobOrderer } from '../JobOrderer/IterableJobOrderer'
 import { Job } from '../Job/Job'
 import { ConnectionFactory, Connection } from './Connection'
 
@@ -10,19 +11,20 @@ import { ConnectionFactory, Connection } from './Connection'
  * It distributes the given jobs among daemons it knows about.
  */
 export class GenericClient extends EventEmitter implements Client {
-	private readonly availableDaemons: Set<Connection> = new Set()
+	readonly #connect: ConnectionFactory
+
+	readonly #jobs: IterableJobOrderer
 
 	/**
 	 * Create a client whose responsibility is to finish jobs.
 	 * It won't start until it knows about some daemons.
 	 *
-	 * @param jobOrderer - A JobOrderer managing the Jobs to complete.
+	 * @param orderer - A JobOrderer managing the Jobs to complete.
 	 */
-	constructor(
-		private readonly connect: ConnectionFactory,
-		private readonly jobOrderer: JobOrderer,
-	) {
+	constructor(connect: ConnectionFactory, orderer: JobOrderer) {
 		super()
+		this.#connect = connect
+		this.#jobs = new IterableJobOrderer(orderer)
 	}
 
 	/**
@@ -34,9 +36,21 @@ export class GenericClient extends EventEmitter implements Client {
 	 * @override
 	 */
 	public introduce(host: string, port: number): void {
-		this.connect(host, port)
-			.then((client) => this.setAvailableAndCheckJobs(client))
+		// Absorb the Promise at this API boundary so the user can just fire-and-forget.
+		this.#connect(host, port)
+			.then((daemon) => this.daemonThread(daemon))
 			.catch((err) => this.emit('error', err))
+	}
+
+	/**
+	 * Notify the caller of completion.
+	 * It's safe to call this multiple times.
+	 * @param success - Whether the overall operation succeeded.
+	 */
+	private finish(success: boolean): void {
+		// Make this function a no-op, so 'done' only fires once
+		this.finish = (): void => {}
+		this.emit('done', success)
 	}
 
 	/**
@@ -45,38 +59,15 @@ export class GenericClient extends EventEmitter implements Client {
 	 *
 	 * @param daemon - The daemon that is available.
 	 */
-	private setAvailableAndCheckJobs(daemon: Connection): void {
-		this.availableDaemons.add(daemon)
-		this.checkJobsAndAssign()
-	}
-
-	/**
-	 * Tries to assign the next available job to a daemon.
-	 * Closes all daemons if all jobs are finished.
-	 */
-	private checkJobsAndAssign(): void {
-		if (this.jobOrderer.isDone()) {
-			this.closeAllDaemonsAndFinish().catch((err) => this.emit('error', err))
-			return
-		}
-
-		for (const daemon of this.availableDaemons) {
-			const job = this.jobOrderer.popNextJob()
-			if (!job) {
-				break
+	private async daemonThread(daemon: Connection): Promise<void> {
+		try {
+			for await (const job of this.#jobs) {
+				await this.assignJobToDaemon(job, daemon)
 			}
-
-			this.assignJobToDaemon(job, daemon)
+			this.finish(true)
+		} finally {
+			await daemon.end()
 		}
-	}
-
-	/**
-	 * Closes all daemons.
-	 * Emits 'done' once all daemons are closed.
-	 */
-	private async closeAllDaemonsAndFinish(): Promise<void> {
-		await Promise.all([...this.availableDaemons].map((daemon) => daemon.end()))
-		this.emit('done')
 	}
 
 	/**
@@ -86,17 +77,22 @@ export class GenericClient extends EventEmitter implements Client {
 	 * @param job - The job to assign.
 	 * @param daemon - The daemon to which to assign the job.
 	 */
-	private assignJobToDaemon(job: Job, daemon: Connection): void {
-		this.availableDaemons.delete(daemon)
-		daemon
-			.run(job)
-			.then((data) => {
-				this.jobOrderer.reportCompletedJob(job)
-				this.emit('progress', job, data)
-				return null // For linter rule promise/always-return.
-			})
-			.catch(() => this.jobOrderer.reportFailedJob(job))
-			.then(() => this.setAvailableAndCheckJobs(daemon))
-			.catch((err) => this.emit('error', err))
+	private async assignJobToDaemon(job: Job, daemon: Connection): Promise<void> {
+		let result: JobResult | undefined
+		try {
+			result = await daemon.run(job)
+		} catch (err: unknown) {
+			this.#jobs.reportFailed(job)
+			return
+		}
+
+		this.#jobs.reportCompleted(job)
+		this.emit('progress', job, result)
+
+		// Nonzero status means the whole operation fails, gracefully.
+		if (result.status) {
+			this.finish(false)
+			this.#jobs.cancel()
+		}
 	}
 }

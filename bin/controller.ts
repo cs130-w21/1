@@ -2,8 +2,6 @@
 
 import bonjour from 'bonjour'
 
-import { once } from 'events'
-
 import {
 	supplyClient,
 	Client,
@@ -16,13 +14,6 @@ import {
 
 const zeroconf = bonjour()
 
-function clientDone(): void {
-	console.log('Finished')
-
-	// The mDNS socket apparently has no way to tell that it's not needed.
-	zeroconf.destroy()
-}
-
 const job3: Job = new NormalJob('third')
 const job4: Job = new NormalJob('fourth')
 const job2: Job = new NormalJob('second', new Set([job3]))
@@ -33,8 +24,13 @@ const client: Client = new GenericClient(
 	createHttp2Connection,
 	new HeapJobOrderer([job5]),
 )
-client.on('progress', console.log)
-once(client, 'done').then(clientDone).catch(console.error)
+client.on('error', console.error)
+client.on('progress', (job, result) => console.log(job, result.status))
+client.on('done', (success): void => {
+	console.log('Finished')
+	process.exitCode = +!success
+	zeroconf.destroy()
+})
 
 const browser = supplyClient(zeroconf, client)
 browser.on('up', console.info)

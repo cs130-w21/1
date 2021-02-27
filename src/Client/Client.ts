@@ -36,8 +36,9 @@ export interface ClientEvents {
 	/**
 	 * All jobs have completed.
 	 * The {@link progress} event will not trigger again.
+	 * @param success - whether all jobs were successful.
 	 */
-	done(): void
+	done(success: boolean): void
 }
 
 /**

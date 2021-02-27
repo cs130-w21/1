@@ -54,7 +54,7 @@ describe('supplyClient', () => {
 
 		// Act
 		const browser = supplyClient(zeroconf, client)
-		client.emit('done')
+		client.emit('done', true)
 
 		// Assert
 		expect(browser.stop).toHaveBeenCalled()
