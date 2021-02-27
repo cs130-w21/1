@@ -2,7 +2,7 @@ import yargs from 'yargs'
 
 export interface JunknetArguments {
 	makefile: string
-	docker_image: string
+	dockerImage: string
 	target: string | null
 }
 
@@ -41,7 +41,7 @@ export function interpretArgv(argv: readonly string[]): JunknetArguments {
 
 	return {
 		makefile: yargsArgv.f,
-		docker_image: yargsArgv.i,
+		dockerImage: yargsArgv.i,
 		target,
 	}
 }
