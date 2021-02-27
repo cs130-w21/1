@@ -1,9 +1,9 @@
 import yargs from 'yargs'
 
 export interface JunknetArguments {
-	makefile: string
-	dockerImage: string
-	target: string | null
+	makefile: string | undefined
+	dockerImage: string | undefined
+	targets: string[]
 }
 
 /**
@@ -16,34 +16,44 @@ export interface JunknetArguments {
  */
 export function interpretArgv(argv: readonly string[]): JunknetArguments {
 	// Use only the first two elements; Node.js appends extra elements to process.argv.
-	const yargsArgv = yargs(argv).options({
-		f: {
-			alias: 'makefile',
-			type: 'string',
-			default: 'Makefile',
-			desc: 'The Makefile to process',
-		},
-		i: {
-			alias: 'docker-image',
-			type: 'string',
-			default: 'ubuntu:18.04',
-			desc: 'The Docker Image to run',
-		},
-		t: {
-			alias: 'target',
-			type: 'string',
-			desc: 'The Makefile target to build',
-		},
-	}).argv
+	const yargsArgv = yargs(argv)
+		.usage(
+			'Build a makefile target in parallel, given a docker image and' +
+				'a list of targets\nUsage: ' +
+				'junknet [-f makefile] docker-image [target1 target2...]',
+		)
+		.epilogue(
+			'for more information, read our manual ' +
+				'at https://github.com/cs130-w21/1',
+		)
+		.options({
+			f: {
+				alias: 'makefile',
+				type: 'string',
+				desc: 'The Makefile to process',
+			},
+		})
+		.help().argv
 
-	let target = null
-	if (yargsArgv.t !== undefined) {
-		target = yargsArgv.t
+	const positionalArguments = yargsArgv._ as string[]
+
+	let dockerImage
+	const targets: string[] = []
+	for (const arg of positionalArguments) {
+		if (dockerImage === undefined) {
+			dockerImage = arg
+		} else {
+			targets.push(arg)
+		}
+	}
+
+	if (dockerImage === undefined) {
+		throw Error('Not enough arguments')
 	}
 
 	return {
 		makefile: yargsArgv.f,
-		dockerImage: yargsArgv.i,
-		target,
+		dockerImage,
+		targets,
 	}
 }
