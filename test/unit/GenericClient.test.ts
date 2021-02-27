@@ -1,14 +1,16 @@
 import { once } from 'events'
-import { MockProxy, mock } from 'jest-mock-extended'
-import { mocked } from 'ts-jest/utils'
+import { mock } from 'jest-mock-extended'
 
-import { Client, JobResult } from '../../src/Client/Client'
-import { GenericClient } from '../../src/Client/GenericClient'
-import { Connection, ConnectionFactory } from '../../src/Client/Connection'
-import { JobOrderer } from '../../src/JobOrderer/JobOrderer'
-import { HeapJobOrderer } from '../../src/JobOrderer/HeapJobOrderer'
-import { NormalJob } from '../../src/Job/NormalJob'
-import { Job } from '../../src/Job/Job'
+import {
+	Client,
+	GenericClient,
+	Connection,
+	ConnectionFactory,
+	Job,
+	NormalJob,
+	JobResult,
+	HeapJobOrderer,
+} from '../../src'
 
 const MOCK_HOST = 'example.com'
 const MOCK_PORT = 1337
@@ -16,11 +18,15 @@ const MOCK_PORT = 1337
 const BAD_RESULT = mock<JobResult>({ status: 1 })
 const GOOD_RESULT = mock<JobResult>({ status: 0 })
 
+function create(connect: ConnectionFactory, ...jobs: Job[]): Client {
+	return new GenericClient(connect, new HeapJobOrderer(jobs))
+}
+
 describe('GenericClient', () => {
 	it('connects to a newly introduced daemon', () => {
 		// Arrange
 		const connect = jest.fn().mockResolvedValue(undefined)
-		const client: Client = new GenericClient(connect, undefined)
+		const client = create(connect)
 
 		// Act
 		client.introduce(MOCK_HOST, MOCK_PORT)
@@ -37,8 +43,7 @@ describe('GenericClient', () => {
 		const connect = jest.fn().mockResolvedValue(daemon)
 
 		const job: Job = new NormalJob('root')
-		const orderer: JobOrderer = new HeapJobOrderer([job])
-		const client: Client = new GenericClient(connect, orderer)
+		const client = create(connect, job)
 
 		// Act
 		client.introduce(MOCK_HOST, MOCK_PORT)
@@ -56,8 +61,7 @@ describe('GenericClient', () => {
 		const connect = jest.fn().mockResolvedValue(daemon)
 
 		const job: Job = new NormalJob('root')
-		const orderer: JobOrderer = new HeapJobOrderer([job])
-		const client: Client = new GenericClient(connect, orderer)
+		const client = create(connect, job)
 
 		// Act
 		client.introduce(MOCK_HOST, MOCK_PORT)
@@ -81,8 +85,7 @@ describe('GenericClient', () => {
 		daemon.run.mockResolvedValueOnce(GOOD_RESULT)
 
 		const job: Job = new NormalJob('root')
-		const orderer: JobOrderer = new HeapJobOrderer([job])
-		const client: Client = new GenericClient(connect, orderer)
+		const client = create(connect, job)
 
 		// Act
 		client.introduce(MOCK_HOST, MOCK_PORT)
@@ -106,8 +109,7 @@ describe('GenericClient', () => {
 
 		const badJob: Job = new NormalJob('bad')
 		const goodJob: Job = new NormalJob('good', new Set([badJob]))
-		const orderer: JobOrderer = new HeapJobOrderer([goodJob])
-		const client: Client = new GenericClient(connect, orderer)
+		const client = create(connect, goodJob)
 
 		// Act
 		client.introduce(MOCK_HOST, MOCK_PORT)
@@ -123,9 +125,7 @@ describe('GenericClient', () => {
 		// Arrange
 		const daemon = mock<Connection>()
 		const connect = jest.fn().mockResolvedValue(daemon)
-
-		const orderer: JobOrderer = new HeapJobOrderer([])
-		const client: Client = new GenericClient(connect, orderer)
+		const client = create(connect)
 
 		// Act
 		client.introduce(MOCK_HOST, MOCK_PORT)
@@ -138,20 +138,18 @@ describe('GenericClient', () => {
 	it('distributes independent jobs to multiple daemons', async () => {
 		// Arrange
 		const workerCount = 3
-		const connect = mocked<ConnectionFactory>(jest.fn())
+		const connect = jest.fn()
 
-		const daemons: MockProxy<Connection>[] = []
-		const jobs: Job[] = []
+		const daemons: Connection[] = []
 		for (let i = 0; i < workerCount; ++i) {
 			const daemon = mock<Connection>()
 			daemon.run.mockResolvedValueOnce(GOOD_RESULT)
 			connect.mockResolvedValueOnce(daemon)
 			daemons.push(daemon)
-			jobs.push(new NormalJob(i.toString()))
 		}
 
-		const orderer: JobOrderer = new HeapJobOrderer(jobs)
-		const client: Client = new GenericClient(connect, orderer)
+		const jobs = daemons.map((_, i) => new NormalJob(i.toString()))
+		const client = create(connect, ...jobs)
 
 		// Act
 		for (let i = 0; i < workerCount; ++i) {
