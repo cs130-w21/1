@@ -7,14 +7,16 @@ export interface JunknetArguments {
 }
 
 /**
- * Interpret a list of arguments, returning the relevant ones in the f
+ * Interpret a list of user-provided CLI arguments, returning the relevant ones
+ * in a compact form.
  *
- * @param argv - the invoking process's command-line arguments.
- * @returns JunknetInterface object containing option values.
+ * @param argv - A list of option arguments to parse. Be mindful that node.js
+ * prepends extra arguments to process.argv; if using this function from node,
+ * be sure to use `process.argv.slice(2)`.
  */
 export function interpretArgv(argv: readonly string[]): JunknetArguments {
 	// Use only the first two elements; Node.js appends extra elements to process.argv.
-	const yargsArgv = yargs(argv.slice(2)).options({
+	const yargsArgv = yargs(argv).options({
 		f: {
 			alias: 'makefile',
 			type: 'string',
