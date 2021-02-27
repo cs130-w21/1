@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events'
 
 import { Client, JobResult } from './Client'
-import { JobOrderer } from '../JobOrderer/JobOrderer'
 import {
+	JobOrderer,
 	IterableJobOrderer,
 	StopJobOrdererIteration,
-} from '../JobOrderer/IterableJobOrderer'
+} from '../JobOrderer'
 import { Job } from '../Job/Job'
 import { ConnectionFactory, Connection } from './Connection'
 
