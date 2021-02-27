@@ -55,5 +55,5 @@ export interface Client extends TypedEmitter<ClientEvents> {
 	/**
 	 * Close all daemons
 	 */
-	closeAllDaemonsAndFinish(): void
+	quit(): void
 }

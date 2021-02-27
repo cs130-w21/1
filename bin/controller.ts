@@ -36,10 +36,9 @@ once(client, 'done').then(clientDone).catch(console.error)
 process.on('SIGINT', () => {
 	console.log('\nClosing Daemons\n')
 
-	client.closeAllDaemonsAndFinish()
+	client.quit()
 
 	console.log('Exit Process\n')
-	process.exit()
 })
 
 const browser = supplyClient(zeroconf, client)
