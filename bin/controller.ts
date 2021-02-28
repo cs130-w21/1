@@ -28,8 +28,8 @@ const job1: Job = new NormalJob('first', new Set([job4, job2]))
 const job5: Job = new NormalJob('fifth', new Set([job1]))
 
 const client: Client = new Http2Client(new HeapJobOrderer([job5]))
-client.on('progress', (FinishedJob) => {
-	console.log(`${FinishedJob.getName()} completed\n`)
+client.on('progress', (finishedJob) => {
+	console.log(`${finishedJob.getName()} completed\n`)
 })
 once(client, 'done').then(clientDone).catch(console.error)
 
