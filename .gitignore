@@ -13,6 +13,9 @@ coverage
 # musl repository
 musl-cross
 
+#make directory
+make
+
 # Personal configs
 .vscode/settings.json
 
