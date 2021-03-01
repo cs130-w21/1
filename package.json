@@ -30,7 +30,6 @@
     "@types/bonjour": "^3.5.8",
     "@types/dockerode": "^3.2.1",
     "@types/node": "^14.14.21",
-    "@types/yargs": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "eslint": "^7.18.0",
@@ -53,7 +52,6 @@
   "dependencies": {
     "bonjour": "^3.5.0",
     "dockerode": "^3.2.1",
-    "heap-js": "^2.1.4",
-    "yargs": "^16.2.0"
+    "heap-js": "^2.1.4"
   }
 }
