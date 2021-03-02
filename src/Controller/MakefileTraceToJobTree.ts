@@ -15,6 +15,9 @@ interface TargetLineAndCommands {
 const targetLineRegexWithPrereqs = /^.+: update target '(.+)' due to: (.+)$/
 const targetLineRegexWithoutPrereqs = /^.+: target '(.+)' does not exist$/
 
+const filterEnteringDirectory = /^make: Entering directory '.*'$/
+const filterLeavingDirectory = /^make: Leaving directory '.*'$/
+
 // Extract target and prerequisites from target line. It must match one of two regular expressions.
 function extractInfoFromTargetLine(targetLine: string) {
 	const matchesWithPrereqs = targetLineRegexWithPrereqs.exec(targetLine)
@@ -49,7 +52,7 @@ function extractTargetLinesAndCommands(traceLines: string[]) {
 		} else {
 			assert(
 				targetLinesWithCommands.length > 0,
-				'Makefile command supplied before any targets',
+				`Makefile command supplied before any targets:\n${line}`,
 			)
 			targetLinesWithCommands[
 				targetLinesWithCommands.length - 1
@@ -113,12 +116,36 @@ function constructDAGFromTargetsAndCommands(
 	return rootJobs
 }
 
+function filterTraceLines(traceLines: string[]): string[] {
+	let filteredTraceLines = traceLines
+
+	if (
+		filteredTraceLines[0] &&
+		filterEnteringDirectory.exec(filteredTraceLines[0])
+	) {
+		filteredTraceLines = filteredTraceLines.slice(1)
+	}
+
+	// console.log(filteredTraceLines[filteredTraceLines.length - 1])
+	if (filteredTraceLines[filteredTraceLines.length - 1] === '') {
+		filteredTraceLines = filteredTraceLines.slice(0, -1)
+	}
+
+	const lastLine = filteredTraceLines[filteredTraceLines.length - 1]
+	if (lastLine && filterLeavingDirectory.exec(lastLine)) {
+		filteredTraceLines = filteredTraceLines.slice(0, -1)
+	}
+
+	return filteredTraceLines
+}
+
 export function makefileTraceToJobTree(trace: string): Set<Job> {
 	const traceLines = trace.split('\n')
+	const filteredTraceLines = filterTraceLines(traceLines)
 
 	// Jobs are intended to be immutable, so its easiest to compile all the information for a single Job at once.
 	const targetLinesWithCommands: TargetLineAndCommands[] = extractTargetLinesAndCommands(
-		traceLines,
+		filteredTraceLines,
 	)
 
 	return constructDAGFromTargetsAndCommands(targetLinesWithCommands)
