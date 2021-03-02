@@ -6,27 +6,34 @@ export interface JunknetArguments {
 	targets: string[]
 }
 
+export interface ArgvData {
+	// The data retrieved from the passed arguments.
+	arguments: JunknetArguments
+
+	// Whether we should cleanly exit after parsing argv.
+	// (eg. `--help` or `--version` was called).
+	// Takes priority over invalid arguments.
+	cleanExit: boolean
+
+	// Whether incorrect arguments were given.
+	// This would usually imply exiting with an error.
+	incorrectArguments: boolean
+}
+
 /**
  * Interpret a list of user-provided CLI arguments, returning the relevant ones
- * in a compact form.
+ * in a compact form. Does not error when given invalid options (eg. `-z`), but
+ * does warn on incorrect positional arguments (eg. no docker image).
  *
- * This function is rife with side effects. `yargs` prints to console and exits
- * whenever the `--help` and `--version` options are invoked. It also exits
- * when given invalid options (eg. `--doesntexist`), and reads `package.json`
- * to find the package's current version.
- *
- * This is not good; it makes testing invalid options impossible
- * (process.exit() bypasses jest entirely; all failure modes in this function
- * are untested), and breaks encapsulation.
- *
- * After a long battle, our code has conceded to this approach; we exit when
- * given invalid positional arguments.
+ * This function is rife with side effects. `yargs` prints to console whenever
+ * the `--help` and `--version` options are invoked. It also reads
+ * `package.json` to find the package's current version.
  *
  * @param argv - A list of option arguments to parse. Be mindful that node.js
  * prepends extra arguments to process.argv; if using this function from node,
  * be sure to use `process.argv.slice(2)`.
  */
-export function interpretArgv(argv: readonly string[]): JunknetArguments {
+export function interpretArgv(argv: readonly string[]): ArgvData {
 	// Use only the first two elements; Node.js appends extra elements to process.argv.
 	const yargsArgv = yargs(argv)
 		.usage(
@@ -45,8 +52,22 @@ export function interpretArgv(argv: readonly string[]): JunknetArguments {
 				desc: 'The Makefile to process',
 			},
 		})
+		.exitProcess(false) // Don't `process.exit()` on invalid options.
 		.version() // SIDE EFFECT: parses package.json for version info.
 		.help().argv
+
+	// Exit when given `--help` or `--version`.
+	if (yargsArgv.help !== undefined || yargsArgv.version !== undefined) {
+		return {
+			arguments: {
+				makefile: undefined,
+				dockerImage: '',
+				targets: [],
+			},
+			cleanExit: true,
+			incorrectArguments: false,
+		}
+	}
 
 	const positionalArgs = yargsArgv._ as string[]
 
@@ -61,17 +82,24 @@ export function interpretArgv(argv: readonly string[]): JunknetArguments {
 	}
 
 	if (dockerImage === undefined) {
-		// SIDE EFFECT: prints to console and exits.
-		console.log(
-			'Not enough arguments: provide a docker image name' +
-				'(eg. "ubuntu:latest")\nTry `junknet --help` for more info',
-		)
-		process.exit(1)
+		return {
+			arguments: {
+				makefile: undefined,
+				dockerImage: '',
+				targets: [],
+			},
+			cleanExit: false,
+			incorrectArguments: true,
+		}
 	}
 
 	return {
-		makefile: yargsArgv.f,
-		dockerImage,
-		targets,
+		arguments: {
+			makefile: yargsArgv.f,
+			dockerImage,
+			targets,
+		},
+		cleanExit: false,
+		incorrectArguments: false,
 	}
 }
