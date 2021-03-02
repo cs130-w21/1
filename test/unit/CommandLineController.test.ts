@@ -1,8 +1,8 @@
+import * as cli from '../../src/Controller/CommandLineController'
+
 /**
  * Tests for the Command-Line Argument Parser
  */
-
-import * as cli from '../../src/Controller/CommandLineController'
 
 describe('CommandLineController', () => {
 	it('interprets short options', () => {
