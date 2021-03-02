@@ -67,7 +67,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 */
 	private checkJobsAndAssign(): void {
 		if (this.jobOrderer.isDone()) {
-			this.closeAllDaemonsAndFinish()
+			this.quit()
 			return
 		}
 
@@ -90,7 +90,7 @@ export class Http2Client extends EventEmitter implements Client {
 	 * Closes all daemons.
 	 * Emits 'done' once all daemons are closed.
 	 */
-	private closeAllDaemonsAndFinish() {
+	public quit(): void {
 		for (const daemon of this.availableDaemons) {
 			daemon.close(() => {
 				this.availableDaemons.delete(daemon)
