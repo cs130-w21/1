@@ -25,7 +25,8 @@ function create(connect: ConnectionFactory, ...jobs: Job[]): Client {
 describe('GenericClient', () => {
 	it('connects to a newly introduced daemon', () => {
 		// Arrange
-		const connect = jest.fn().mockResolvedValue(undefined)
+		const daemon = mock<Connection>()
+		const connect = jest.fn().mockResolvedValue(daemon)
 		const client = create(connect)
 
 		// Act

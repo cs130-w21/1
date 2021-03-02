@@ -43,7 +43,7 @@ export class GenericClient extends EventEmitter implements Client {
 		// Absorb the Promise at this API boundary so the user can just fire-and-forget.
 		this.#connect(host, port)
 			.then((daemon) => this.daemonThread(daemon))
-			.catch((err) => console.error(err))
+			.catch((err) => this.emit('error', err))
 	}
 
 	/**
@@ -72,8 +72,8 @@ export class GenericClient extends EventEmitter implements Client {
 			}
 			this.finish(true)
 		} catch (err: unknown) {
-			// TODO: this check doesn't work
-			if (!(err instanceof StopJobOrdererIteration)) {
+			const errWrapper = err as { context?: Error }
+			if (!(errWrapper.context instanceof StopJobOrdererIteration)) {
 				throw err
 			}
 		} finally {
