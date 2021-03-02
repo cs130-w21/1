@@ -1,7 +1,7 @@
 import yargs from 'yargs'
 
 /**
- * Contains processed argument data (usually from `process.argv`.
+ * Contains processed argument data (usually from `process.argv`).
  *
  */
 export interface ArgvData {
