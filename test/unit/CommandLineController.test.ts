@@ -74,8 +74,26 @@ describe('CommandLineController', () => {
 	})
 
 	it('requests a clean exit when given `--help` option', () => {
+		// Mock console.log to stop yargs from printing help info.
+		const spy = jest.spyOn(console, 'log').mockImplementation()
+
 		const argv: readonly string[] = ['--help']
 		expect(cli.interpretArgv(argv).invalidArguments).toBe(false)
 		expect(cli.interpretArgv(argv).cleanExit).toBe(true)
+
+		// Restore regular console functionality.
+		spy.mockRestore()
+	})
+
+	it('requests a clean exit when given `--version` option', () => {
+		// Mock console.log to stop yargs from printing help info.
+		const spy = jest.spyOn(console, 'log').mockImplementation()
+
+		const argv: readonly string[] = ['--version']
+		expect(cli.interpretArgv(argv).invalidArguments).toBe(false)
+		expect(cli.interpretArgv(argv).cleanExit).toBe(true)
+
+		// Restore regular console functionality.
+		spy.mockRestore()
 	})
 })
