@@ -1,17 +1,40 @@
 import yargs from 'yargs'
 
+/**
+ * Contains processed argument data (usually from `process.argv`.
+ *
+ */
 export interface ArgvData {
+	/**
+	 * The makefile specified by the user (eg. `build.make`).
+	 * Set to `undefined` if no file was specified.
+	 */
 	makefile: string | undefined
+
+	/**
+	 * The Docker Image specified by the user (eg. `ubuntu:latest`).
+	 */
 	dockerImage: string
+
+	/**
+	 * A list of build targets specified by the user
+	 * (eg. `[all, a.out, clean]`).
+	 * This list is empty if no targets were specified.
+	 */
 	targets: string[]
 
-	// If this flag is set, the caller should cleanly exit.
-	// This is because `--help` or `--version` was called.
+	/**
+	 * This flag instructs the caller of `interpretArgv` to exit cleanly.
+	 * Eg. If `--help` was specified on the command line, `interpretArgv` will
+	 * print a help message and set this flag.
+	 */
 	cleanExit: boolean
 
-	// If this flag is set, incorrect arguments were given to the CLI.
-	// This would usually imply printing something to the console, then exiting
-	// with an error (which we don't do in this module).
+	/**
+	 * This flag indicates `interpretArgv` that incorrect arguments were given
+	 * to the CLI. The caller should print an error message to the console,
+	 * then exit with an error code.
+	 */
 	invalidArguments: boolean
 }
 
