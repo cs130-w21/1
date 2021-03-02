@@ -3,6 +3,7 @@
 Zero-config distributed parallel processing. Junknet can parallelize your existing Makefiles among any number of machines on your LAN.
 
 ## Prerequisites
+
 - [Docker](https://www.docker.com)
 
 ## Developer's Guide
@@ -13,12 +14,26 @@ The [NPM scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) you'll use mo
 - `cli`: Run the controller program once. Use `--` to pass arguments to it.
 - `fix`: Try to automatically fix linting issues (but not everything can be auto-fixed) and run the formatter.
 - `postfix`: Just run the formatter by itself.
-- `test`: Run the linter, unit and integration tests, and format checker. This is exactly what CI/CD does, so if you have all external dependencies set up, it's a good idea to run this before you push.
-    - You must have Docker running when you run `test`.
+- `test`: Run the type checker, unit and integration tests, linter, and format checker. This is exactly what CI/CD does, so if you have all external dependencies set up, it's a good idea to run this before you push.
+  - You must have Docker running when you run `test`.
 - `test:local`: Like `test`, but skip integration tests. Always run this locally and make sure it passes before you commit.
 
 ### For packaging
 
-These commands involve compiling TypeScript to JavaScript.
+- `prepack`: Build the project as JavaScript files into [dist](dist). There's no need to run this task during your normal development process. This is run automatically when the package is distributed (`npm pack`) and/or published to NPM.
+- `docs`: Build the documentation website as HTML files into [docs](docs). This is run by CI/CD and automatically hosted online. Optionally, you can run it yourself to scan for broken links and get a local copy.
 
-- `prepare`: Build the project (as JavaScript files, into [dist](dist)) and documentation (as HTML files, into [docs](docs)). There's no need to run this task during your normal development process. This is run automatically on `npm install` or `npm pack`, which means that CI/CD will run it.
+## External Dependencies
+
+To be able to run the integration tests locally, you'll need:
+
+- [Docker Engine](https://docs.docker.com/engine/), latest stable version.
+- [GNU Make](https://www.gnu.org/software/make/), version 4.3.
+
+### Windows
+
+The easiest way to install Make is using the [Scoop](https://scoop.sh/) package manager:
+
+    scoop install make
+
+The easiest way to install the Docker daemon is via [Docker Desktop](https://hub.docker.com/editions/community/docker-ce-desktop-windows).
