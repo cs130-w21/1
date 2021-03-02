@@ -5,7 +5,7 @@ import bonjour from 'bonjour'
 import {
 	supplyClient,
 	Client,
-	createHttp2Connection,
+	createSSHConnection,
 	GenericClient,
 	NormalJob,
 	HeapJobOrderer,
@@ -21,7 +21,7 @@ const job1: Job = new NormalJob('first', new Set([job4, job2]))
 const job5: Job = new NormalJob('fifth', new Set([job1]))
 
 const client: Client = new GenericClient(
-	createHttp2Connection,
+	createSSHConnection,
 	new HeapJobOrderer([job5]),
 )
 client.on('error', console.error)
