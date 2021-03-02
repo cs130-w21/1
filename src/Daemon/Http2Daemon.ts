@@ -25,9 +25,9 @@ function mockFailure(): boolean {
  * Dummy Junknet server, using HTTP/2 as a placeholder.
  * Echoes the requested path back to the client in uppercase as plain text.
  * Randomly delayed response to create more interesting tests.
- * @experimental
+ * @deprecated Use the SSH daemon instead.
  */
-export function createDaemon(): Server {
+export function createHttp2Daemon(): Server {
 	const server = createServer()
 	server.on('stream', (stream, headers) => {
 		const input = headers[':path']

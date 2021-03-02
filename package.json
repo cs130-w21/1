@@ -1,11 +1,11 @@
 {
   "name": "junknet",
   "version": "0.1.0",
-  "description": "Zero-config distributed parallel processing",
+  "description": "Zero-config distributed parallel processing.",
   "license": "Apache-2.0",
   "files": [
     "dist",
-    "docs"
+    "!**/*.tsbuildinfo"
   ],
   "main": "dist/src",
   "types": "dist/src",
@@ -13,33 +13,39 @@
     "junknetd": "dist/bin/server.js",
     "junknet-make": "dist/bin/controller.js"
   },
-  "repository": "github:cs130-w21/1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cs130-w21/1.git"
+  },
   "scripts": {
-    "prepare": "tsc",
-    "postprepare": "typedoc",
+    "docs": "typedoc",
+    "prepack": "git clean -fX dist && tsc --project tsconfig.dist.json",
     "start": "tsnd bin/server.ts",
     "cli": "ts-node bin/controller.ts",
     "fix": "eslint --fix .",
     "postfix": "prettier -w .",
-    "pretest": "eslint .",
+    "pretest": "tsc --noEmit",
     "test": "jest",
-    "posttest": "prettier -c .",
+    "posttest": "eslint . && prettier -c .",
     "test:local": "npm run test -- --runInBand --selectProjects unit"
   },
   "devDependencies": {
+    "@tsconfig/node14": "^1.0.0",
     "@types/bonjour": "^3.5.8",
     "@types/dockerode": "^3.2.1",
     "@types/node": "^14.14.21",
+    "@types/ssh2": "^0.5.46",
+    "@types/yargs": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "eslint": "^7.18.0",
     "eslint-config-airbnb-typescript": "^12.0.0",
-    "eslint-config-prettier": "^7.2.0",
-    "eslint-plugin-github": "^4.1.1",
+    "eslint-config-prettier": "^8.0.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.3",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-tsdoc": "^0.2.11",
+    "eslint-plugin-unicorn": "^28.0.2",
     "jest": "^26.6.3",
     "jest-mock-extended": "^1.0.10",
     "prettier": "^2.2.1",
@@ -52,6 +58,10 @@
   "dependencies": {
     "bonjour": "^3.5.0",
     "dockerode": "^3.2.1",
-    "heap-js": "^2.1.4"
+    "fp-ts": "^2.9.5",
+    "heap-js": "^2.1.4",
+    "io-ts": "^2.2.14",
+    "ssh2": "^0.8.9",
+    "yargs": "^16.2.0"
   }
 }
