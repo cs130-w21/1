@@ -1,23 +1,18 @@
 import yargs from 'yargs'
 
-export interface JunknetArguments {
+export interface ArgvData {
 	makefile: string | undefined
 	dockerImage: string
 	targets: string[]
-}
 
-export interface ArgvData {
-	// The data retrieved from the passed arguments.
-	arguments: JunknetArguments
-
-	// Whether we should cleanly exit after parsing argv.
-	// (eg. `--help` or `--version` was called).
-	// Takes priority over invalid arguments.
+	// If this flag is set, the caller should cleanly exit.
+	// This is because `--help` or `--version` was called.
 	cleanExit: boolean
 
-	// Whether incorrect arguments were given.
-	// This would usually imply exiting with an error.
-	incorrectArguments: boolean
+	// If this flag is set, incorrect arguments were given to the CLI.
+	// This would usually imply printing something to the console, then exiting
+	// with an error (which we don't do in this module).
+	invalidArguments: boolean
 }
 
 /**
@@ -59,13 +54,11 @@ export function interpretArgv(argv: readonly string[]): ArgvData {
 	// Exit when given `--help` or `--version`.
 	if (yargsArgv.help !== undefined || yargsArgv.version !== undefined) {
 		return {
-			arguments: {
-				makefile: undefined,
-				dockerImage: '',
-				targets: [],
-			},
+			makefile: undefined,
+			dockerImage: '',
+			targets: [],
 			cleanExit: true,
-			incorrectArguments: false,
+			invalidArguments: false,
 		}
 	}
 
@@ -81,25 +74,23 @@ export function interpretArgv(argv: readonly string[]): ArgvData {
 		}
 	}
 
+	// If we haven't specified a docker image, we should exit with the
+	// invalidArguments flag.
 	if (dockerImage === undefined) {
 		return {
-			arguments: {
-				makefile: undefined,
-				dockerImage: '',
-				targets: [],
-			},
+			makefile: undefined,
+			dockerImage: '',
+			targets: [],
 			cleanExit: false,
-			incorrectArguments: true,
+			invalidArguments: true,
 		}
 	}
 
 	return {
-		arguments: {
-			makefile: yargsArgv.f,
-			dockerImage,
-			targets,
-		},
+		makefile: yargsArgv.f,
+		dockerImage,
+		targets,
 		cleanExit: false,
-		incorrectArguments: false,
+		invalidArguments: false,
 	}
 }
