@@ -4,7 +4,7 @@ import { EventEmitter } from 'events'
 
 import { supplyClient } from '../../src/Zeroconf/ZeroconfClient'
 import { Client } from '../../src/Client/Client'
-import { SERVICE_TYPE } from '../../src/Constants'
+import { SERVICE_TYPE } from '../../src/Zeroconf/Constants'
 
 const MOCK_SERVICE_HOST = 'example.com'
 const MOCK_SERVICE_PORT = 1337

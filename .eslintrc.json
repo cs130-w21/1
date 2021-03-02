@@ -2,9 +2,9 @@
 	"root": true,
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
-		"project": "tsconfig.eslint.json"
+		"project": "tsconfig.json"
 	},
-	"plugins": ["tsdoc", "github"],
+	"plugins": ["tsdoc", "unicorn"],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/recommended",
@@ -13,13 +13,11 @@
 		"plugin:promise/recommended",
 		"plugin:jest/recommended",
 		"plugin:jest/style",
-		"prettier",
-		"prettier/@typescript-eslint"
+		"prettier"
 	],
 	"rules": {
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
-		"tsdoc/syntax": "error",
 		"no-restricted-syntax": [
 			"error",
 			"ForInStatement",
@@ -27,15 +25,14 @@
 			"WithStatement"
 		],
 		"no-return-assign": ["error", "except-parens"],
-		"github/array-foreach": ["error"],
+		"unicorn/no-array-for-each": "error",
 		"jest/consistent-test-it": "error",
-		"jest/no-hooks": "error",
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
-		"jest/require-top-level-describe": "error"
+		"jest/require-top-level-describe": "error",
+		"tsdoc/syntax": "error"
 	},
 	"env": {
-		"node": true,
-		"browser": false
+		"node": true
 	}
 }
