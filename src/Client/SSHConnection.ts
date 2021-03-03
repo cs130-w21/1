@@ -6,7 +6,7 @@ import { promisify } from 'util'
 import { ConnectionFactory, ProcessStreams } from './Connection'
 import { Job } from '../Job/Job'
 import { JobResult } from './Client'
-import { JobRequest } from '../Network'
+import { jobToRequest } from './ClientNetConvert'
 
 /**
  * SSH username used to connect. Its value is irrelevant.
@@ -22,16 +22,6 @@ type ExitSpec = [null, string, boolean, string] | [number]
  * Thrown when a remote daemon was unable to complete a job.
  */
 class FailedJobError extends Error {}
-
-/**
- * Convert a {@link Job} (controller world) to a {@link JobRequest} (network world).
- * That these types don't share an interface is a historical accident.
- * @param job - The input job.
- * @returns The converted job request.
- */
-function jobToRequest(job: Job): JobRequest {
-	return { image: job.getEnvironment().dockerImage, target: job.getName() }
-}
 
 /**
  * Create a new connection to a daemon using SSH.
