@@ -55,4 +55,9 @@ export interface Client extends TypedEmitter<ClientEvents> {
 	 * @param port - port number of daemon on the host
 	 */
 	introduce(host: string, port: number): void
+
+	/**
+	 * Close all daemons and clean up resources.
+	 */
+	quit(): void
 }

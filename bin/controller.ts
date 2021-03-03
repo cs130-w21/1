@@ -32,6 +32,14 @@ client.on('done', (success): void => {
 	zeroconf.destroy()
 })
 
+process.on('SIGINT', () => {
+	console.log('\nClosing Daemons\n')
+
+	client.quit()
+
+	console.log('Exit Process\n')
+})
+
 const browser = supplyClient(zeroconf, client)
 browser.on('up', console.info)
 browser.on('down', console.info)

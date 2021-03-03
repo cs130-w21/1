@@ -47,6 +47,15 @@ export class GenericClient extends EventEmitter implements Client {
 	}
 
 	/**
+	 * Notify all threads to exit and clean up resources.
+	 * The overall operation is considered to have failed.
+	 */
+	public quit(): void {
+		this.finish(false)
+		this.#jobs.cancel()
+	}
+
+	/**
 	 * Notify the caller of completion.
 	 * It's safe to call this multiple times.
 	 *
@@ -102,8 +111,7 @@ export class GenericClient extends EventEmitter implements Client {
 
 		// Nonzero status means the whole operation fails, gracefully.
 		if (result.status) {
-			this.finish(false)
-			this.#jobs.cancel()
+			this.quit()
 		}
 	}
 }
