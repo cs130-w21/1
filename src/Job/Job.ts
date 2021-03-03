@@ -12,13 +12,22 @@ export interface Job {
 	getTarget(): string
 
 	/**
-	 * Gets this Job's prerequisites as an iterable.
+	 * Gets this Job's prerequisite Jobs as an iterable.
 	 *
 	 * Returns an iterable to prevent modifying the prerequisites directly.
 	 *
-	 * @returns An iterable that iterates over this Job's prerequisites.
+	 * @returns An iterable that iterates over this Job's prerequisite Jobs.
 	 */
-	getPrerequisitesIterable(): Iterable<Job>
+	getPrerequisiteJobsIterable(): Iterable<Job>
+
+	/**
+	 * Gets this Job's prerequisite files as an iterable.
+	 *
+	 * Returns an iterable to prevent modifying the prerequisites directly.
+	 *
+	 * @returns An iterable that iterates over this Job's prerequisite files.
+	 */
+	getPrerequisiteFilesIterable(): Iterable<string>
 
 	/**
 	 * Gets the number of prerequisites that this Job has.

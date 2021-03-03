@@ -1,7 +1,7 @@
 import { Job } from '../../src/Job/Job'
 import { makefileTraceToJobTree } from '../../src/Controller/MakefileTraceToJobTree'
 
-describe('Deserializer', () => {
+describe('makefileTraceToJobTree', () => {
 	it('correctly constructs DAG #1', () => {
 		const sample = `<builtin>: update target 'funct.o' due to: funct.c
 cc -c -o funct.o funct.c
@@ -49,5 +49,20 @@ cc ./build/./src/a.c.o ./build/./src/b.c.o ./build/./src/f.c.o -o build/a.out `
 		expect(rootJob.getTarget()).toEqual('build/a.out')
 		expect(rootJob.getCommands()).toHaveLength(1)
 		expect(rootJob.getNumPrerequisites()).toEqual(3)
+	})
+
+	it("correctly handles 'entering directory' things", () => {
+		const sample = `make: Entering directory '/Users/rohankhajuria/Desktop/makefile-tests'
+../makefile-tests/Makefile:7: update target 'a.o' due to: a.c
+echo a.c -> a.o
+<builtin>: update target 'b.o' due to: b.c
+cc    -c -o b.o b.c
+../makefile-tests/Makefile:14: update target 'c.o' due to: cdir/c.c
+echo cdir/c.c -> c.o
+../makefile-tests/Makefile:17: update target 'ddir/d.o' due to: ddir/d.c
+echo ddir/d.c -> ddir/d.o
+make: Leaving directory '/Users/rohankhajuria/Desktop/makefile-tests'`
+		const rootJobs = makefileTraceToJobTree(sample)
+		expect(rootJobs.size).toEqual(4)
 	})
 })

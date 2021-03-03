@@ -4,18 +4,28 @@ import { Job } from './Job'
  * An implementation of {@link Job}.
  */
 export class NormalJob implements Job {
-	private prerequisites: Set<Job>
+	private prerequisiteJobs: Set<Job>
+
+	private prerequisiteFiles: Set<string>
+
+	private commands: string[]
 
 	/**
-	 * @param target - The job's name. Must be unique between jobs in the same dependency graph.
-	 * @param prerequisites - An optional set containing all of this job's prerequisites. Defaults to no prerequisites.
+	 * @param target - The target file that the Job will produce. Must be unique between jobs in the same dependency graph.
+	 * @param commands - An optional array of the commands to run to build the target.
+	 * @param prerequisiteJobs - An optional set containing all of this job's prerequisite Jobs. Defaults to no prerequisites.
+	 * @param prerequisiteFiles - An optional set containing all of this job's prerequisite files. Defaults to no prerequisites.
 	 */
 	constructor(
 		private readonly target: string,
-		private readonly commands: string[] = [],
-		prerequisites: Set<Job> = new Set(),
+		commands: string[] = [],
+		prerequisiteJobs: Set<Job> = new Set(),
+		prerequisiteFiles: Set<string> = new Set(),
 	) {
-		this.prerequisites = new Set(prerequisites) // Make a copy so the caller can't directly access prerequisites. Encapsulation!
+		// Make copies so the caller can't directly access prerequisites. Encapsulation!
+		this.prerequisiteJobs = new Set(prerequisiteJobs) // We don't need a deep copy because Jobs are immutable.
+		this.prerequisiteFiles = new Set(prerequisiteFiles)
+		this.commands = commands.slice()
 	}
 
 	/**
@@ -30,15 +40,19 @@ export class NormalJob implements Job {
 	 *
 	 * @returns An iterable that iterates over the prerequisites Set.
 	 */
-	public getPrerequisitesIterable(): Iterable<Job> {
-		return this.prerequisites.values()
+	public getPrerequisiteJobsIterable(): Iterable<Job> {
+		return this.prerequisiteJobs.values()
+	}
+
+	public getPrerequisiteFilesIterable(): Iterable<string> {
+		return this.prerequisiteFiles.values()
 	}
 
 	/**
 	 * Returns the number of prerequisites using Set's native size property.
 	 */
 	public getNumPrerequisites(): number {
-		return this.prerequisites.size
+		return this.prerequisiteJobs.size
 	}
 
 	/**
@@ -47,11 +61,13 @@ export class NormalJob implements Job {
 	 * @returns This job's name.
 	 */
 	public toString(): string {
-		if (this.prerequisites.size === 0) {
+		if (this.prerequisiteJobs.size === 0) {
 			return `Source job ${this.target}.`
 		}
 
-		return `Job "${this.target}" depending on ${Array.from(this.prerequisites)
+		return `Job "${this.target}" depending on ${Array.from(
+			this.prerequisiteJobs,
+		)
 			.map((prerequisite) => prerequisite.getTarget())
 			.join(', ')}.`
 	}

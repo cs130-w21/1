@@ -84,7 +84,7 @@ export class HeapJobOrderer implements JobOrderer {
 			// Don't process the same node twice.
 			if (!sourcesHelperSet.has(job) && !this.nonSources.has(job)) {
 				// Update job's prerequisites' 'dependents' fields.
-				for (const prerequisite of job.getPrerequisitesIterable()) {
+				for (const prerequisite of job.getPrerequisiteJobsIterable()) {
 					let dependents = this.jobToDependents.get(prerequisite)
 
 					if (!dependents) {

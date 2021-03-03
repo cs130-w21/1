@@ -31,7 +31,8 @@
 		"jest/prefer-todo": "error",
 		"jest/require-top-level-describe": "error",
 		"tsdoc/syntax": "error",
-		"prefer-destructuring": ["error", { "array": false }]
+		"prefer-destructuring": ["error", { "array": false }],
+		"@typescript-eslint/restrict-template-expressions": "off"
 	},
 	"env": {
 		"node": true
