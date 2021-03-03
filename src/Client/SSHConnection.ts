@@ -9,11 +9,6 @@ import { JobResult } from './Client'
 import { JobRequest } from '../Network'
 
 /**
- * @deprecated This shouldn't be hard-coded.
- */
-const IMAGE_NAME = 'buildpack-deps:bullseye'
-
-/**
  * SSH username used to connect. Its value is irrelevant.
  */
 const SSH_USER = 'junknet'
@@ -35,7 +30,7 @@ class FailedJobError extends Error {}
  * @returns The converted job request.
  */
 function jobToRequest(job: Job): JobRequest {
-	return { image: IMAGE_NAME, target: job.getName() }
+	return { image: job.getEnvironment().dockerImage, target: job.getName() }
 }
 
 /**

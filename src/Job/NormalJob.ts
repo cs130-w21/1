@@ -1,4 +1,14 @@
-import { Job } from './Job'
+import { JobEnv, Job } from './Job'
+
+/**
+ * The hard-coded Docker image for all {@link NormalJob} instances.
+ * This is a terrible idea, but needed for backwards compatibility.
+ * {@link NormalJob} was created without Docker support and got used heavily throughout the codebase.
+ * @deprecated Make {@link JobEnv} a required parameter to {@link NormalJob}.
+ */
+const DEFAULT_ENV: JobEnv = Object.freeze({
+	dockerImage: 'buildpack-deps:bullseye',
+})
 
 /**
  * An implementation of {@link Job}.
@@ -8,13 +18,16 @@ export class NormalJob implements Job {
 
 	/**
 	 * @param name - The job's name. Must be unique between jobs in the same dependency graph.
-	 * @param prerequisites - An optional set containing all of this job's prerequisites. Defaults to no prerequisites.
+	 * @param prerequisites - A set containing all of this job's prerequisites. Defaults to no prerequisites.
+	 * @param environment - A description of the job's runtime environment. For forwards compatibility, always provide this parameter. Defaults to a Docker image containing GNU Make.
 	 */
 	constructor(
 		private readonly name: string,
 		prerequisites: Set<Job> = new Set(),
+		private environment: JobEnv = DEFAULT_ENV,
 	) {
-		this.prerequisites = new Set(prerequisites) // Make a copy so the caller can't directly access prerequisites. Encapsulation!
+		// Make a copy so the caller can't directly access prerequisites. Encapsulation!
+		this.prerequisites = new Set(prerequisites)
 	}
 
 	/**
@@ -53,5 +66,12 @@ export class NormalJob implements Job {
 		return `Job "${this.name}" depending on ${Array.from(this.prerequisites)
 			.map((prerequisite) => prerequisite.getName())
 			.join(', ')}.`
+	}
+
+	/**
+	 * Getter for the environment this job must run under.
+	 */
+	public getEnvironment(): JobEnv {
+		return this.environment
 	}
 }
