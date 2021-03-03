@@ -4,6 +4,7 @@ import { mock } from 'jest-mock-extended'
 import {
 	Client,
 	GenericClient,
+	ProcessStreams,
 	Connection,
 	ConnectionFactory,
 	Job,
@@ -15,11 +16,13 @@ import {
 const MOCK_HOST = 'example.com'
 const MOCK_PORT = 1337
 
-const BAD_RESULT = mock<JobResult>({ status: 1 })
-const GOOD_RESULT = mock<JobResult>({ status: 0 })
+const MOCK_STREAMS = Object.freeze({} as ProcessStreams)
+
+const BAD_RESULT: Readonly<JobResult> = Object.freeze({ status: 1 })
+const GOOD_RESULT: Readonly<JobResult> = Object.freeze({ status: 0 })
 
 function create(connect: ConnectionFactory, ...jobs: Job[]): Client {
-	return new GenericClient(connect, new HeapJobOrderer(jobs))
+	return new GenericClient(connect, MOCK_STREAMS, new HeapJobOrderer(jobs))
 }
 
 describe('GenericClient', () => {
@@ -71,8 +74,10 @@ describe('GenericClient', () => {
 		// Assert
 		expect(success).toBeTruthy()
 		expect(daemon.run).toHaveBeenCalledTimes(1)
-		expect(daemon.run).toHaveBeenCalledWith(job)
+		expect(daemon.run).toHaveBeenCalledWith(expect.anything(), job)
 	})
+
+	it.todo('pipes all streams to the remote job')
 
 	it('retries jobs that failed to complete', async () => {
 		// Arrange
@@ -96,7 +101,7 @@ describe('GenericClient', () => {
 		expect(success).toBeTruthy()
 		expect(daemon.run).toHaveBeenCalledTimes(failCount + 1)
 		for (let i = 1; i <= failCount + 1; ++i) {
-			expect(daemon.run).toHaveBeenNthCalledWith(i, job)
+			expect(daemon.run).toHaveBeenNthCalledWith(i, expect.anything(), job)
 		}
 	})
 
@@ -119,7 +124,7 @@ describe('GenericClient', () => {
 		// Assert
 		expect(success).toBeFalsy()
 		expect(daemon.run).toHaveBeenCalledTimes(1)
-		expect(daemon.run).toHaveBeenCalledWith(badJob)
+		expect(daemon.run).toHaveBeenCalledWith(expect.anything(), badJob)
 	})
 
 	it('closes connection when done', async () => {

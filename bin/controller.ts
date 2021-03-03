@@ -22,6 +22,7 @@ const job5: Job = new NormalJob('fifth', new Set([job1]))
 
 const client: Client = new GenericClient(
 	createSSHConnection,
+	process,
 	new HeapJobOrderer([job5]),
 )
 client.on('error', console.error)

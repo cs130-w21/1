@@ -9,8 +9,6 @@ import { Job } from '../Job/Job'
  */
 export interface JobResult {
 	status: number
-	stdout: NodeJS.ReadableStream
-	stderr: NodeJS.ReadableStream
 }
 
 /**

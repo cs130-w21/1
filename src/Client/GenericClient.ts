@@ -7,7 +7,7 @@ import {
 	StopJobOrdererIteration,
 } from '../JobOrderer'
 import { Job } from '../Job/Job'
-import { ConnectionFactory, Connection } from './Connection'
+import { ProcessStreams, ConnectionFactory, Connection } from './Connection'
 
 /**
  * A Junknet client implementation using a provided connection factory.
@@ -16,6 +16,8 @@ import { ConnectionFactory, Connection } from './Connection'
 export class GenericClient extends EventEmitter implements Client {
 	readonly #connect: ConnectionFactory
 
+	readonly #streams: ProcessStreams
+
 	readonly #jobs: IterableJobOrderer
 
 	/**
@@ -23,11 +25,17 @@ export class GenericClient extends EventEmitter implements Client {
 	 * It won't start until it knows about some daemons.
 	 *
 	 * @param connect - A connection factory compatible with the daemons you will use.
+	 * @param streams - A common source and sink used by all remote jobs.
 	 * @param orderer - A job orderer that tracks the jobs to be completed.
 	 */
-	constructor(connect: ConnectionFactory, orderer: JobOrderer) {
+	constructor(
+		connect: ConnectionFactory,
+		streams: ProcessStreams,
+		orderer: JobOrderer,
+	) {
 		super()
 		this.#connect = connect
+		this.#streams = streams
 		this.#jobs = new IterableJobOrderer(orderer)
 	}
 
@@ -100,7 +108,7 @@ export class GenericClient extends EventEmitter implements Client {
 	private async assignJobToDaemon(job: Job, daemon: Connection): Promise<void> {
 		let result: JobResult | undefined
 		try {
-			result = await daemon.run(job)
+			result = await daemon.run(this.#streams, job)
 		} catch (err: unknown) {
 			this.#jobs.reportFailed(job)
 			return

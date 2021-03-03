@@ -1,8 +1,7 @@
 import { connect } from 'http2'
 import { once } from 'events'
-import { Readable } from 'stream'
 
-import { ConnectionFactory } from './Connection'
+import { ConnectionFactory, ProcessStreams } from './Connection'
 import { Job } from '../Job/Job'
 import { JobResult } from './Client'
 
@@ -34,7 +33,7 @@ export const createHttp2Connection: ConnectionFactory = async (host, port) => {
 	const client = connect(`http://${hostAndPort(host, port)}`)
 	await once(client, 'connect')
 	return {
-		async run(job: Job): Promise<JobResult> {
+		async run(streams: ProcessStreams, job: Job): Promise<JobResult> {
 			const request = client.request({ ':path': `/${job.getName()}` })
 
 			let data = ''
@@ -42,15 +41,7 @@ export const createHttp2Connection: ConnectionFactory = async (host, port) => {
 			request.on('data', (chunk) => (data += chunk))
 			await once(request, 'end')
 
-			return {
-				status: +(data === 'failed'),
-				stdout: new Readable({
-					read(): void {
-						this.push(data)
-					},
-				}),
-				stderr: new Readable(),
-			}
+			return { status: +(data === 'failed') }
 		},
 
 		async end(): Promise<void> {
