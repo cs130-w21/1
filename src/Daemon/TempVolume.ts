@@ -1,5 +1,5 @@
 import { mkdtemp, rmdir } from 'fs/promises'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { tmpdir } from 'os'
 
 /**
@@ -21,7 +21,7 @@ const TEMP_PREFIX = join(tmpdir(), `junknet-${process.pid}-`)
  * Resolve a relative filename within a root directory.
  * This is a security-critical function. It prevents pathname traversal.
  * @see https://nodejs.org/en/knowledge/file-system/security/introduction/
- * @param root - The directory that cannot be exited from.
+ * @param root - Absolute path to the directory that must not be exited.
  * @param file - Something that should be a relative path.
  * @returns The absolute path to the named file.
  */
@@ -30,7 +30,7 @@ export function safeResolve(root: string, file: string): string | undefined {
 		return undefined
 	}
 
-	const path = join(root, file)
+	const path = resolve(root, file)
 	return path.startsWith(root) ? path : undefined
 }
 

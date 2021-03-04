@@ -2,7 +2,8 @@ import { Server, ServerConfig, ClientInfo, AuthContext, Session } from 'ssh2'
 import { create } from 'tar'
 
 import * as net from 'net'
-import { once } from 'events'
+import * as stream from 'stream'
+import { promisify } from 'util'
 
 import { createTempDir, destroyTempDir, safeResolve } from './TempVolume'
 import { Request, parse, unexpected } from '../Network'
@@ -10,6 +11,8 @@ import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
 const EXEC_FAIL_MSG = 'Failed to start job execution.'
+
+const pipeline = promisify(stream.pipeline)
 
 /**
  * Decide whether or not to authenticate the given client.
@@ -63,9 +66,7 @@ function handleSession(runJob: RunJob, session: Session): void {
 					if (request.files.some((file) => !safeResolve(root, file))) {
 						throw new Error('Permission denied.')
 					}
-					// TODO: properly handle errors here so it can't crash the server.
-					create({ cwd: root }, request.files).pipe(channel)
-					return once(channel, 'end')
+					return pipeline(create({ cwd: root }, request.files), channel)
 
 				case 'put':
 					// TODO: implement this.
