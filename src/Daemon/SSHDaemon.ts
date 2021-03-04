@@ -1,4 +1,4 @@
-import { Server, ServerConfig, Session } from 'ssh2'
+import { Server, ServerConfig, ClientInfo, AuthContext, Session } from 'ssh2'
 
 import * as net from 'net'
 import { once } from 'events'
@@ -10,6 +10,17 @@ import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
 const EXEC_FAIL_MSG = 'Failed to start job execution.'
+
+/**
+ * Decide whether or not to authenticate the given client.
+ * Currently, this is a no-op (all clients are allowed).
+ * @param ctx - The authentication context from the SSH server.
+ * @param info - Information about the remote client.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function handleAuthentication(ctx: AuthContext, info: ClientInfo): void {
+	ctx.accept()
+}
 
 /**
  * Service a Junknet client's requests, such as running jobs and transferring artifacts.
@@ -49,7 +60,8 @@ function handleSession(runJob: RunJob, session: Session): void {
 
 		return once(session, 'close')
 	}).catch(() => {
-		// TODO: What types of errors happen here? Decide how to handle them.
+		// ssh2 Session doesn't emit errors, so this means the tempdir creation failed.
+		// TODO: If this does need to be logged, refactor the error handling.
 	})
 }
 
@@ -69,10 +81,13 @@ export function createSSHDaemon(
 	hostKeys: ServerConfig['hostKeys'],
 ): net.Server {
 	const server = new Server({ hostKeys })
-	server.on('connection', (client) => {
-		client.on('authentication', (ctx) => ctx.accept())
+	server.on('connection', (client, info) => {
+		client.on('authentication', (ctx) => handleAuthentication(ctx, info))
 		client.on('ready', () => {
 			client.on('session', (accept) => handleSession(runJob, accept()))
+		})
+		client.on('error', () => {
+			// TODO: If this does need to be logged, refactor the error handling.
 		})
 	})
 
