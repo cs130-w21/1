@@ -28,14 +28,14 @@ function handleAuthentication(ctx: AuthContext, info: ClientInfo): void {
  * @param session - A new incoming SSH session.
  */
 function handleSession(runJob: RunJob, session: Session): void {
-	const tempDirPromise = createTempDir()
-	tempDirPromise.catch(() => {
+	const futureTempDir = createTempDir()
+	futureTempDir.catch(() => {
 		// Proactively catch the rejection to avoid a race condition.
 	})
 
 	session.on('close', () => {
 		// Close the tempdir if it was created. Any errors are irrelevant here.
-		tempDirPromise.then((root) => destroyTempDir(root)).catch(() => {})
+		futureTempDir.then((root) => destroyTempDir(root)).catch(() => {})
 	})
 
 	session.on('exec', (accept, reject, info) => {
@@ -45,6 +45,7 @@ function handleSession(runJob: RunJob, session: Session): void {
 			return
 		}
 
+		// Type-safe request parsing. Don't even open the stream if it fails.
 		const request = parse(Request, info.command)
 		if (!request) {
 			reject()
@@ -52,37 +53,35 @@ function handleSession(runJob: RunJob, session: Session): void {
 		}
 
 		const channel = accept()
-		tempDirPromise
-			.then(
-				(root): Promise<unknown> => {
-					switch (request.action) {
-						case 'job':
-							return runJob(request, channel)
+		const handleRequest = (root: string): Promise<unknown> => {
+			switch (request.action) {
+				case 'job':
+					return runJob(request, channel)
 
-						case 'get':
-							// CRITICAL: Make sure user-supplied paths don't escape the directory!
-							if (request.files.some((file) => !safeResolve(root, file))) {
-								throw new Error('Permission denied.')
-							}
-							// TODO: properly handle errors here so it can't crash the server.
-							create({ cwd: root }, request.files).pipe(channel)
-							return once(channel, 'end')
-
-						case 'put':
-							// TODO: implement this.
-							throw new Error('Not implemented.')
-
-						default:
-							// This (intentionally) doesn't compile unless the switch is exhaustive.
-							return unexpected(request)
+				case 'get':
+					// CRITICAL: Make sure user-supplied paths don't escape the directory!
+					if (request.files.some((file) => !safeResolve(root, file))) {
+						throw new Error('Permission denied.')
 					}
-				},
-			)
-			.catch((err: Error) => {
-				channel.stderr.end(`${err.name}: ${err.message}\n`)
-				channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
-				channel.end()
-			})
+					// TODO: properly handle errors here so it can't crash the server.
+					create({ cwd: root }, request.files).pipe(channel)
+					return once(channel, 'end')
+
+				case 'put':
+					// TODO: implement this.
+					throw new Error('Not implemented.')
+
+				default:
+					// This (intentionally) doesn't compile unless the switch is exhaustive.
+					return unexpected(request)
+			}
+		}
+
+		futureTempDir.then(handleRequest).catch((err: Error) => {
+			channel.stderr.end(`${err.name}: ${err.message}\n`)
+			channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
+			channel.end()
+		})
 	})
 }
 
