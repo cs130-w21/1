@@ -1,8 +1,9 @@
 import { Server, ServerConfig, ClientInfo, AuthContext, Session } from 'ssh2'
-import { create } from 'tar'
+import { create, extract } from 'tar'
 
 import * as net from 'net'
 import * as stream from 'stream'
+import { once } from 'events'
 import { promisify } from 'util'
 
 import { createTempDir, destroyTempDir, safeResolve } from './TempVolume'
@@ -11,6 +12,16 @@ import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
 const EXEC_FAIL_MSG = 'Failed to start job execution.'
+
+/**
+ * Exit status codes of tar(1).
+ * @see https://www.gnu.org/software/tar/manual/html_section/Synopsis.html#exit-status
+ */
+enum TarExit {
+	Good,
+	Differ,
+	Fatal,
+}
 
 const pipeline = promisify(stream.pipeline)
 
@@ -58,19 +69,30 @@ function handleSession(runJob: RunJob, session: Session): void {
 		const channel = accept()
 		const handleRequest = (root: string): Promise<unknown> => {
 			switch (request.action) {
-				case 'job':
-					return runJob(request, channel)
+				case 'job': {
+					const promise = runJob(request, channel)
+					promise.catch(() => channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG))
+					return promise
+				}
 
-				case 'get':
+				case 'get': {
 					// CRITICAL: Make sure user-supplied paths don't escape the directory!
 					if (request.files.some((file) => !safeResolve(root, file))) {
 						throw new Error('Permission denied.')
 					}
-					return pipeline(create({ cwd: root }, request.files), channel)
+					const source = create({ cwd: root }, request.files)
+					source.pipe(channel, { end: false })
+					const promise = once(source, 'end')
+					promise.catch(() => channel.exit(TarExit.Fatal))
+					return promise.then(() => channel.exit(TarExit.Good))
+				}
 
-				case 'put':
-					// TODO: implement this.
-					throw new Error('Not implemented.')
+				case 'put': {
+					// TODO: Check for path traversal attacks.
+					const promise = pipeline(channel, extract({ cwd: root }))
+					promise.catch(() => channel.exit(TarExit.Fatal))
+					return promise.then(() => channel.exit(TarExit.Good))
+				}
 
 				default:
 					// This (intentionally) doesn't compile unless the switch is exhaustive.
@@ -78,11 +100,16 @@ function handleSession(runJob: RunJob, session: Session): void {
 			}
 		}
 
-		futureTempDir.then(handleRequest).catch((err: Error) => {
-			channel.stderr.end(`${err.name}: ${err.message}\n`)
-			channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
-			channel.end()
-		})
+		// Once the temporary directory is ready:
+		futureTempDir
+			// Delegate based on the request type.
+			.then(handleRequest)
+			// Format all errors to the client.
+			.catch((e: Error) => channel.stderr.end(`${e.name}: ${e.message}\n`))
+			// No matter what happened before, close the stream.
+			.then(() => channel.end())
+			// This never happens.
+			.catch(() => {})
 	})
 }
 
