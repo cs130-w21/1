@@ -12,7 +12,13 @@ describe('jobToRequest', () => {
 	it('correctly converts a job to a job request', () => {
 		// Arrange
 		const env: JobEnv = { dockerImage: MOCK_REQUEST.image }
-		const job = new NormalJob(MOCK_REQUEST.target, new Set(), env)
+		const job = new NormalJob(
+			MOCK_REQUEST.target,
+			[],
+			new Set(),
+			new Set(),
+			env,
+		)
 
 		// Act
 		const request = jobToRequest(job)

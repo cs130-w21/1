@@ -8,5 +8,5 @@ import { JobRequest } from '../Network'
  * @returns The converted job request.
  */
 export function jobToRequest(job: Job): JobRequest {
-	return { image: job.getEnvironment().dockerImage, target: job.getName() }
+	return { image: job.getEnvironment().dockerImage, target: job.getTarget() }
 }

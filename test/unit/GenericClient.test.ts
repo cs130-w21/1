@@ -114,7 +114,7 @@ describe('GenericClient', () => {
 		daemon.run.mockRejectedValueOnce(new Error())
 
 		const badJob: Job = new NormalJob('bad')
-		const goodJob: Job = new NormalJob('good', new Set([badJob]))
+		const goodJob: Job = new NormalJob('good', [], new Set([badJob]))
 		const client = create(connect, goodJob)
 
 		// Act

@@ -68,7 +68,7 @@ describe('NormalJob', () => {
 
 	it('returns the correct environment', () => {
 		const environment: JobEnv = Object.freeze({ dockerImage: 'fake:latest' })
-		const job = new NormalJob('job', new Set(), environment)
+		const job = new NormalJob('job', [], new Set(), new Set(), environment)
 		expect(job.getEnvironment()).toEqual(environment)
 	})
 
