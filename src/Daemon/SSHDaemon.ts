@@ -5,7 +5,7 @@ import * as net from 'net'
 import { once } from 'events'
 
 import { createTempDir, destroyTempDir, safeResolve } from './TempVolume'
-import { Request, parse } from '../Network'
+import { Request, parse, unexpected } from '../Network'
 import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
@@ -54,14 +54,11 @@ function handleSession(runJob: RunJob, session: Session): void {
 		const channel = accept()
 		tempDirPromise
 			.then(
-				// ESLint has no idea what we're trying to do here.
-				// The explicit return value and no default ensure that the switch is exhaustive.
-				// eslint-disable-next-line consistent-return
 				(root): Promise<unknown> => {
-					// eslint-disable-next-line default-case, promise/always-return
 					switch (request.action) {
 						case 'job':
 							return runJob(request, channel)
+
 						case 'get':
 							// CRITICAL: Make sure user-supplied paths don't escape the directory!
 							if (request.files.some((file) => !safeResolve(root, file))) {
@@ -70,6 +67,14 @@ function handleSession(runJob: RunJob, session: Session): void {
 							// TODO: properly handle errors here so it can't crash the server.
 							create({ cwd: root }, request.files).pipe(channel)
 							return once(channel, 'end')
+
+						case 'put':
+							// TODO: implement this.
+							throw new Error('Not implemented.')
+
+						default:
+							// This (intentionally) doesn't compile unless the switch is exhaustive.
+							return unexpected(request)
 					}
 				},
 			)
