@@ -1,4 +1,4 @@
-import { parse } from '../../src/Network/NetParse'
+import { parse, unexpected } from '../../src/Network/NetParse'
 import { JobRequest } from '../../src/Network/JobRequest'
 
 describe('parse', () => {
@@ -36,5 +36,15 @@ describe('parse', () => {
 
 		// Assert
 		expect(parsed).toBeUndefined()
+	})
+})
+
+describe('unexpected', () => {
+	it('throws with useful message if actually called', () => {
+		// Arrange
+		const NEVER_VALUE = 'The quick brown fox'
+
+		// Act + Assert
+		expect(() => unexpected(NEVER_VALUE as never)).toThrow(NEVER_VALUE)
 	})
 })

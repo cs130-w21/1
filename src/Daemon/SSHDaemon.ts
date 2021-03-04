@@ -4,7 +4,7 @@ import * as net from 'net'
 import { once } from 'events'
 
 import { withTempDir } from './TempVolume'
-import { JobRequest, parse } from '../Network'
+import { Request, parse, unexpected } from '../Network'
 import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
@@ -35,18 +35,28 @@ function handleSession(runJob: RunJob, session: Session): void {
 				return
 			}
 
-			const request = parse(JobRequest, info.command)
+			const request = parse(Request, info.command)
 			if (!request) {
 				reject()
 				return
 			}
 
 			const channel = accept()
-			runJob(request, channel).catch((e: Error) => {
-				channel.stderr.end(`${e.name}: ${e.message}\n`)
-				channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
-				channel.end()
-			})
+			switch (request.action) {
+				case 'job':
+					runJob(request, channel).catch((e: Error) => {
+						channel.stderr.end(`${e.name}: ${e.message}\n`)
+						channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
+						channel.end()
+					})
+					break
+
+				case 'get':
+					break
+
+				default:
+					unexpected(request)
+			}
 		})
 
 		return once(session, 'close')
