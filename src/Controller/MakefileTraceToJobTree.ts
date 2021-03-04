@@ -22,6 +22,7 @@ interface TargetLineAndCommands {
 	commands: string[]
 }
 
+// Regexes used when interpreting target-lines.
 const targetLineRegexWithPrereqs = /^.+: update target '(.+)' due to: (.+)$/
 const targetLineRegexWithoutPrereqs = /^.+: target '(.+)' does not exist$/
 
@@ -34,7 +35,9 @@ const targetLineRegexWithoutPrereqs = /^.+: target '(.+)' does not exist$/
  * @param targetLine - a line from a trace containing a target.
  * @returns the target and prerequisites.
  */
-function extractInfoFromTargetLine(targetLine: string) {
+function extractInfoFromTargetLine(
+	targetLine: string,
+): { readonly target: string; readonly prerequisiteJobTargets: string[] } {
 	const matchesWithPrereqs = targetLineRegexWithPrereqs.exec(targetLine)
 	const matchesWithoutPrereqs = targetLineRegexWithoutPrereqs.exec(targetLine)
 
@@ -65,7 +68,9 @@ function extractInfoFromTargetLine(targetLine: string) {
  * @param traceLines - an array of strings.
  * @returns a list of target-lines and their associated commands.
  */
-function extractTargetLinesAndCommands(traceLines: string[]) {
+function extractTargetLinesAndCommands(
+	traceLines: string[],
+): TargetLineAndCommands[] {
 	const targetLinesWithCommands: TargetLineAndCommands[] = []
 
 	for (const line of traceLines) {
@@ -96,7 +101,7 @@ function extractTargetLinesAndCommands(traceLines: string[]) {
  */
 function constructDAGFromTargetsAndCommands(
 	targetLinesWithCommands: TargetLineAndCommands[],
-) {
+): Set<Job> {
 	// We need to know whether a Job has dependents so we can isolate the root jobs later.
 	const targetToJAD = new Map<string, JobAndDependency>()
 
