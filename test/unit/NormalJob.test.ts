@@ -1,4 +1,4 @@
-import { Job } from '../../src/Job/Job'
+import { Job, JobEnv } from '../../src/Job/Job'
 import { NormalJob } from '../../src/Job/NormalJob'
 
 describe('NormalJob', () => {
@@ -64,5 +64,17 @@ describe('NormalJob', () => {
 		expect(new Set(job.getPrerequisiteFilesIterable())).toEqual(
 			prerequisiteFiles,
 		)
+	})
+
+	it('returns the correct environment', () => {
+		const environment: JobEnv = Object.freeze({ dockerImage: 'fake:latest' })
+		const job = new NormalJob('job', new Set(), environment)
+		expect(job.getEnvironment()).toEqual(environment)
+	})
+
+	// This is testing deprecated behavior.
+	it('defaults to an environment with a docker image', () => {
+		const job = new NormalJob('job')
+		expect(typeof job.getEnvironment().dockerImage).toBe('string')
 	})
 })

@@ -1,14 +1,15 @@
-// Override for eslint-plugin-import older than v2.22.0:
 // eslint-disable-next-line import/no-extraneous-dependencies
 import TypedEmitter from 'typed-emitter'
+
 import { Job } from '../Job/Job'
 
 /**
  * Representation of the output of a single job.
- * Obviously, in the future this will not just be a string.
  * @experimental
  */
-export type JobResult = string
+export interface JobResult {
+	status: number
+}
 
 /**
  * Model for events emitted by {@link Client}.
@@ -33,8 +34,9 @@ export interface ClientEvents {
 	/**
 	 * All jobs have completed.
 	 * The {@link progress} event will not trigger again.
+	 * @param success - whether all jobs were successful.
 	 */
-	done(): void
+	done(success: boolean): void
 }
 
 /**
@@ -51,4 +53,9 @@ export interface Client extends TypedEmitter<ClientEvents> {
 	 * @param port - port number of daemon on the host
 	 */
 	introduce(host: string, port: number): void
+
+	/**
+	 * Close all daemons and clean up resources.
+	 */
+	quit(): void
 }

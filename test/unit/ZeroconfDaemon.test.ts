@@ -1,4 +1,4 @@
-import { mock } from 'jest-mock-extended'
+import { mock, MockProxy } from 'jest-mock-extended'
 import { Bonjour, Service } from 'bonjour'
 import { AddressInfo, Server } from 'net'
 import { EventEmitter } from 'events'
@@ -15,12 +15,11 @@ const MOCK_SERVER_PORT = 1337
 function mockEmitter<T extends EventEmitter>(
 	mockImplementation?: unknown,
 	opts?: unknown,
-) {
+): MockProxy<T> {
 	// Casting to never silences both type checker and ESLint.
 	const original = mock<T>(mockImplementation as never, opts as never)
 	return new Proxy(new EventEmitter(), {
-		get(target, prop) {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+		get(target, prop): unknown {
 			return Reflect.has(target, prop)
 				? Reflect.get(target, prop)
 				: Reflect.get(original, prop)

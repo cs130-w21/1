@@ -1,4 +1,14 @@
 /**
+ * A description of the runtime environment required by a Job.
+ */
+export interface JobEnv {
+	/**
+	 * The name:version specifier of the Docker image required by the job.
+	 */
+	dockerImage: string
+}
+
+/**
  * A job for a Daemon to complete.
  */
 export interface Job {
@@ -40,4 +50,11 @@ export interface Job {
 	 * Returns the commands to run (in-order and synchronously) that will result.
 	 */
 	getCommands(): string[]
+
+	/**
+	 * Get the environment this job must run under.
+	 *
+	 * @returns A recipe for the job's runtime environment.
+	 */
+	getEnvironment(): JobEnv
 }
