@@ -1,7 +1,10 @@
 import { Server, ServerConfig, Session } from 'ssh2'
 
 import * as net from 'net'
+import { once } from 'events'
 
+import { handleSFTPSession } from './SFTPServer'
+import { withTempDir } from './TempVolume'
 import { JobRequest, parse } from '../Network'
 import { RunJob } from './RunJob'
 
@@ -10,29 +13,43 @@ const EXEC_FAIL_MSG = 'Failed to start job execution.'
 
 /**
  * Service a Junknet client's requests, such as running jobs and transferring artifacts.
- * @param docker - A connected Dockerode client.
+ * @param runJob - A strategy for executing jobs.
  * @param session - A new incoming SSH session.
  */
 function handleSession(runJob: RunJob, session: Session): void {
-	session.on('exec', (accept, reject, info) => {
-		// `accept` and `reject` are only defined if the client wants a response
-		// For Junknet, it doesn't make sense to run a job without a client waiting for it.
-		if (!reject) {
-			return
-		}
-
-		const request = parse(JobRequest, info.command)
-		if (!request) {
-			reject()
-			return
-		}
-
-		const channel = accept()
-		runJob(request, channel).catch((e: Error) => {
-			channel.stderr.end(`${e.name}: ${e.message}\n`)
-			channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
-			channel.end()
+	withTempDir((root) => {
+		session.on('sftp', (accept, reject) => {
+			// `accept` and `reject` are only defined if the client wants a response.
+			// For Junknet, it doesn't make sense to start file transfer without a client driving it.
+			if (reject) {
+				handleSFTPSession(root, accept())
+			}
 		})
+
+		session.on('exec', (accept, reject, info) => {
+			// `accept` and `reject` are only defined if the client wants a response.
+			// For Junknet, it doesn't make sense to run a job without a client waiting for it.
+			if (!reject) {
+				return
+			}
+
+			const request = parse(JobRequest, info.command)
+			if (!request) {
+				reject()
+				return
+			}
+
+			const channel = accept()
+			runJob(request, channel).catch((e: Error) => {
+				channel.stderr.end(`${e.name}: ${e.message}\n`)
+				channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
+				channel.end()
+			})
+		})
+
+		return once(session, 'close')
+	}).catch(() => {
+		// TODO: What types of errors happen here? Decide how to handle them.
 	})
 }
 
