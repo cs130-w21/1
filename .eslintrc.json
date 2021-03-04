@@ -16,8 +16,10 @@
 		"prettier"
 	],
 	"rules": {
+		"@typescript-eslint/explicit-function-return-type": "warn",
 		"import/prefer-default-export": "off",
 		"import/no-default-export": "error",
+		"no-plusplus": "off",
 		"no-restricted-syntax": [
 			"error",
 			"ForInStatement",

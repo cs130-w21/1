@@ -33,7 +33,7 @@ class SpyDuplex extends Duplex {
 	 * @override
 	 */
 	// eslint-disable-next-line class-methods-use-this
-	_read() {}
+	_read(): void {}
 
 	/**
 	 * Store all chunks written to this stream as Buffers.
@@ -43,7 +43,7 @@ class SpyDuplex extends Duplex {
 		chunk: string | Buffer,
 		encoding: BufferEncoding,
 		callback: () => void,
-	) {
+	): void {
 		const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, encoding)
 		this.recvChunks.push(buf)
 		callback()
