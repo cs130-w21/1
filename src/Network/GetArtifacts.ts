@@ -10,5 +10,4 @@ export const GetArtifacts = t.type({
 	files: t.array(t.string),
 })
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type GetArtifacts = t.TypeOf<typeof GetArtifacts>

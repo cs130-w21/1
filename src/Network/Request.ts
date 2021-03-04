@@ -12,5 +12,4 @@ export const Request = t.union([
 	t.intersection([t.type({ action: t.literal('get') }), GetArtifacts]),
 ])
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Request = t.TypeOf<typeof Request>

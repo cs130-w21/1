@@ -20,5 +20,4 @@ export const JobRequest = t.type({
 	target: t.string,
 })
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export type JobRequest = t.TypeOf<typeof JobRequest>
