@@ -3,7 +3,6 @@ import { Server, ServerConfig, ClientInfo, AuthContext, Session } from 'ssh2'
 import * as net from 'net'
 import { once } from 'events'
 
-import { handleSFTPSession } from './SFTPServer'
 import { withTempDir } from './TempVolume'
 import { JobRequest, parse } from '../Network'
 import { RunJob } from './RunJob'
@@ -29,14 +28,6 @@ function handleAuthentication(ctx: AuthContext, info: ClientInfo): void {
  */
 function handleSession(runJob: RunJob, session: Session): void {
 	withTempDir((root) => {
-		session.on('sftp', (accept, reject) => {
-			// `accept` and `reject` are only defined if the client wants a response.
-			// For Junknet, it doesn't make sense to start file transfer without a client driving it.
-			if (reject) {
-				handleSFTPSession(root, accept())
-			}
-		})
-
 		session.on('exec', (accept, reject, info) => {
 			// `accept` and `reject` are only defined if the client wants a response.
 			// For Junknet, it doesn't make sense to run a job without a client waiting for it.
