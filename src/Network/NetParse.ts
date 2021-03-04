@@ -32,7 +32,7 @@ export function parse<A>(
  *
  * @param x - The expression that should never happen.
  *
- * @throws {@link TypeError}
+ * @throws TypeError
  * If the function actually gets called.
  */
 export function unexpected(x: never): never {
