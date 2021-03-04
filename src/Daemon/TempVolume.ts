@@ -3,6 +3,13 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 
 /**
+ * Pattern for an invalid path or one that has special behavior.
+ * This excludes the null byte and all Windows special path characters.
+ * @see https://nodejs.org/api/fs.html#fs_fspromises_open_path_flags_mode
+ */
+const INVALID_PATH = /[\0<>:"\\|?*]/
+
+/**
  * Absolute path prefix for temporary directories.
  * Includes the process ID to avoid conflicting with other daemons.
  * Should be within the OS's temporary directory. Must not end in X.
@@ -11,15 +18,9 @@ import { tmpdir } from 'os'
 const TEMP_PREFIX = join(tmpdir(), `junknet-${process.pid}-`)
 
 /**
- * Pattern for an invalid path or one that has special behavior.
- * This excludes the null byte and all Windows special path characters.
- * @see https://nodejs.org/api/fs.html#fs_fspromises_open_path_flags_mode
- */
-const INVALID_PATH = /[\0<>:"\\|?*]/
-
-/**
  * Resolve a relative filename within a root directory.
  * This is a security-critical function. It prevents pathname traversal.
+ * @see https://nodejs.org/en/knowledge/file-system/security/introduction/
  * @param root - The directory that cannot be exited from.
  * @param file - Something that should be a relative path.
  * @returns The absolute path to the named file.
@@ -31,6 +32,25 @@ export function safeResolve(root: string, file: string): string | undefined {
 
 	const path = join(root, file)
 	return path.startsWith(root) ? path : undefined
+}
+
+/**
+ * Create a temporary directory.
+ * Instead of this, use {@link withTempDir} whenever possible.
+ * @returns Asynchronously, the absolute path to a temporary directory.
+ */
+export function createTempDir(): Promise<string> {
+	return mkdtemp(TEMP_PREFIX)
+}
+
+/**
+ * Clean up a temporary directory created with {@link createTempDir}.
+ * Instead of this, use {@link withTempDir} whenever possible.
+ * @param path - The path to the temporary directory.
+ * @returns Asynchronously, if and when the cleanup is successful.
+ */
+export function destroyTempDir(path: string): Promise<void> {
+	return rmdir(path, { recursive: true })
 }
 
 /**

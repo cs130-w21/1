@@ -1,10 +1,11 @@
 import { Server, ServerConfig, ClientInfo, AuthContext, Session } from 'ssh2'
+import { create } from 'tar'
 
 import * as net from 'net'
 import { once } from 'events'
 
-import { withTempDir } from './TempVolume'
-import { Request, parse, unexpected } from '../Network'
+import { createTempDir, destroyTempDir, safeResolve } from './TempVolume'
+import { Request, parse } from '../Network'
 import { RunJob } from './RunJob'
 
 const EXEC_FAIL_SIG = 'USR2'
@@ -27,42 +28,56 @@ function handleAuthentication(ctx: AuthContext, info: ClientInfo): void {
  * @param session - A new incoming SSH session.
  */
 function handleSession(runJob: RunJob, session: Session): void {
-	withTempDir((root) => {
-		session.on('exec', (accept, reject, info) => {
-			// `accept` and `reject` are only defined if the client wants a response.
-			// For Junknet, it doesn't make sense to run a job without a client waiting for it.
-			if (!reject) {
-				return
-			}
+	const tempDirPromise = createTempDir()
+	tempDirPromise.catch(() => {
+		// Proactively catch the rejection to avoid a race condition.
+	})
 
-			const request = parse(Request, info.command)
-			if (!request) {
-				reject()
-				return
-			}
+	session.on('close', () => {
+		// Close the tempdir if it was created. Any errors are irrelevant here.
+		tempDirPromise.then((root) => destroyTempDir(root)).catch(() => {})
+	})
 
-			const channel = accept()
-			switch (request.action) {
-				case 'job':
-					runJob(request, channel).catch((e: Error) => {
-						channel.stderr.end(`${e.name}: ${e.message}\n`)
-						channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
-						channel.end()
-					})
-					break
+	session.on('exec', (accept, reject, info) => {
+		// `accept` and `reject` are only defined if the client wants a response.
+		// For Junknet, it doesn't make sense to run a job without a client waiting for it.
+		if (!reject) {
+			return
+		}
 
-				case 'get':
-					break
+		const request = parse(Request, info.command)
+		if (!request) {
+			reject()
+			return
+		}
 
-				default:
-					unexpected(request)
-			}
-		})
-
-		return once(session, 'close')
-	}).catch(() => {
-		// ssh2 Session doesn't emit errors, so this means the tempdir creation failed.
-		// TODO: If this does need to be logged, refactor the error handling.
+		const channel = accept()
+		tempDirPromise
+			.then(
+				// ESLint has no idea what we're trying to do here.
+				// The explicit return value and no default ensure that the switch is exhaustive.
+				// eslint-disable-next-line consistent-return
+				(root): Promise<unknown> => {
+					// eslint-disable-next-line default-case, promise/always-return
+					switch (request.action) {
+						case 'job':
+							return runJob(request, channel)
+						case 'get':
+							// CRITICAL: Make sure user-supplied paths don't escape the directory!
+							if (request.files.some((file) => !safeResolve(root, file))) {
+								throw new Error('Permission denied.')
+							}
+							// TODO: properly handle errors here so it can't crash the server.
+							create({ cwd: root }, request.files).pipe(channel)
+							return once(channel, 'end')
+					}
+				},
+			)
+			.catch((err: Error) => {
+				channel.stderr.end(`${err.name}: ${err.message}\n`)
+				channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG)
+				channel.end()
+			})
 	})
 }
 
