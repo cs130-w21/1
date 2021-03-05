@@ -96,7 +96,7 @@ export class HeapJobOrderer implements JobOrderer {
 					queue.push(prerequisite)
 				}
 
-				if (job.getNumPrerequisites() === 0) {
+				if (job.getNumPrerequisiteJobs() === 0) {
 					this.sources.push(job)
 					sourcesHelperSet.add(job)
 				} else {
@@ -123,7 +123,7 @@ export class HeapJobOrderer implements JobOrderer {
 			numCompletedPrereqs !== undefined,
 			`We don't know about this job: ${job.toString()}.`,
 		)
-		return job.getNumPrerequisites() === numCompletedPrereqs
+		return job.getNumPrerequisiteJobs() === numCompletedPrereqs
 	}
 
 	/**
@@ -171,7 +171,10 @@ export class HeapJobOrderer implements JobOrderer {
 				dependentNumCompletedJobs + 1,
 			)
 
-			if (dependent.getNumPrerequisites() === dependentNumCompletedJobs + 1) {
+			if (
+				dependent.getNumPrerequisiteJobs() ===
+				dependentNumCompletedJobs + 1
+			) {
 				this.sources.push(dependent)
 				this.nonSources.delete(dependent)
 			}

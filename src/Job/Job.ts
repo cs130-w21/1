@@ -44,7 +44,7 @@ export interface Job {
 	 *
 	 * @returns The number of prerequisites.
 	 */
-	getNumPrerequisites(): number
+	getNumPrerequisiteJobs(): number
 
 	/**
 	 * Returns the commands to run (in-order and synchronously) that will result.

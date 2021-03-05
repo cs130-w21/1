@@ -40,7 +40,11 @@ export class NormalJob implements Job {
 		this.prerequisiteFiles = new Set(options.prerequisiteFiles)
 		this.commands = options.commands.slice()
 		this.target = options.target
-		this.environment = options.environment || DEFAULT_ENV // todo change
+		this.environment = options.environment
+			? {
+					dockerImage: options.environment.dockerImage,
+			  }
+			: DEFAULT_ENV
 	}
 
 	/**
@@ -53,50 +57,68 @@ export class NormalJob implements Job {
 	/**
 	 * Uses Set's native values() function to get an iterable of prerequisites.
 	 *
-	 * @returns An iterable that iterates over the prerequisites Set.
+	 * @returns An iterable that iterates over the prerequisiteJobs Set.
 	 */
 	public getPrerequisiteJobsIterable(): Iterable<Job> {
 		return this.prerequisiteJobs.values()
 	}
 
+	/**
+	 * Uses Set's native values() function to get an iterable of prerequisites.
+	 *
+	 * @returns An iterable that iterates over the prerequisiteFiles Set.
+	 */
 	public getPrerequisiteFilesIterable(): Iterable<string> {
 		return this.prerequisiteFiles.values()
 	}
 
 	/**
-	 * Returns the number of prerequisites using Set's native size property.
+	 * Returns the number of prerequisite Jobs using Set's native size property.
 	 */
-	public getNumPrerequisites(): number {
+	public getNumPrerequisiteJobs(): number {
 		return this.prerequisiteJobs.size
 	}
 
 	/**
 	 * JavaScript calls this function whenever Job is casted to a string.
 	 *
-	 * @returns This job's name.
+	 * @returns A string detailing this job's target, as well as any prerequisite jobs or files.
 	 */
 	public toString(): string {
-		if (this.prerequisiteJobs.size === 0) {
-			return `Source job ${this.target}.`
+		let description = ''
+
+		if (this.getNumPrerequisiteJobs() === 0) {
+			description += `Source job with target ${this.target}.`
+		} else {
+			description += `Job with target "${
+				this.target
+			}". Depends on targets "${Array.from(this.prerequisiteJobs)
+				.map((prerequisite) => prerequisite.getTarget())
+				.join('", "')}". Depends on files "${Array.from(
+				this.prerequisiteFiles,
+			).join('", "')}".`
 		}
 
-		return `Job with target "${this.target}". Depends on targets "${Array.from(
-			this.prerequisiteJobs,
-		)
-			.map((prerequisite) => prerequisite.getTarget())
-			.join('", "')}". Depends on files "${Array.from(
-			this.prerequisiteFiles,
-		).join('", "')}".`
+		if (this.prerequisiteFiles.size > 0) {
+			description += ` Depends on files "${Array.from(
+				this.prerequisiteFiles,
+			).join('", "')}".`
+		}
+
+		return description
 	}
 
+	/**
+	 * Getter for this job's environment.
+	 */
 	public getCommands(): string[] {
-		return this.commands
+		return [...this.commands]
 	}
 
 	/**
 	 * Getter for the environment this job must run under.
 	 */
 	public getEnvironment(): JobEnv {
-		return this.environment
+		return { dockerImage: this.environment.dockerImage }
 	}
 }

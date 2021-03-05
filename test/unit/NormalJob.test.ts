@@ -10,7 +10,7 @@ describe('NormalJob', () => {
 
 	it('returns the correct number of prerequisites for sources', () => {
 		const sourceJob = new NormalJob({ target: '', commands: [] })
-		expect(sourceJob.getNumPrerequisites()).toEqual(0)
+		expect(sourceJob.getNumPrerequisiteJobs()).toEqual(0)
 	})
 
 	it('returns the correct number of prerequisites for nonsources', () => {
@@ -23,7 +23,7 @@ describe('NormalJob', () => {
 				new NormalJob({ target: '', commands: [] }),
 			]),
 		})
-		expect(nonsourceJob.getNumPrerequisites()).toEqual(3)
+		expect(nonsourceJob.getNumPrerequisiteJobs()).toEqual(3)
 	})
 
 	it('is impervious to manipulation of passed objects', () => {
@@ -40,7 +40,7 @@ describe('NormalJob', () => {
 		})
 
 		prerequisiteJobs.delete(jobToDelete)
-		expect(job.getNumPrerequisites()).toEqual(1)
+		expect(job.getNumPrerequisiteJobs()).toEqual(1)
 
 		prerequisiteFiles.delete('file_to_delete')
 		expect(new Set(job.getPrerequisiteFilesIterable())).toEqual(

@@ -16,7 +16,7 @@ echo Done`
 		const rootJob = rootJobs.values().next().value as Job
 		expect(rootJob.getTarget()).toEqual('execute')
 		expect(rootJob.getCommands()).toHaveLength(2)
-		expect(rootJob.getNumPrerequisites()).toEqual(2)
+		expect(rootJob.getNumPrerequisiteJobs()).toEqual(2)
 	})
 
 	it(`correctly constructs a DAG with a rule that doesn't have prerequisites.`, () => {
@@ -48,7 +48,7 @@ cc ./build/./src/a.c.o ./build/./src/b.c.o ./build/./src/f.c.o -o build/a.out `
 		const rootJob = rootJobs.values().next().value as Job
 		expect(rootJob.getTarget()).toEqual('build/a.out')
 		expect(rootJob.getCommands()).toHaveLength(1)
-		expect(rootJob.getNumPrerequisites()).toEqual(3)
+		expect(rootJob.getNumPrerequisiteJobs()).toEqual(3)
 
 		const prerequisitesIterable = rootJob.getPrerequisiteJobsIterable()
 		for (const prerequisite of prerequisitesIterable) {
