@@ -23,8 +23,13 @@ interface TargetLineAndCommands {
 }
 
 // Regexes used when interpreting target-lines.
-const targetLineRegexWithPrereqs = /^.+: update target '(.+)' due to: (.+)$/
-const targetLineRegexWithoutPrereqs = /^.+: target '(.+)' does not exist$/
+const pathRegex = '[\\w\\-_. /]+'
+const targetLineRegexWithPrereqs = new RegExp(
+	`^.+: update target '(${pathRegex})' due to: (${pathRegex})$`,
+)
+const targetLineRegexWithoutPrereqs = new RegExp(
+	`^.+: target '(${pathRegex})' does not exist$`,
+)
 
 /**
  * Reads a line from a trace containing a target.

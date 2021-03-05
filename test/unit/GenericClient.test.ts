@@ -22,7 +22,11 @@ const BAD_RESULT: Readonly<JobResult> = Object.freeze({ status: 1 })
 const GOOD_RESULT: Readonly<JobResult> = Object.freeze({ status: 0 })
 
 function create(connect: ConnectionFactory, ...jobs: Job[]): Client {
-	return new GenericClient(connect, MOCK_STREAMS, new HeapJobOrderer(jobs))
+	return new GenericClient(
+		connect,
+		MOCK_STREAMS,
+		new HeapJobOrderer(new Set(jobs)),
+	)
 }
 
 describe('GenericClient', () => {
