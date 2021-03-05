@@ -20,7 +20,7 @@ function argvForMake(target: string): string[] {
  * @returns A job runner that uses Docker.
  */
 export function dockerRunJob(docker: Dockerode): RunJob {
-	return async (request, channel): Promise<void> => {
+	return async (request, workdir, channel): Promise<void> => {
 		await ensureImageImport(docker, request.image)
 		const container = await createContainer(
 			docker,

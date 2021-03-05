@@ -68,7 +68,7 @@ describe('dockerRunJob', () => {
 			})
 
 			// Act
-			await runJob(REQUEST, channel)
+			await runJob(REQUEST, 'this absolutely does not work', channel)
 
 			// Assert
 			expect(Buffer.concat(channel.recvChunks)).toEqual(

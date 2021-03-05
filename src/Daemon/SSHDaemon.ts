@@ -70,7 +70,7 @@ function handleSession(runJob: RunJob, session: Session): void {
 		const handleRequest = (root: string): Promise<unknown> => {
 			switch (request.action) {
 				case 'job': {
-					const promise = runJob(request, channel)
+					const promise = runJob(request, root, channel)
 					promise.catch(() => channel.exit(EXEC_FAIL_SIG, false, EXEC_FAIL_MSG))
 					return promise
 				}
