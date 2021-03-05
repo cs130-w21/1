@@ -7,23 +7,27 @@ import { UnknownJobError } from '../../src/JobOrderer/UnknownJobError'
 describe('HeapJobOrderer', () => {
 	it('correctly orders jobs', () => {
 		// The names are unused.
-		const sourceJob: Job = new NormalJob('sourceJob')
-		const intermediateJob1: Job = new NormalJob(
-			'intermediateJob1',
-			[''],
-			new Set([sourceJob]),
-		)
-		const intermediateJob2: Job = new NormalJob(
-			'intermediateJob2',
-			[''],
-			new Set([sourceJob, intermediateJob1]),
-		)
-		const rootJob1: Job = new NormalJob('rootJob1', [''], new Set([sourceJob]))
-		const rootJob2: Job = new NormalJob(
-			'rootJob2',
-			[''],
-			new Set([intermediateJob2]),
-		)
+		const sourceJob: Job = new NormalJob({ target: 'sourceJob', commands: [] })
+		const intermediateJob1: Job = new NormalJob({
+			target: 'intermediateJob1',
+			commands: [],
+			prerequisiteJobs: new Set([sourceJob]),
+		})
+		const intermediateJob2: Job = new NormalJob({
+			target: 'intermediateJob2',
+			commands: [],
+			prerequisiteJobs: new Set([sourceJob, intermediateJob1]),
+		})
+		const rootJob1: Job = new NormalJob({
+			target: 'rootJob1',
+			commands: [],
+			prerequisiteJobs: new Set([sourceJob]),
+		})
+		const rootJob2: Job = new NormalJob({
+			target: 'rootJob2',
+			commands: [],
+			prerequisiteJobs: new Set([intermediateJob2]),
+		})
 
 		const rootJobs: Job[] = [rootJob1, rootJob2]
 		const jobOrderer = new HeapJobOrderer(rootJobs)
@@ -67,16 +71,22 @@ describe('HeapJobOrderer', () => {
 		const jobOrderer = new HeapJobOrderer([])
 
 		expect(() => {
-			jobOrderer.reportFailedJob(new NormalJob('test job'))
+			jobOrderer.reportFailedJob(
+				new NormalJob({ target: 'test job', commands: [] }),
+			)
 		}).toThrow(UnknownJobError)
 
 		expect(() => {
-			jobOrderer.reportCompletedJob(new NormalJob('test job'))
+			jobOrderer.reportCompletedJob(
+				new NormalJob({ target: 'test job', commands: [] }),
+			)
 		}).toThrow(UnknownJobError)
 	})
 
 	it('correctly reports whether it is done', () => {
-		const jobOrderer = new HeapJobOrderer([new NormalJob('')])
+		const jobOrderer = new HeapJobOrderer([
+			new NormalJob({ target: '', commands: [] }),
+		])
 
 		expect(jobOrderer.isDone()).toEqual(false)
 		const onlyJob = jobOrderer.popNextJob()
@@ -86,7 +96,9 @@ describe('HeapJobOrderer', () => {
 	})
 
 	it('reschedules failed jobs', () => {
-		const jobOrderer = new HeapJobOrderer([new NormalJob('')])
+		const jobOrderer = new HeapJobOrderer([
+			new NormalJob({ target: '', commands: [] }),
+		])
 		const toFail = jobOrderer.popNextJob()
 		assert(toFail)
 

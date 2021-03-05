@@ -14,11 +14,23 @@ import {
 
 const zeroconf = bonjour()
 
-const job3: Job = new NormalJob('third')
-const job4: Job = new NormalJob('fourth')
-const job2: Job = new NormalJob('second', [], new Set([job3]))
-const job1: Job = new NormalJob('first', [], new Set([job4, job2]))
-const job5: Job = new NormalJob('fifth', [], new Set([job1]))
+const job3: Job = new NormalJob({ target: 'third', commands: [] })
+const job4: Job = new NormalJob({ target: 'fourth', commands: [] })
+const job2: Job = new NormalJob({
+	target: 'second',
+	commands: [],
+	prerequisiteJobs: new Set([job3]),
+})
+const job1: Job = new NormalJob({
+	target: 'first',
+	commands: [],
+	prerequisiteJobs: new Set([job4, job2]),
+})
+const job5: Job = new NormalJob({
+	target: 'fifth',
+	commands: [],
+	prerequisiteJobs: new Set([job1]),
+})
 
 const client: Client = new GenericClient(
 	createSSHConnection,

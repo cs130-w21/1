@@ -134,7 +134,12 @@ function constructDAGFromTargetsAndCommands(
 			`Target "${target}" exists twice in the provided Makefile trace.`,
 		)
 		targetToJAD.set(target, {
-			job: new NormalJob(target, commands, prerequisiteJobs, prerequisiteFiles),
+			job: new NormalJob({
+				target,
+				commands,
+				prerequisiteJobs,
+				prerequisiteFiles,
+			}),
 			hasDependent: false,
 		})
 	}

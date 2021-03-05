@@ -1,4 +1,5 @@
 import { JobEnv, Job } from './Job'
+import { NormalJobOptions } from './NormalJobOptions'
 
 /**
  * The hard-coded Docker image for all {@link NormalJob} instances.
@@ -20,24 +21,26 @@ export class NormalJob implements Job {
 
 	private commands: string[]
 
+	private target: string
+
+	private environment: JobEnv
+
 	/**
-	 * @param target - The target file that the Job will produce. Must be unique between jobs in the same dependency graph.
-	 * @param commands - An optional array of the commands to run to build the target.
-	 * @param prerequisiteJobs - An optional set containing all of this job's prerequisite Jobs. Defaults to no prerequisites.
-	 * @param prerequisiteFiles - An optional set containing all of this job's prerequisite files. Defaults to no prerequisites.
-	 * @param environment - A description of the job's runtime environment. For forwards compatibility, always provide this parameter. Defaults to a Docker image containing GNU Make.
+	 * @param options - the settings for this Job.
+	 *
+	 * The default for options.prerequisiteJobs is the empty set.
+	 *
+	 * The default for options.prerequisiteFiles is the empty set.
+	 *
+	 * The default for options.environment is a Docker image containing GNU Make: {@link DEFAULT_ENV}. For forwards compatibility, always provide this parameter.
 	 */
-	constructor(
-		private readonly target: string,
-		commands: string[] = [],
-		prerequisiteJobs: Set<Job> = new Set(),
-		prerequisiteFiles: Set<string> = new Set(),
-		private environment: JobEnv = DEFAULT_ENV,
-	) {
+	constructor(options: NormalJobOptions) {
 		// Make copies so the caller can't directly access prerequisites. Encapsulation!
-		this.prerequisiteJobs = new Set(prerequisiteJobs) // We don't need a deep copy because Jobs are immutable.
-		this.prerequisiteFiles = new Set(prerequisiteFiles)
-		this.commands = commands.slice()
+		this.prerequisiteJobs = new Set(options.prerequisiteJobs) // We don't need a deep copy because Jobs are immutable.
+		this.prerequisiteFiles = new Set(options.prerequisiteFiles)
+		this.commands = options.commands.slice()
+		this.target = options.target
+		this.environment = options.environment || DEFAULT_ENV // todo change
 	}
 
 	/**
@@ -77,11 +80,13 @@ export class NormalJob implements Job {
 			return `Source job ${this.target}.`
 		}
 
-		return `Job "${this.target}" depending on ${Array.from(
+		return `Job with target "${this.target}". Depends on targets "${Array.from(
 			this.prerequisiteJobs,
 		)
 			.map((prerequisite) => prerequisite.getTarget())
-			.join(', ')}.`
+			.join('", "')}". Depends on files "${Array.from(
+			this.prerequisiteFiles,
+		).join('", "')}".`
 	}
 
 	public getCommands(): string[] {

@@ -46,7 +46,7 @@ describe('GenericClient', () => {
 		daemon.run.mockResolvedValue(GOOD_RESULT)
 		const connect = jest.fn().mockResolvedValue(daemon)
 
-		const job: Job = new NormalJob('root')
+		const job: Job = new NormalJob({ target: 'root', commands: [] })
 		const client = create(connect, job)
 
 		// Act
@@ -64,7 +64,7 @@ describe('GenericClient', () => {
 		daemon.run.mockResolvedValue(GOOD_RESULT)
 		const connect = jest.fn().mockResolvedValue(daemon)
 
-		const job: Job = new NormalJob('root')
+		const job: Job = new NormalJob({ target: 'root', commands: [] })
 		const client = create(connect, job)
 
 		// Act
@@ -90,7 +90,7 @@ describe('GenericClient', () => {
 		}
 		daemon.run.mockResolvedValueOnce(GOOD_RESULT)
 
-		const job: Job = new NormalJob('root')
+		const job: Job = new NormalJob({ target: 'root', commands: [] })
 		const client = create(connect, job)
 
 		// Act
@@ -113,8 +113,12 @@ describe('GenericClient', () => {
 		daemon.run.mockResolvedValueOnce(GOOD_RESULT)
 		daemon.run.mockRejectedValueOnce(new Error())
 
-		const badJob: Job = new NormalJob('bad')
-		const goodJob: Job = new NormalJob('good', [], new Set([badJob]))
+		const badJob: Job = new NormalJob({ target: 'bad', commands: [] })
+		const goodJob: Job = new NormalJob({
+			target: 'good',
+			commands: [],
+			prerequisiteJobs: new Set([badJob]),
+		})
 		const client = create(connect, goodJob)
 
 		// Act
@@ -154,7 +158,9 @@ describe('GenericClient', () => {
 			daemons.push(daemon)
 		}
 
-		const jobs = daemons.map((_, i) => new NormalJob(i.toString()))
+		const jobs = daemons.map(
+			(_, i) => new NormalJob({ target: i.toString(), commands: [] }),
+		)
 		const client = create(connect, ...jobs)
 
 		// Act
