@@ -54,11 +54,11 @@ const REQUEST_NOTARGET: JobRequest = Object.freeze({
 })
 
 /**
- * Expected output of Make when asked to build a nonexistent target.
+ * Expected output fragments of Make when asked to build a nonexistent target.
  */
 const MAKE_NOTARGET = {
 	code: 2,
-	stdout: '',
+	stdout: 'make: Entering directory',
 	stderr: `make: *** No rule to make target '${REQUEST_NOTARGET.target}'.  Stop.\n`,
 }
 
@@ -86,12 +86,10 @@ describe('dockerRunJob', () => {
 			await runJob(REQUEST_NOTARGET, WORKING_DIR, channel)
 
 			// Assert
-			expect(Buffer.concat(channel.recvChunks)).toEqual(
-				Buffer.from(MAKE_NOTARGET.stdout),
-			)
-			expect(Buffer.concat(stderr.recvChunks)).toEqual(
-				Buffer.from(MAKE_NOTARGET.stderr),
-			)
+			const outputs = Buffer.concat(channel.recvChunks)
+			const errors = Buffer.concat(stderr.recvChunks)
+			expect(outputs.toString()).toMatch(MAKE_NOTARGET.stdout)
+			expect(errors.toString()).toMatch(MAKE_NOTARGET.stderr)
 			expect(channel.exit).toHaveBeenCalledWith(MAKE_NOTARGET.code)
 		},
 		PULL_TIMEOUT_MS,

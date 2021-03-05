@@ -1,5 +1,7 @@
 import Docker from 'dockerode'
 
+import { convertPath } from './WindowsDocker'
+
 interface DockerModemEvent {
 	status: string
 	progressDetail: { current: number; total: number }
@@ -109,9 +111,22 @@ export async function createContainer(
 	command: string[],
 	volumePairs: VolumeDefinition[],
 ): Promise<Docker.Container> {
+	if (process.platform === 'win32') {
+		for (const pair of volumePairs) {
+			pair.fromPath = convertPath(pair.fromPath)
+		}
+	}
+
+	const isInjectionAttempt = volumePairs.some(
+		(el) => el.fromPath.includes(':') || el.toPath.includes(':'),
+	)
+	if (isInjectionAttempt) {
+		throw new TypeError('Refusing to create volume containing a colon (:).')
+	}
+
 	// make volumes in form accepted by createContainer
 	const volumeJson: { [volume: string]: Record<string, never> } = {}
-	for (const value of Object.values(volumePairs)) {
+	for (const value of volumePairs) {
 		volumeJson[value.toPath] = {}
 	}
 	const volumeArray = volumePairs.map((el) => `${el.fromPath}:${el.toPath}`)
