@@ -14,7 +14,7 @@ import { JobRequest } from '../../src/Network/JobRequest'
  * This works best if the tests are always run from the project root.
  * Unlike in normal (non-testing) operation, the directory won't be cleared afterwards.
  */
-const WORKING_DIR = resolve('integ', basename(__filename))
+const WORKING_DIR = resolve('output', basename(__filename))
 
 /**
  * The name of a Docker image that has GNU Make in $PATH.
