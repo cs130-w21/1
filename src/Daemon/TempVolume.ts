@@ -62,10 +62,10 @@ export function destroyTempDir(path: string): Promise<void> {
 export async function withTempDir<R>(
 	action: (root: string) => Promise<R>,
 ): Promise<R> {
-	const root = await mkdtemp(TEMP_PREFIX)
+	const root = await createTempDir()
 	try {
 		return await action(root)
 	} finally {
-		await rmdir(root, { recursive: true })
+		await destroyTempDir(root)
 	}
 }
