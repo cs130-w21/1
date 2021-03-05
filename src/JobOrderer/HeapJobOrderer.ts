@@ -62,7 +62,7 @@ export class HeapJobOrderer implements JobOrderer {
 	 * @throws When one of the jobs has a prerequisite that is not one of the jobs, or is itself.
 	 * @param jobs - The jobs to manage. They must have correctly populated prerequisites fields.
 	 */
-	constructor(rootJobs: Job[]) {
+	constructor(rootJobs: Set<Job>) {
 		// Add all of the root jobs to dependents map.
 		for (const rootJob of rootJobs) {
 			this.jobToDependents.set(rootJob, new Set())

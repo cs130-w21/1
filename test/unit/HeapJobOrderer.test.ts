@@ -29,7 +29,7 @@ describe('HeapJobOrderer', () => {
 			prerequisiteJobs: new Set([intermediateJob2]),
 		})
 
-		const rootJobs: Job[] = [rootJob1, rootJob2]
+		const rootJobs = new Set([rootJob1, rootJob2])
 		const jobOrderer = new HeapJobOrderer(rootJobs)
 
 		expect(jobOrderer.isDone()).toBe(false)
@@ -68,7 +68,7 @@ describe('HeapJobOrderer', () => {
 	})
 
 	it('throws an Error when passed an unknown job', () => {
-		const jobOrderer = new HeapJobOrderer([])
+		const jobOrderer = new HeapJobOrderer(new Set())
 
 		expect(() => {
 			jobOrderer.reportFailedJob(
@@ -84,9 +84,9 @@ describe('HeapJobOrderer', () => {
 	})
 
 	it('correctly reports whether it is done', () => {
-		const jobOrderer = new HeapJobOrderer([
-			new NormalJob({ target: '', commands: [] }),
-		])
+		const jobOrderer = new HeapJobOrderer(
+			new Set([new NormalJob({ target: '', commands: [] })]),
+		)
 
 		expect(jobOrderer.isDone()).toEqual(false)
 		const onlyJob = jobOrderer.popNextJob()
@@ -96,9 +96,9 @@ describe('HeapJobOrderer', () => {
 	})
 
 	it('reschedules failed jobs', () => {
-		const jobOrderer = new HeapJobOrderer([
-			new NormalJob({ target: '', commands: [] }),
-		])
+		const jobOrderer = new HeapJobOrderer(
+			new Set([new NormalJob({ target: '', commands: [] })]),
+		)
 		const toFail = jobOrderer.popNextJob()
 		assert(toFail)
 
