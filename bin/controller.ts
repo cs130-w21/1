@@ -25,7 +25,9 @@ if (cliArgs.cleanExit) {
 // we want `--help` messages to take priority over invalid arguments.
 if (cliArgs.invalidArguments) {
 	console.error(
-		new Error(`Invalid arguments supplied: ${process.argv.slice(2)}.`),
+		new Error(
+			`Invalid arguments supplied: "${process.argv.slice(2).join(' ')}".`,
+		),
 	)
 	process.exit(1)
 }

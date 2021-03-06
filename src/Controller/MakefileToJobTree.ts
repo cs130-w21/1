@@ -1,5 +1,5 @@
 import { basename, dirname } from 'path'
-import { exec } from 'child_process'
+import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { Job } from '..'
 import { makefileTraceToJobTree } from './MakefileTraceToJobTree'
@@ -17,32 +17,37 @@ async function getMakefileTrace(options: {
 	filePath?: string
 	targets?: string[]
 }): Promise<string> {
-	let command = 'make --trace --dry-run'
+	const makeArguments = ['--trace', '--dry-run']
 
 	if (options.filePath) {
 		const fileName = basename(options.filePath)
 		const directoryName = dirname(options.filePath)
 
-		command += ` -f "${fileName}" --directory="${directoryName}"`
+		makeArguments.push('-f', fileName, `--directory`, directoryName)
 	}
 
 	if (options.targets) {
-		command += ` ${options.targets.join(' ')}`
+		makeArguments.push(...options.targets)
 	}
 
 	let stdout: string
 	let stderr: string
 	try {
-		;({ stdout, stderr } = await promisify(exec)(command))
+		;({ stdout, stderr } = await promisify(execFile)('make', makeArguments))
 	} catch (error) {
 		throw new MakeTracingError(
-			`Error while generating make trace using command "${command}":\n${error}`,
+			/* eslint-disable @typescript-eslint/restrict-template-expressions */
+			`Error while generating make trace using arguments "${makeArguments.join(
+				`", "`,
+			)}": ${error}`,
 		)
 	}
 
 	if (stderr.length > 0) {
 		throw new MakeTracingError(
-			`Error while generating make trace using command "${command}".\n\nStderr:\n${stderr}\n\nStdout:${stdout}`,
+			`Error while generating make trace using arguments "${makeArguments.join(
+				`", "`,
+			)}".\n\nStderr:\n${stderr}\n\nStdout:${stdout}`,
 		)
 	}
 
