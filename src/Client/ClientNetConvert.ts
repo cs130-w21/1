@@ -1,12 +1,31 @@
 import { Job } from '../Job/Job'
-import { JobRequest } from '../Network'
+import { Request } from '../Network'
 
 /**
- * Convert a {@link Job} (controller world) to a {@link JobRequest} (network world).
- * That these types don't share an interface is a historical accident.
- * @param job - The input job.
- * @returns The converted job request.
+ * Build a network request to trigger the specified job.
+ * @param job - The job to be triggered.
+ * @returns The appropriate network request from client to daemon.
  */
-export function jobToRequest(job: Job): JobRequest {
-	return { image: job.getEnvironment().dockerImage, target: job.getName() }
+export function jobToJobRequest(job: Job): Request {
+	const image = job.getEnvironment().dockerImage
+	return { action: 'job', image, target: job.getName() }
+}
+
+/**
+ * Build a network request to get build artifacts for the given job.
+ * @param job - The job to get the artifacts for.
+ * @returns The appropriate network request from client to daemon.
+ */
+export function jobToGetArtifacts(job: Job): Request {
+	return { action: 'get', files: [job.getName()] }
+}
+
+/**
+ * Build a network request to initiate pushing input files for the given job.
+ * @param job - The job to push inputs for.
+ * @returns The appropriate network request from client to daemon.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function jobToPushInputs(job: Job): Request {
+	return { action: 'put' }
 }

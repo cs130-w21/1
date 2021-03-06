@@ -6,7 +6,7 @@ import { promisify } from 'util'
 import { ConnectionFactory, ProcessStreams } from './Connection'
 import { Job } from '../Job/Job'
 import { JobResult } from './Client'
-import { jobToRequest } from './ClientNetConvert'
+import { jobToJobRequest } from './ClientNetConvert'
 
 /**
  * SSH username used to connect. Its value is irrelevant.
@@ -40,7 +40,7 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 	await once(conn, 'ready')
 	return {
 		async run(streams: ProcessStreams, job: Job): Promise<JobResult> {
-			const payload = JSON.stringify(jobToRequest(job))
+			const payload = JSON.stringify(jobToJobRequest(job))
 			const stream = await promisify(conn.exec.bind(conn))(payload)
 			streams.stdin.pipe(stream)
 			stream.pipe(streams.stdout)
