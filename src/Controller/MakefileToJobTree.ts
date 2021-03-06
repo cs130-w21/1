@@ -47,7 +47,9 @@ async function getMakefileTrace(options: {
 		throw new MakeTracingError(
 			`Error while generating make trace using arguments "${makeArguments.join(
 				`", "`,
-			)}".\n\nStderr:\n${stderr}\n\nStdout:${stdout}`,
+			)}".`,
+			stderr,
+			stdout,
 		)
 	}
 
