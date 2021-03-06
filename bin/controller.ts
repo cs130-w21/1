@@ -17,18 +17,20 @@ import { makefileToJobTree } from '../src/Controller/MakefileToJobTree'
 const zeroconf = bonjour()
 const cliArgs = interpretArgv(process.argv.slice(2))
 
-if (cliArgs.invalidArguments) {
-	throw new Error(`Invalid arguments supplied: ${process.argv.slice(2)}.`)
-}
-
 if (cliArgs.cleanExit) {
 	process.exit(0)
 }
 
-makefileToJobTree({
-	filePath: cliArgs.makefile,
-	targets: cliArgs.targets,
-})
+// Exit on invalid arguments. Do this *after* checking for a clean exit, because
+// we want `--help` messages to take priority over invalid arguments.
+if (cliArgs.invalidArguments) {
+	console.error(
+		new Error(`Invalid arguments supplied: ${process.argv.slice(2)}.`),
+	)
+	process.exit(1)
+}
+
+makefileToJobTree({ filePath: cliArgs.makefile, targets: cliArgs.targets })
 	.then((rootJobs) => {
 		// Update all Jobs' environment. Need to change . . .
 		const env: JobEnv = { dockerImage: cliArgs.dockerImage }

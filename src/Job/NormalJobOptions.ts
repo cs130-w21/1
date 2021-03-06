@@ -6,7 +6,7 @@ import { Job, JobEnv } from './Job'
  * target: The target file that the Job will produce. Must be unique between jobs in the same dependency graph.
  * commands: An array of the commands to run to build the target.
  * prerequisiteJobs: A set containing all of this job's prerequisite Jobs.
- * prerequisiteFiles: A set containing all of this job's prerequisite files
+ * prerequisiteFiles: A set containing the names of all files needed by the job to run (eg. "sourceCodeToCompile.js"). 
  * environment: A description of the job's runtime environment. For forwards compatibility, always provide this parameter.
  */
 export interface NormalJobOptions {
