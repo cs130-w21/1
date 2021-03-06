@@ -94,9 +94,7 @@ export class NormalJob implements Job {
 				this.target
 			}". Depends on targets "${Array.from(this.prerequisiteJobs)
 				.map((prerequisite) => prerequisite.getTarget())
-				.join('", "')}". Depends on files "${Array.from(
-				this.prerequisiteFiles,
-			).join('", "')}".`
+				.join('", "')}".`
 		}
 
 		if (this.prerequisiteFiles.size > 0) {
@@ -111,15 +109,17 @@ export class NormalJob implements Job {
 	/**
 	 * Getter for this job's environment.
 	 */
-	public getCommands(): string[] {
-		return [...this.commands]
+	public getCommands(): Readonly<string[]> {
+		Object.freeze(this.commands)
+		return this.commands
 	}
 
 	/**
 	 * Getter for the environment this job must run under.
 	 */
-	public getEnvironment(): JobEnv {
-		return { dockerImage: this.environment.dockerImage }
+	public getEnvironment(): Readonly<JobEnv> {
+		Object.freeze(this.environment)
+		return this.environment
 	}
 
 	/**

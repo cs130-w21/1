@@ -46,13 +46,14 @@ describe('NormalJob', () => {
 		const prerequisiteJobs = new Set([jobToDelete])
 		const prerequisiteFiles = new Set(['file_to_delete'])
 		const commands = ['command_to_delete']
+		const environment: JobEnv = { dockerImage: 'image_to_change' }
 
 		const job = new NormalJob({
 			target: 'job',
 			commands,
 			prerequisiteJobs,
 			prerequisiteFiles,
-			environment: dummyEnv,
+			environment,
 		})
 
 		prerequisiteJobs.delete(jobToDelete)
@@ -65,6 +66,9 @@ describe('NormalJob', () => {
 
 		commands.pop()
 		expect(job.getCommands()).toEqual(['command_to_delete'])
+
+		environment.dockerImage = 'new_image'
+		expect(job.getEnvironment().dockerImage).toBe('image_to_change')
 	})
 
 	it('returns the correct prerequisite Jobs', () => {

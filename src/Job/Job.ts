@@ -49,14 +49,14 @@ export interface Job {
 	/**
 	 * Returns the commands to run (in-order and synchronously) that will result.
 	 */
-	getCommands(): string[]
+	getCommands(): Readonly<string[]>
 
 	/**
 	 * Gets the environment this job must run under.
 	 *
 	 * @returns A recipe for the job's runtime environment.
 	 */
-	getEnvironment(): JobEnv
+	getEnvironment(): Readonly<JobEnv>
 
 	/**
 	 * Sets the environment this job must run under.

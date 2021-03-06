@@ -32,38 +32,6 @@ const targetLineRegexWithoutPrereqs = new RegExp(
 )
 
 /**
- * Reads a line from a trace containing a target.
- * Extracts the target and any referenced prerequisites.
- *
- * The target line must match one of two recognized Regular Expressions.
- *
- * @param targetLine - a line from a trace containing a target.
- * @returns the target and prerequisites.
- */
-function extractInfoFromTargetLine(
-	targetLine: string,
-): { readonly target: string; readonly prerequisiteJobTargets: string[] } {
-	const matchesWithPrereqs = targetLineRegexWithPrereqs.exec(targetLine)
-	const matchesWithoutPrereqs = targetLineRegexWithoutPrereqs.exec(targetLine)
-
-	let target: string
-	let prerequisiteJobTargets: string[]
-	if (matchesWithPrereqs && matchesWithPrereqs[1] && matchesWithPrereqs[2]) {
-		target = matchesWithPrereqs[1]
-		prerequisiteJobTargets = matchesWithPrereqs[2].split(' ')
-	} else {
-		assert(
-			matchesWithoutPrereqs && matchesWithoutPrereqs[1],
-			`Target line was rejected by regex: ${targetLine}.`,
-		)
-		target = matchesWithoutPrereqs[1]
-		prerequisiteJobTargets = []
-	}
-
-	return { target, prerequisiteJobTargets }
-}
-
-/**
  * Reads a trace.
  * Extracts a list of lines containing targets, and the associated command-lines to build that target.
  *
@@ -99,6 +67,38 @@ function extractTargetLinesAndCommands(
 }
 
 /**
+ * Reads a line from a trace containing a target.
+ * Extracts the target and any referenced prerequisites.
+ *
+ * The target line must match one of two recognized Regular Expressions.
+ *
+ * @param targetLine - a line from a trace containing a target.
+ * @returns the target and prerequisites.
+ */
+function extractInfoFromTargetLine(
+	targetLine: string,
+): { readonly target: string; readonly prerequisiteJobTargets: string[] } {
+	const matchesWithPrereqs = targetLineRegexWithPrereqs.exec(targetLine)
+	const matchesWithoutPrereqs = targetLineRegexWithoutPrereqs.exec(targetLine)
+
+	let target: string
+	let prerequisiteJobTargets: string[]
+	if (matchesWithPrereqs && matchesWithPrereqs[1] && matchesWithPrereqs[2]) {
+		target = matchesWithPrereqs[1]
+		prerequisiteJobTargets = matchesWithPrereqs[2].split(' ')
+	} else {
+		assert(
+			matchesWithoutPrereqs && matchesWithoutPrereqs[1],
+			`Target line was rejected by regex: ${targetLine}.`,
+		)
+		target = matchesWithoutPrereqs[1]
+		prerequisiteJobTargets = []
+	}
+
+	return { target, prerequisiteJobTargets }
+}
+
+/**
  * Creates a DAG tree of Jobs from a list of targets and their associated commands.
  *
  * @param targetLinesWithCommands - the targets and their associated commands.
@@ -117,7 +117,8 @@ function constructDAGFromTargetsAndCommands(
 			targetLine,
 		)
 
-		// Find all prerequisite jobs. If no Job has some target, then the target is (hopefully) a preexisting file and we can ignore it. Also marks prerequisite Jobs as having dependents.
+		// Find all prerequisite jobs. If no Job has some target, then the target is (hopefully) a preexisting file and we can ignore it.
+		// Also marks prerequisite Jobs as having dependents.
 		const prerequisiteJobs: Set<Job> = new Set()
 		const prerequisiteFiles: Set<string> = new Set()
 		for (const prerequisiteJobTarget of prerequisiteJobTargets) {
@@ -203,7 +204,7 @@ function filterTraceLines(traceLines: string[]): string[] {
  * @returns the tree's root jobs.
  */
 export function makefileTraceToJobTree(trace: string): Set<Job> {
-	const traceLines = trace.split('\n')
+	const traceLines = trace.split(/\r?\n/)
 	const filteredTraceLines = filterTraceLines(traceLines)
 
 	// Jobs are intended to be immutable, so its easiest to compile all the information for a single Job at once.
