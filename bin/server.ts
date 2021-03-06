@@ -61,9 +61,9 @@ async function start(): Promise<void> {
 	const opts = parseOptions(process.argv.slice(2))
 
 	const runJob = dockerRunJob(new Dockerode())
-	const daemon = createSSHDaemon((request, channel) => {
+	const daemon = createSSHDaemon((request, workdir, channel) => {
 		console.log(request)
-		return runJob(request, channel)
+		return runJob(request, workdir, channel)
 	}, opts.hostKeys)
 
 	daemon.on('error', console.error)

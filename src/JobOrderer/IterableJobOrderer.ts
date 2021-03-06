@@ -11,7 +11,7 @@ import { Job } from '../Job/Job'
 export class StopJobOrdererIteration extends Error {}
 
 /**
- * Wrap a {@link JobOrderer} in an {@link AsyncIterable}.
+ * Wrap a {@link JobOrderer} in an AsyncIterable.
  * This exposes the jobs as a linear sequence that can be iterated over.
  * The sequence can be controller and interrupted, which affects all users.
  */
@@ -35,6 +35,7 @@ export class IterableJobOrderer implements AsyncIterable<Job> {
 
 	/**
 	 * Cause all consumers of this iterable to quit with a {@link StopJobOrdererIteration}.
+	 * TODO: Use an AbortController instead.
 	 */
 	cancel(): void {
 		this.#emitter.emit('error', new StopJobOrdererIteration())

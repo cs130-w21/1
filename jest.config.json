@@ -14,6 +14,6 @@
 		}
 	],
 	"collectCoverage": true,
-	"collectCoverageFrom": ["src/**", "!**/index.ts"],
+	"collectCoverageFrom": ["src/**/*.ts", "!**/index.ts"],
 	"errorOnDeprecated": true
 }

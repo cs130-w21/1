@@ -5,12 +5,18 @@ import { ContainerWaitOK } from './DockerAPI'
 import { RunJob } from './RunJob'
 
 /**
+ * The absolute path within the container where the Make project will be mounted.
+ * TODO: Will any parent directories will be created? Or must the direct parent already exist?
+ */
+const CONTAINER_WORKDIR = '/root/junknet'
+
+/**
  * Get an argv array for invoking Make for the given target.
  * @param target - The Makefile target name that should run.
  * @returns An array that can be passed to `exec(3)`.
  */
 function argvForMake(target: string): string[] {
-	return ['make', target]
+	return ['make', '-C', CONTAINER_WORKDIR, target]
 }
 
 /**
@@ -20,13 +26,13 @@ function argvForMake(target: string): string[] {
  * @returns A job runner that uses Docker.
  */
 export function dockerRunJob(docker: Dockerode): RunJob {
-	return async (request, channel): Promise<void> => {
+	return async (request, workdir, channel): Promise<void> => {
 		await ensureImageImport(docker, request.image)
 		const container = await createContainer(
 			docker,
 			request.image,
 			argvForMake(request.target),
-			[], // TODO: obviously Make doesn't work without its Makefile
+			[{ fromPath: workdir, toPath: CONTAINER_WORKDIR }],
 		)
 		await attachStreams(container, channel, channel, channel.stderr)
 		await container.start()

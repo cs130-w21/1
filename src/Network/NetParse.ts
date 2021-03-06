@@ -24,3 +24,17 @@ export function parse<A>(
 
 	return decoded.right
 }
+
+/**
+ * Utility function that fails to compile unless the expression is impossible.
+ * It's useful for ensuring that a `switch` statement handles all cases.
+ * @see https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html#union-exhaustiveness-checking
+ *
+ * @param x - The expression that should never happen.
+ *
+ * @throws TypeError
+ * If the function actually gets called.
+ */
+export function unexpected(x: never): never {
+	throw new TypeError(`Unexpected ${x as string}`)
+}

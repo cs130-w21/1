@@ -17,6 +17,9 @@ import { JobRequest } from '../../src/Network'
 
 jest.mock('../../src/Daemon/DaemonExec')
 
+// As this is a unit test, no filesystem operations will be checked.
+const MOCK_WORKDIR = (undefined as unknown) as string
+
 const REQUEST: JobRequest = Object.freeze({
 	image: 'buildpack-deps:bullseye',
 	target: 'all',
@@ -39,7 +42,7 @@ describe('dockerRunJob', () => {
 
 	// Act
 	const runJob = dockerRunJob(docker)
-	beforeAll(() => runJob(REQUEST, channel))
+	beforeAll(() => runJob(REQUEST, MOCK_WORKDIR, channel))
 
 	it('pulls the image using a tested method', () => {
 		// Assert
@@ -79,7 +82,7 @@ describe('dockerRunJob', () => {
 		container.wait.mockResolvedValue(badExit)
 
 		// Act
-		const promise = runJob(REQUEST, channel)
+		const promise = runJob(REQUEST, MOCK_WORKDIR, channel)
 
 		// Assert
 		assert(badExit.Error)
