@@ -76,5 +76,5 @@ makefileToJobTree({ filePath: cliArgs.makefile, targets: cliArgs.targets })
 	})
 	.catch((error) => {
 		console.error(error)
-		process.exit(1)
+		process.exitCode = 1
 	})
