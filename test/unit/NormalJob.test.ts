@@ -2,14 +2,24 @@ import { Job, JobEnv } from '../../src/Job/Job'
 import { NormalJob } from '../../src/Job/NormalJob'
 
 describe('NormalJob', () => {
+	const dummyEnv: JobEnv = { dockerImage: 'fake' }
+
 	it('returns the correct name', () => {
 		const expectedName = 'jobName'
-		const job = new NormalJob({ target: expectedName, commands: [] })
+		const job = new NormalJob({
+			target: expectedName,
+			commands: [],
+			environment: dummyEnv,
+		})
 		expect(job.getTarget()).toEqual(expectedName)
 	})
 
 	it('returns the correct number of prerequisites for sources', () => {
-		const sourceJob = new NormalJob({ target: '', commands: [] })
+		const sourceJob = new NormalJob({
+			target: '',
+			commands: [],
+			environment: dummyEnv,
+		})
 		expect(sourceJob.getNumPrerequisiteJobs()).toEqual(0)
 	})
 
@@ -18,16 +28,21 @@ describe('NormalJob', () => {
 			target: '',
 			commands: [],
 			prerequisiteJobs: new Set([
-				new NormalJob({ target: '', commands: [] }),
-				new NormalJob({ target: '', commands: [] }),
-				new NormalJob({ target: '', commands: [] }),
+				new NormalJob({ target: '', commands: [], environment: dummyEnv }),
+				new NormalJob({ target: '', commands: [], environment: dummyEnv }),
+				new NormalJob({ target: '', commands: [], environment: dummyEnv }),
 			]),
+			environment: dummyEnv,
 		})
 		expect(nonsourceJob.getNumPrerequisiteJobs()).toEqual(3)
 	})
 
 	it('is impervious to manipulation of passed objects', () => {
-		const jobToDelete = new NormalJob({ target: 'asd', commands: [] })
+		const jobToDelete = new NormalJob({
+			target: 'asd',
+			commands: [],
+			environment: dummyEnv,
+		})
 		const prerequisiteJobs = new Set([jobToDelete])
 		const prerequisiteFiles = new Set(['file_to_delete'])
 		const commands = ['command_to_delete']
@@ -37,6 +52,7 @@ describe('NormalJob', () => {
 			commands,
 			prerequisiteJobs,
 			prerequisiteFiles,
+			environment: dummyEnv,
 		})
 
 		prerequisiteJobs.delete(jobToDelete)
@@ -53,11 +69,16 @@ describe('NormalJob', () => {
 
 	it('returns the correct prerequisite Jobs', () => {
 		const prerequisiteJobs = new Set<Job>([
-			new NormalJob({ target: '1', commands: [] }),
-			new NormalJob({ target: '2', commands: [] }),
-			new NormalJob({ target: '3', commands: [] }),
+			new NormalJob({ target: '1', commands: [], environment: dummyEnv }),
+			new NormalJob({ target: '2', commands: [], environment: dummyEnv }),
+			new NormalJob({ target: '3', commands: [], environment: dummyEnv }),
 		])
-		const job = new NormalJob({ target: 'job', commands: [], prerequisiteJobs })
+		const job = new NormalJob({
+			target: 'job',
+			commands: [],
+			prerequisiteJobs,
+			environment: dummyEnv,
+		})
 
 		expect(new Set(job.getPrerequisiteJobsIterable())).toEqual(prerequisiteJobs)
 	})
@@ -68,6 +89,7 @@ describe('NormalJob', () => {
 			target: 'job',
 			commands: [],
 			prerequisiteFiles,
+			environment: dummyEnv,
 		})
 		expect(new Set(job.getPrerequisiteFilesIterable())).toEqual(
 			prerequisiteFiles,

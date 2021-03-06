@@ -8,7 +8,9 @@ import { MakeTracingError } from './MakeTracingError'
 /**
  * Gets a trace from a makefile by running make with the --trace and --dry-run options.
  *
- * @param filePath - the path to the Makefile
+ * @param options - an object containing options for running make.
+ * @param filePath - the path to the makefile. If omitted, no makefile will be specified to make.
+ * @param targets - the makefile targets to build. If omitted, no targets will be specified to make.
  * @returns the trace.
  */
 async function getMakefileTrace(options: {
@@ -52,12 +54,18 @@ async function getMakefileTrace(options: {
  *
  * The makefile mustn't include phony rules.
  *
- * @param filePath - the path to the makefile.
+ * @param options - an object containing options for running make.
+ * @param filePath - the path to the makefile. If omitted, no makefile will be specified to make.
+ * @param targets - the makefile targets to build. If omitted, no targets will be specified to make.
+ * @returns the tree's root jobs.
  */
 export async function makefileToJobTree(options: {
 	filePath?: string
 	targets?: string[]
 }): Promise<Set<Job>> {
-	const trace = await getMakefileTrace(options)
+	const trace = await getMakefileTrace({
+		filePath: options.filePath,
+		targets: options.targets,
+	})
 	return makefileTraceToJobTree(trace)
 }

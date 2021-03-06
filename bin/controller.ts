@@ -2,12 +2,14 @@
 
 import bonjour from 'bonjour'
 
+import { strict as assert } from 'assert'
 import {
 	supplyClient,
 	Client,
 	createSSHConnection,
 	GenericClient,
 	HeapJobOrderer,
+	JobEnv,
 } from '../src'
 import { interpretArgv } from '../src/Controller/CommandLineController'
 import { makefileToJobTree } from '../src/Controller/MakefileToJobTree'
@@ -23,8 +25,24 @@ if (cliArgs.cleanExit) {
 	process.exit(0)
 }
 
-makefileToJobTree({ filePath: cliArgs.makefile, targets: cliArgs.targets })
+makefileToJobTree({
+	filePath: cliArgs.makefile,
+	targets: cliArgs.targets,
+})
 	.then((rootJobs) => {
+		// Update all Jobs' environment. Need to change . . .
+		const env: JobEnv = { dockerImage: cliArgs.dockerImage }
+		const queue = [...rootJobs]
+		while (queue.length > 0) {
+			const job = queue.pop()
+
+			assert.ok(job, 'Nonempty queue pop() returned undefined.')
+			job.setEnvironment(env)
+			for (const prereq of job.getPrerequisiteJobsIterable()) {
+				queue.push(prereq)
+			}
+		}
+
 		const client: Client = new GenericClient(
 			createSSHConnection,
 			process,

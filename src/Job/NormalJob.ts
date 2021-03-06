@@ -121,4 +121,13 @@ export class NormalJob implements Job {
 	public getEnvironment(): JobEnv {
 		return { dockerImage: this.environment.dockerImage }
 	}
+
+	/**
+	 * Getter for the environment this job must run under.
+	 *
+	 * @deprecated Should be removed soon.
+	 */
+	public setEnvironment(env: JobEnv): void {
+		this.environment = { dockerImage: env.dockerImage }
+	}
 }

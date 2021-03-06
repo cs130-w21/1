@@ -52,9 +52,16 @@ export interface Job {
 	getCommands(): string[]
 
 	/**
-	 * Get the environment this job must run under.
+	 * Gets the environment this job must run under.
 	 *
 	 * @returns A recipe for the job's runtime environment.
 	 */
 	getEnvironment(): JobEnv
+
+	/**
+	 * Sets the environment this job must run under.
+	 *
+	 * @deprecated This object should not be able to be changed. I'm adding this for the purpose of dev speed.
+	 */
+	setEnvironment(environment: JobEnv): void
 }
