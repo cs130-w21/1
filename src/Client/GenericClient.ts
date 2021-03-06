@@ -122,4 +122,29 @@ export class GenericClient extends EventEmitter implements Client {
 			this.quit()
 		}
 	}
+
+	/**
+	 * Recursively generate a list of jobs and prerequisites, as filenames
+	 * to send to the daemon.
+	 * @param job - the job being recursed over.
+	 */
+	public generateJobList(job: Job): Array<String>
+	{
+		var result : Array<String> = [];
+
+		// DFS over job prereqs until base jobs are reached.
+		while (job.getNumPrerequisites() != 0)
+		{
+			// Iterate through jobs and concatenate calls
+			for (const preJob of job.getPrerequisitesIterable())
+			{
+				result.concat(this.generateJobList(preJob));
+			}
+		}
+
+		// Append own job name onto result Array
+		result.push(job.getName());
+
+		return result;
+	}
 }

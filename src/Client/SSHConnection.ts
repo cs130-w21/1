@@ -2,6 +2,7 @@ import { Client } from 'ssh2'
 
 import { once } from 'events'
 import { promisify } from 'util'
+import { create } from 'tar'
 
 import { ConnectionFactory, ProcessStreams } from './Connection'
 import { Job } from '../Job/Job'
