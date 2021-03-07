@@ -22,15 +22,6 @@ export interface Job {
 	getTarget(): string
 
 	/**
-	 * Get this job's name.
-	 *
-	 * @returns This job's name.
-	 *
-	 * @deprecated Will be removed soon. Use {@link getTarget} instead.
-	 */
-	getName(): string
-
-	/**
 	 * Gets this Job's prerequisite Jobs as an iterable.
 	 *
 	 * Returns an iterable to prevent modifying the prerequisites directly.
