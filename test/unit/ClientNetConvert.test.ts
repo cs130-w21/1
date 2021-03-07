@@ -10,7 +10,11 @@ const MOCK_TARGET = 'all'
 const MOCK_IMAGE = 'fake:latest'
 
 function createMockJob(): Job {
-	return new NormalJob(MOCK_TARGET, new Set(), { dockerImage: MOCK_IMAGE })
+	return new NormalJob({
+		target: MOCK_TARGET,
+		environment: { dockerImage: MOCK_IMAGE },
+		commands: [],
+	})
 }
 
 describe('ClientNetConvert', () => {
