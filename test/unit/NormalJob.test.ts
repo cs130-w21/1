@@ -47,32 +47,20 @@ describe('NormalJob', () => {
 		expect(job.getEnvironment()).toEqual(environment)
 	})
 
-	it ('returns a recursively generated list of prerequisites', () => {
+	it('returns a recursively generated list of prerequisites', () => {
 		const job1 = new NormalJob('1')
 		const job2 = new NormalJob('2')
 		const job3 = new NormalJob('3')
 		const job4 = new NormalJob('4')
 		const job5 = new NormalJob('5')
 		const job6 = new NormalJob('6')
-		const prerequisites1 = new Set<Job>([
-			job1,
-			job2,
-			job3,
-		])
-		const prerequisites2 = new Set<Job>([
-			job4,
-			job5,
-			job6,
-		])
+		const prerequisites1 = new Set<Job>([job1, job2, job3])
+		const prerequisites2 = new Set<Job>([job4, job5, job6])
 		const job7 = new NormalJob('7', prerequisites1)
 		const job8 = new NormalJob('8', prerequisites2)
-		const prerequisites3 = new Set<Job>([
-			job7,
-			job8,
-		])
+		const prerequisites3 = new Set<Job>([job7, job8])
 		const job9 = new NormalJob('9', prerequisites3)
 		const expectedArray = [job1, job2, job3, job7, job4, job5, job6, job8, job9]
-		let result = job9.getDeepPrerequisitesIterable()
 		expect(job9.getDeepPrerequisitesIterable()).toEqual(expectedArray)
 	})
 	// This is testing deprecated behavior.

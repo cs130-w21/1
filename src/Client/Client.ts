@@ -37,7 +37,6 @@ export interface ClientEvents {
 	 * @param success - whether all jobs were successful.
 	 */
 	done(success: boolean): void
-
 }
 
 /**
@@ -54,14 +53,6 @@ export interface Client extends TypedEmitter<ClientEvents> {
 	 * @param port - port number of daemon on the host
 	 */
 	introduce(host: string, port: number): void
-
-
-	/**
-	 * Recursively generate a list of jobs and prerequisites, as filenames
-	 * to send to the daemon.
-	 * @param job - the job being recursed over.
-	 */
- 	generateJobList(job: Job): Array<String>
 
 	/**
 	 * Close all daemons and clean up resources.

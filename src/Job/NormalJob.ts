@@ -46,23 +46,24 @@ export class NormalJob implements Job {
 		return this.prerequisites.values()
 	}
 
-  /**
-    * Gets this Job's dependencies (its prerequisites, recursively)
-    *
-    * @returns a iterable containing a deep scan of the Job's prerequisites.
-    */
-  public getDeepPrerequisitesIterable(): Array<Job>	{
-    let childrenPrereqs : Array<Job> = []
-    if (this.getNumPrerequisites() != 0) {
-      for (const prereqJob of this.getPrerequisitesIterable())
-      {
-        childrenPrereqs = childrenPrereqs.concat(prereqJob.getDeepPrerequisitesIterable())
-      }
-    }
-    childrenPrereqs.concat(Array.from(this.getPrerequisitesIterable()))
-    childrenPrereqs.push(this)
-    return childrenPrereqs
-  }
+	/**
+	 * Gets this Job's dependencies (its prerequisites, recursively)
+	 *
+	 * @returns a iterable containing a deep scan of the Job's prerequisites.
+	 */
+	public getDeepPrerequisitesIterable(): Array<Job> {
+		let childrenPrereqs: Array<Job> = []
+		if (this.getNumPrerequisites() !== 0) {
+			for (const prereqJob of this.getPrerequisitesIterable()) {
+				childrenPrereqs = childrenPrereqs.concat(
+					prereqJob.getDeepPrerequisitesIterable(),
+				)
+			}
+		}
+		childrenPrereqs.concat(Array.from(this.getPrerequisitesIterable()))
+		childrenPrereqs.push(this)
+		return childrenPrereqs
+	}
 
 	/**
 	 * Returns the number of prerequisites using Set's native size property.
