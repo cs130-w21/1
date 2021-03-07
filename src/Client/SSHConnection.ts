@@ -61,7 +61,14 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 			// Send tarred contents to daemon.
 			tarStream.pipe(pushInputStream)
 
-			// tar stuff stream to server, look
+			// Return code handling.
+			const tarExitSpec = (await once(pushInputStream, 'close')) as ExitSpec
+			if (tarExitSpec[0] === null) {
+				const [, tarSignal, , tarDesc] = tarExitSpec
+				throw new FailedJobError(`${tarSignal}: ${tarDesc}`)
+			}
+			// const [tarCode] = tarExitSpec
+
 			const payload = JSON.stringify(jobToJobRequest(job))
 			const stream = await promisify(conn.exec.bind(conn))(payload)
 			streams.stdin.pipe(stream)
@@ -82,6 +89,13 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 			const artifactStream = await promisify(conn.exec.bind(conn))(
 				artifactPayload,
 			)
+
+			// Type inference fails if I check `code` by name instead of index.
+			const artifactExitSpec = (await once(artifactStream, 'close')) as ExitSpec
+			if (artifactExitSpec[0] === null) {
+				const [, artifactSignal, , artifactDesc] = artifactExitSpec
+				throw new FailedJobError(`${artifactSignal}: ${artifactDesc}`)
+			}
 
 			// tar extract <= stdout
 			artifactStream.stdout.pipe(extract({ cwd: process.cwd() }))
