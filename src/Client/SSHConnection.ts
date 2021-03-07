@@ -90,15 +90,16 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 				artifactPayload,
 			)
 
-			// Type inference fails if I check `code` by name instead of index.
+			// tar extract <= stdout
+			artifactStream.stdout.pipe(extract({ cwd: process.cwd() }))
+
+			// Get exit code from daemon.
 			const artifactExitSpec = (await once(artifactStream, 'close')) as ExitSpec
 			if (artifactExitSpec[0] === null) {
 				const [, artifactSignal, , artifactDesc] = artifactExitSpec
 				throw new FailedJobError(`${artifactSignal}: ${artifactDesc}`)
 			}
 
-			// tar extract <= stdout
-			artifactStream.stdout.pipe(extract({ cwd: process.cwd() }))
 			return { status: code }
 		},
 
