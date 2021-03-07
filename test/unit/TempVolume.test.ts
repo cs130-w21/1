@@ -52,6 +52,10 @@ describe('createTempDir', () => {
 	})
 	it('ensures the tempdir cannot be accessed by others', async () => {
 		const stat = await fs.stat(tempdir)
+
+		// 511 is octal for 777, 448 is octal for 700
+		// this is testing that the permissions are only for the user
+		// see https://man7.org/linux/man-pages/man2/chmod.2.html for more details
 		// eslint-disable-next-line no-bitwise
 		expect(stat.mode & 511).toBe(448)
 	})
