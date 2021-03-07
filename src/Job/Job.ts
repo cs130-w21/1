@@ -31,6 +31,14 @@ export interface Job {
 	 */
 	getPrerequisitesIterable(): Iterable<Job>
 
+
+	/**
+		* Gets this Job's dependencies (its prerequisites, recursively)
+		*
+		* @returns an array containing a deep scan of the Job's prerequisites.
+		*/
+	getDeepPrerequisitesIterable(): Array<Job>
+
 	/**
 	 * Gets the number of prerequisites that this Job has.
 	 *
