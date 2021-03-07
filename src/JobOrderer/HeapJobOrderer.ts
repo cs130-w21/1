@@ -62,7 +62,7 @@ export class HeapJobOrderer implements JobOrderer {
 	 * @throws When one of the jobs has a prerequisite that is not one of the jobs, or is itself.
 	 * @param jobs - The jobs to manage. They must have correctly populated prerequisites fields.
 	 */
-	constructor(rootJobs: Job[]) {
+	constructor(rootJobs: Set<Job>) {
 		// Add all of the root jobs to dependents map.
 		for (const rootJob of rootJobs) {
 			this.jobToDependents.set(rootJob, new Set())
@@ -84,7 +84,7 @@ export class HeapJobOrderer implements JobOrderer {
 			// Don't process the same node twice.
 			if (!sourcesHelperSet.has(job) && !this.nonSources.has(job)) {
 				// Update job's prerequisites' 'dependents' fields.
-				for (const prerequisite of job.getPrerequisitesIterable()) {
+				for (const prerequisite of job.getPrerequisiteJobsIterable()) {
 					let dependents = this.jobToDependents.get(prerequisite)
 
 					if (!dependents) {
@@ -96,7 +96,7 @@ export class HeapJobOrderer implements JobOrderer {
 					queue.push(prerequisite)
 				}
 
-				if (job.getNumPrerequisites() === 0) {
+				if (job.getNumPrerequisiteJobs() === 0) {
 					this.sources.push(job)
 					sourcesHelperSet.add(job)
 				} else {
@@ -123,7 +123,7 @@ export class HeapJobOrderer implements JobOrderer {
 			numCompletedPrereqs !== undefined,
 			`We don't know about this job: ${job.toString()}.`,
 		)
-		return job.getNumPrerequisites() === numCompletedPrereqs
+		return job.getNumPrerequisiteJobs() === numCompletedPrereqs
 	}
 
 	/**
@@ -171,7 +171,10 @@ export class HeapJobOrderer implements JobOrderer {
 				dependentNumCompletedJobs + 1,
 			)
 
-			if (dependent.getNumPrerequisites() === dependentNumCompletedJobs + 1) {
+			if (
+				dependent.getNumPrerequisiteJobs() ===
+				dependentNumCompletedJobs + 1
+			) {
 				this.sources.push(dependent)
 				this.nonSources.delete(dependent)
 			}
