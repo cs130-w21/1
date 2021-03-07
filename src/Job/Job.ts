@@ -13,23 +13,40 @@ export interface JobEnv {
  */
 export interface Job {
 	/**
+	 * Get this job's target.
+	 *
+	 * The target is the resulting file.
+	 *
+	 * @returns This job's target.
+	 */
+	getTarget(): string
+
+	/**
 	 * Get this job's name.
 	 *
-	 * This method may be removed in the future because Jobs may no longer have names.
-	 *
-	 * @experimental
 	 * @returns This job's name.
+	 *
+	 * @deprecated Will be removed soon. Use {@link getTarget} instead.
 	 */
 	getName(): string
 
 	/**
-	 * Gets this Job's prerequisites as an iterable.
+	 * Gets this Job's prerequisite Jobs as an iterable.
 	 *
 	 * Returns an iterable to prevent modifying the prerequisites directly.
 	 *
-	 * @returns An iterable that iterates over this Job's prerequisites.
+	 * @returns An iterable that iterates over this Job's prerequisite Jobs.
 	 */
-	getPrerequisitesIterable(): Iterable<Job>
+	getPrerequisiteJobsIterable(): Iterable<Job>
+
+	/**
+	 * Gets this Job's prerequisite files as an iterable.
+	 *
+	 * Returns an iterable to prevent modifying the prerequisites directly.
+	 *
+	 * @returns An iterable that iterates over this Job's prerequisite files.
+	 */
+	getPrerequisiteFilesIterable(): Iterable<string>
 
 	/**
 	 * Gets this Job's dependencies (its prerequisites, recursively)
@@ -43,12 +60,24 @@ export interface Job {
 	 *
 	 * @returns The number of prerequisites.
 	 */
-	getNumPrerequisites(): number
+	getNumPrerequisiteJobs(): number
 
 	/**
-	 * Get the environment this job must run under.
+	 * Returns the commands to run (in-order and synchronously) that will result.
+	 */
+	getCommands(): Readonly<string[]>
+
+	/**
+	 * Gets the environment this job must run under.
 	 *
 	 * @returns A recipe for the job's runtime environment.
 	 */
-	getEnvironment(): JobEnv
+	getEnvironment(): Readonly<JobEnv>
+
+	/**
+	 * Sets the environment this job must run under.
+	 *
+	 * @deprecated This object should not be able to be changed. I'm adding this for the purpose of dev speed.
+	 */
+	setEnvironment(environment: JobEnv): void
 }
