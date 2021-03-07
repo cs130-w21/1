@@ -2,12 +2,16 @@ import { Client } from 'ssh2'
 
 import { once } from 'events'
 import { promisify } from 'util'
-import { create } from 'tar'
+import { create, extract } from 'tar'
 
 import { ConnectionFactory, ProcessStreams } from './Connection'
 import { Job } from '../Job/Job'
 import { JobResult } from './Client'
-import { jobToJobRequest } from './ClientNetConvert'
+import {
+	jobToJobRequest,
+	jobToPushInputs,
+	jobToGetArtifacts,
+} from './ClientNetConvert'
 
 /**
  * SSH username used to connect. Its value is irrelevant.
@@ -41,6 +45,23 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 	await once(conn, 'ready')
 	return {
 		async run(streams: ProcessStreams, job: Job): Promise<JobResult> {
+			// TBD Transfter files to erv s jobstopushinputreq
+			// TBD  peipe tar.c to stdin of exec
+			// We send a put request to the daemon
+			const putPayload = JSON.stringify(jobToPushInputs(job))
+			const pushInputStream = await promisify(conn.exec.bind(conn))(putPayload)
+			// We generate list of jobs to be tarred in the stream.
+			const arrayOfJobs: Array<Job> = job.getDeepPrerequisitesIterable()
+			const fileList: Array<string> = []
+			for (const subJob of arrayOfJobs) {
+				fileList.push(subJob.getName())
+			}
+			// Create tar stream.
+			const tarStream = create({}, fileList)
+			// Send tarred contents to daemon.
+			tarStream.pipe(pushInputStream)
+
+			// tar stuff stream to server, look
 			const payload = JSON.stringify(jobToJobRequest(job))
 			const stream = await promisify(conn.exec.bind(conn))(payload)
 			streams.stdin.pipe(stream)
@@ -55,6 +76,15 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 			}
 
 			const [code] = exitSpec
+
+			// Setup stream to collect build artifacts from daemon.
+			const artifactPayload = JSON.stringify(jobToGetArtifacts(job))
+			const artifactStream = await promisify(conn.exec.bind(conn))(
+				artifactPayload,
+			)
+
+			// tar extract <= stdout
+			artifactStream.stdout.pipe(extract({ cwd: process.cwd() }))
 			return { status: code }
 		},
 
