@@ -18,11 +18,11 @@ describe('safeResolve', () => {
 		expect(path2).toEqual('/usr/bin/ls')
 	})
 	it('rejects relative paths that escape the root', () => {
-		const resolved = safeResolve('../', 'ls')
+		const resolved = safeResolve('/bin', '../media')
 		expect(resolved).toBeUndefined()
 	})
 	it('rejects absolute paths that escape the root', () => {
-		const resolved = safeResolve('/../', 'ls')
+		const resolved = safeResolve('/dev', '/bin/ls')
 		expect(resolved).toBeUndefined()
 	})
 	it('rejects paths with null bytes', () => {
