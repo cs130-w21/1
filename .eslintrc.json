@@ -32,7 +32,8 @@
 		"jest/prefer-spy-on": "error",
 		"jest/prefer-todo": "error",
 		"jest/require-top-level-describe": "error",
-		"tsdoc/syntax": "error"
+		"tsdoc/syntax": "error",
+		"prefer-destructuring": ["error", { "array": false }]
 	},
 	"env": {
 		"node": true

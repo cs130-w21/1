@@ -1,4 +1,6 @@
+import { cloneDeep } from 'lodash'
 import { JobEnv, Job } from './Job'
+import { NormalJobOptions } from './NormalJobOptions'
 
 /**
  * The hard-coded Docker image for all {@link NormalJob} instances.
@@ -14,64 +16,124 @@ const DEFAULT_ENV: JobEnv = Object.freeze({
  * An implementation of {@link Job}.
  */
 export class NormalJob implements Job {
-	private prerequisites: Set<Job>
+	private prerequisiteJobs: Set<Job>
+
+	private prerequisiteFiles: Set<string>
+
+	private commands: string[]
+
+	private target: string
+
+	private environment: JobEnv
 
 	/**
-	 * @param name - The job's name. Must be unique between jobs in the same dependency graph.
-	 * @param prerequisites - A set containing all of this job's prerequisites. Defaults to no prerequisites.
-	 * @param environment - A description of the job's runtime environment. For forwards compatibility, always provide this parameter. Defaults to a Docker image containing GNU Make.
+	 * @param options - the settings for this Job.
+	 *
+	 * The default for options.prerequisiteJobs is the empty set.
+	 *
+	 * The default for options.prerequisiteFiles is the empty set.
+	 *
+	 * The default for options.environment is a Docker image containing GNU Make: {@link DEFAULT_ENV}. For forwards compatibility, always provide this parameter.
 	 */
-	constructor(
-		private readonly name: string,
-		prerequisites: Set<Job> = new Set(),
-		private environment: JobEnv = DEFAULT_ENV,
-	) {
-		// Make a copy so the caller can't directly access prerequisites. Encapsulation!
-		this.prerequisites = new Set(prerequisites)
+	constructor(options: NormalJobOptions) {
+		// Make copies so the caller can't directly access prerequisites. Encapsulation!
+		this.prerequisiteJobs = new Set(options.prerequisiteJobs) // We don't need a deep copy because Jobs are immutable.
+		this.prerequisiteFiles = new Set(options.prerequisiteFiles)
+		this.commands = options.commands.slice()
+		this.target = options.target
+		this.environment = options.environment
+			? cloneDeep(options.environment)
+			: DEFAULT_ENV
 	}
 
 	/**
-	 * @returns The job's name.
+	 * @returns This job's target.
+	 */
+	public getTarget(): string {
+		return this.target
+	}
+
+	/**
+	 * @returns This job's name.
 	 */
 	public getName(): string {
-		return this.name
+		return this.target
 	}
 
 	/**
 	 * Uses Set's native values() function to get an iterable of prerequisites.
 	 *
-	 * @returns An iterable that iterates over the prerequisites Set.
+	 * @returns An iterable that iterates over the prerequisiteJobs Set.
 	 */
-	public getPrerequisitesIterable(): Iterable<Job> {
-		return this.prerequisites.values()
+	public getPrerequisiteJobsIterable(): Iterable<Job> {
+		return this.prerequisiteJobs.values()
 	}
 
 	/**
-	 * Returns the number of prerequisites using Set's native size property.
+	 * Uses Set's native values() function to get an iterable of prerequisites.
+	 *
+	 * @returns An iterable that iterates over the prerequisiteFiles Set.
 	 */
-	public getNumPrerequisites(): number {
-		return this.prerequisites.size
+	public getPrerequisiteFilesIterable(): Iterable<string> {
+		return this.prerequisiteFiles.values()
+	}
+
+	/**
+	 * Returns the number of prerequisite Jobs using Set's native size property.
+	 */
+	public getNumPrerequisiteJobs(): number {
+		return this.prerequisiteJobs.size
 	}
 
 	/**
 	 * JavaScript calls this function whenever Job is casted to a string.
 	 *
-	 * @returns This job's name.
+	 * @returns A string detailing this job's target, as well as any prerequisite jobs or files.
 	 */
 	public toString(): string {
-		if (this.prerequisites.size === 0) {
-			return `Source job ${this.name}.`
+		let description = ''
+
+		if (this.getNumPrerequisiteJobs() === 0) {
+			description += `Source job with target ${this.target}.`
+		} else {
+			description += `Job with target "${
+				this.target
+			}". Depends on targets "${Array.from(this.prerequisiteJobs)
+				.map((prerequisite) => prerequisite.getTarget())
+				.join('", "')}".`
 		}
 
-		return `Job "${this.name}" depending on ${Array.from(this.prerequisites)
-			.map((prerequisite) => prerequisite.getName())
-			.join(', ')}.`
+		if (this.prerequisiteFiles.size > 0) {
+			description += ` Depends on files "${Array.from(
+				this.prerequisiteFiles,
+			).join('", "')}".`
+		}
+
+		return description
+	}
+
+	/**
+	 * Getter for this job's environment.
+	 */
+	public getCommands(): Readonly<string[]> {
+		Object.freeze(this.commands)
+		return this.commands
 	}
 
 	/**
 	 * Getter for the environment this job must run under.
 	 */
-	public getEnvironment(): JobEnv {
+	public getEnvironment(): Readonly<JobEnv> {
+		Object.freeze(this.environment)
 		return this.environment
+	}
+
+	/**
+	 * Getter for the environment this job must run under.
+	 *
+	 * @deprecated Should be removed soon.
+	 */
+	public setEnvironment(env: JobEnv): void {
+		this.environment = { dockerImage: env.dockerImage }
 	}
 }

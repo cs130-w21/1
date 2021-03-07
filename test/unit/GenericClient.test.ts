@@ -11,6 +11,7 @@ import {
 	NormalJob,
 	JobResult,
 	HeapJobOrderer,
+	JobEnv,
 } from '../../src'
 
 const MOCK_HOST = 'example.com'
@@ -22,10 +23,16 @@ const BAD_RESULT: Readonly<JobResult> = Object.freeze({ status: 1 })
 const GOOD_RESULT: Readonly<JobResult> = Object.freeze({ status: 0 })
 
 function create(connect: ConnectionFactory, ...jobs: Job[]): Client {
-	return new GenericClient(connect, MOCK_STREAMS, new HeapJobOrderer(jobs))
+	return new GenericClient(
+		connect,
+		MOCK_STREAMS,
+		new HeapJobOrderer(new Set(jobs)),
+	)
 }
 
 describe('GenericClient', () => {
+	const dummyEnvironment: JobEnv = { dockerImage: 'fake' }
+
 	it('connects to a newly introduced daemon', () => {
 		// Arrange
 		const daemon = mock<Connection>()
@@ -46,7 +53,11 @@ describe('GenericClient', () => {
 		daemon.run.mockResolvedValue(GOOD_RESULT)
 		const connect = jest.fn().mockResolvedValue(daemon)
 
-		const job: Job = new NormalJob('root')
+		const job: Job = new NormalJob({
+			target: 'root',
+			commands: [],
+			environment: dummyEnvironment,
+		})
 		const client = create(connect, job)
 
 		// Act
@@ -64,7 +75,11 @@ describe('GenericClient', () => {
 		daemon.run.mockResolvedValue(GOOD_RESULT)
 		const connect = jest.fn().mockResolvedValue(daemon)
 
-		const job: Job = new NormalJob('root')
+		const job: Job = new NormalJob({
+			target: 'root',
+			commands: [],
+			environment: dummyEnvironment,
+		})
 		const client = create(connect, job)
 
 		// Act
@@ -90,7 +105,11 @@ describe('GenericClient', () => {
 		}
 		daemon.run.mockResolvedValueOnce(GOOD_RESULT)
 
-		const job: Job = new NormalJob('root')
+		const job: Job = new NormalJob({
+			target: 'root',
+			commands: [],
+			environment: dummyEnvironment,
+		})
 		const client = create(connect, job)
 
 		// Act
@@ -113,8 +132,17 @@ describe('GenericClient', () => {
 		daemon.run.mockResolvedValueOnce(GOOD_RESULT)
 		daemon.run.mockRejectedValueOnce(new Error())
 
-		const badJob: Job = new NormalJob('bad')
-		const goodJob: Job = new NormalJob('good', new Set([badJob]))
+		const badJob: Job = new NormalJob({
+			target: 'bad',
+			commands: [],
+			environment: dummyEnvironment,
+		})
+		const goodJob: Job = new NormalJob({
+			target: 'good',
+			commands: [],
+			prerequisiteJobs: new Set([badJob]),
+			environment: dummyEnvironment,
+		})
 		const client = create(connect, goodJob)
 
 		// Act
@@ -154,7 +182,14 @@ describe('GenericClient', () => {
 			daemons.push(daemon)
 		}
 
-		const jobs = daemons.map((_, i) => new NormalJob(i.toString()))
+		const jobs = daemons.map(
+			(_, i) =>
+				new NormalJob({
+					target: i.toString(),
+					commands: [],
+					environment: dummyEnvironment,
+				}),
+		)
 		const client = create(connect, ...jobs)
 
 		// Act
