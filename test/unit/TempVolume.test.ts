@@ -4,7 +4,7 @@ import {
 	safeResolve,
 	createTempDir,
 	destroyTempDir,
-	withTempDir
+	withTempDir,
 } from '../../src/Daemon/TempVolume'
 
 describe('safeResolve', () => {
@@ -52,6 +52,7 @@ describe('createTempDir', () => {
 	})
 	it('ensures the tempdir cannot be accessed by others', async () => {
 		const stat = await fs.stat(tempdir)
+		// eslint-disable-next-line no-bitwise
 		expect(stat.mode & 511).toBe(448)
 	})
 })
@@ -81,47 +82,35 @@ describe('destroyTempDir', () => {
 
 		await fs.chmod(tempdir, 0o000)
 
-		//try to destroy the directory
+		// try to destroy the directory
 		await expect(destroyTempDir(tempdir)).rejects.toThrow()
 	})
 })
 
 describe('withTempDir', () => {
 	it('creates the tempdir before the action is triggered', async () => {
-		const action = async (root: string) => {
-			return existsSync(root)
-		}
+		const action = async (root: string): Promise<boolean> => existsSync(root)
 		await expect(withTempDir(action)).resolves.toBeTruthy()
 	})
 	it('removes the tempdir after the action completes', async () => {
-		const action = async (root: string) => {
-			return root
-		}
+		const action = async (root: string): Promise<string> => root
 		const directory = await withTempDir(action)
 		expect(existsSync(directory)).toBeFalsy()
 	})
 	it('removes the tempdir even when the action throws', async () => {
-		const action = async (root: string) => {
+		const action = async (root: string): Promise<string> => {
 			throw new Error(root)
 			return root
 		}
 
-		try{
-			await withTempDir(action)
-
-			//should not happen
-			expect(true).toBeFalsy()
-		} catch(error){
-			//directory was cleaned up
+		await withTempDir(action).catch((error: Error) => {
 			expect(existsSync(error.message)).toBeFalsy()
-		}
+		})
 	})
 	it('propagates the promise status of the action', async () => {
-		const resolveAction = async (root: string) => {
-			return root
-		}
+		const resolveAction = async (root: string): Promise<string> => root
 
-		const rejectAction = async (root: string) => {
+		const rejectAction = async (root: string): Promise<string> => {
 			throw new Error(root)
 			return root
 		}
