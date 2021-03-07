@@ -124,29 +124,28 @@ describe('NormalJob', () => {
 		const job4 = new NormalJob({ target: '4', commands: [], environment })
 		const job5 = new NormalJob({ target: '5', commands: [], environment })
 		const job6 = new NormalJob({ target: '6', commands: [], environment })
-		const prerequisites1 = new Set<Job>([job1, job2, job3])
-		const prerequisites2 = new Set<Job>([job4, job5, job6])
 		const job7 = new NormalJob({
 			target: '7',
-			prerequisiteJobs: prerequisites1,
+			prerequisiteJobs: new Set<Job>([job1, job2, job3]),
 			commands: [],
 			environment,
 		})
 		const job8 = new NormalJob({
 			target: '8',
-			prerequisiteJobs: prerequisites2,
+			prerequisiteJobs: new Set<Job>([job4, job5, job6]),
 			commands: [],
 			environment,
 		})
-		const prerequisites3 = new Set<Job>([job7, job8])
 		const job9 = new NormalJob({
 			target: '9',
-			prerequisiteJobs: prerequisites3,
+			prerequisiteJobs: new Set<Job>([job7, job8]),
 			commands: [],
 			environment,
 		})
-		const expectedArray = [job1, job2, job3, job7, job4, job5, job6, job8, job9]
-		expect(job9.getDeepPrerequisitesIterable()).toEqual(expectedArray)
+		const expectedArray = [job1, job2, job3, job7, job4, job5, job6, job8]
+		expect(job9.getDeepPrerequisitesIterable().sort()).toEqual(
+			expectedArray.sort(),
+		)
 	})
 	// This is testing deprecated behavior.
 	it('defaults to an environment with a docker image', () => {

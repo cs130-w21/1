@@ -85,15 +85,15 @@ export class NormalJob implements Job {
 	 */
 	public getDeepPrerequisitesIterable(): Array<Job> {
 		let childrenPrereqs: Array<Job> = []
-		if (this.getNumPrerequisiteJobs() !== 0) {
-			for (const prereqJob of this.getPrerequisiteJobsIterable()) {
-				childrenPrereqs = childrenPrereqs.concat(
-					prereqJob.getDeepPrerequisitesIterable(),
-				)
-			}
+		for (const prereqJob of this.getPrerequisiteJobsIterable()) {
+			childrenPrereqs = childrenPrereqs.concat(
+				prereqJob.getDeepPrerequisitesIterable(),
+			)
 		}
-		childrenPrereqs.concat(Array.from(this.getPrerequisiteJobsIterable()))
-		childrenPrereqs.push(this)
+		childrenPrereqs = childrenPrereqs.concat(
+			Array.from(this.getPrerequisiteJobsIterable()),
+		)
+		//  childrenPrereqs.push(this)
 		return childrenPrereqs
 	}
 
