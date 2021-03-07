@@ -34,7 +34,7 @@ export const createHttp2Connection: ConnectionFactory = async (host, port) => {
 	await once(client, 'connect')
 	return {
 		async run(streams: ProcessStreams, job: Job): Promise<JobResult> {
-			const request = client.request({ ':path': `/${job.getTarget()}` })
+			const request = client.request({ ':path': `/${job.getName()}` })
 
 			let data = ''
 			request.setEncoding('utf8')

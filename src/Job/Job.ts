@@ -17,9 +17,18 @@ export interface Job {
 	 *
 	 * The target is the resulting file.
 	 *
-	 * @returns This target.
+	 * @returns This job's target.
 	 */
 	getTarget(): string
+
+	/**
+	 * Get this job's name.
+	 *
+	 * @returns This job's name.
+	 *
+	 * @deprecated Will be removed soon. Use {@link getTarget} instead.
+	 */
+	getName(): string
 
 	/**
 	 * Gets this Job's prerequisite Jobs as an iterable.

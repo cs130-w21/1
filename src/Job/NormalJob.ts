@@ -47,9 +47,16 @@ export class NormalJob implements Job {
 	}
 
 	/**
-	 * @returns The job's name.
+	 * @returns This job's target.
 	 */
 	public getTarget(): string {
+		return this.target
+	}
+
+	/**
+	 * @returns This job's name.
+	 */
+	public getName(): string {
 		return this.target
 	}
 
