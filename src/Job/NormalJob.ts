@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash'
 import { JobEnv, Job } from './Job'
 import { NormalJobOptions } from './NormalJobOptions'
 
@@ -41,9 +42,7 @@ export class NormalJob implements Job {
 		this.commands = options.commands.slice()
 		this.target = options.target
 		this.environment = options.environment
-			? {
-					dockerImage: options.environment.dockerImage,
-			  }
+			? cloneDeep(options.environment)
 			: DEFAULT_ENV
 	}
 
