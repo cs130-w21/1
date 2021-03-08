@@ -87,7 +87,7 @@ export class NormalJob implements Job {
 		//	Array.from(this.getPrerequisiteJobsIterable())),
 		childrenPrereqs = childrenPrereqs.concat(
 			Array.from(this.getPrerequisiteJobsIterable()).map((preJob) =>
-				preJob.getName(),
+				preJob.getTarget(),
 			),
 		)
 		childrenPrereqs = childrenPrereqs.concat(
