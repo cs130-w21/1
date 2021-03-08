@@ -8,7 +8,7 @@ import { Request } from '../Network'
  */
 export function jobToJobRequest(job: Job): Request {
 	const image = job.getEnvironment().dockerImage
-	return { action: 'job', image, target: job.getName() }
+	return { action: 'job', image, target: job.getTarget() }
 }
 
 /**
@@ -17,7 +17,7 @@ export function jobToJobRequest(job: Job): Request {
  * @returns The appropriate network request from client to daemon.
  */
 export function jobToGetArtifacts(job: Job): Request {
-	return { action: 'get', files: [job.getName()] }
+	return { action: 'get', files: [job.getTarget()] }
 }
 
 /**

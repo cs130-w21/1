@@ -4,7 +4,7 @@ import { NormalJob } from '../../src/Job/NormalJob'
 describe('NormalJob', () => {
 	const dummyEnv: JobEnv = { dockerImage: 'fake' }
 
-	it('returns the correct name', () => {
+	it('returns the correct target', () => {
 		const expectedTarget = 'jobTarget'
 		const job = new NormalJob({
 			target: expectedTarget,
@@ -12,16 +12,6 @@ describe('NormalJob', () => {
 			environment: dummyEnv,
 		})
 		expect(job.getTarget()).toEqual(expectedTarget)
-	})
-
-	it('returns the correct target', () => {
-		const expectedName = 'jobName'
-		const job = new NormalJob({
-			target: expectedName,
-			commands: [],
-			environment: dummyEnv,
-		})
-		expect(job.getName()).toEqual(expectedName)
 	})
 
 	it('returns the correct number of prerequisites for sources', () => {

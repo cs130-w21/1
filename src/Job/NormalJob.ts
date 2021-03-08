@@ -54,13 +54,6 @@ export class NormalJob implements Job {
 	}
 
 	/**
-	 * @returns This job's name.
-	 */
-	public getName(): string {
-		return this.target
-	}
-
-	/**
 	 * Uses Set's native values() function to get an iterable of prerequisites.
 	 *
 	 * @returns An iterable that iterates over the prerequisiteJobs Set.
@@ -94,7 +87,7 @@ export class NormalJob implements Job {
 		//	Array.from(this.getPrerequisiteJobsIterable())),
 		childrenPrereqs = childrenPrereqs.concat(
 			Array.from(this.getPrerequisiteJobsIterable()).map((preJob) =>
-				preJob.getName(),
+				preJob.getTarget(),
 			),
 		)
 		childrenPrereqs = childrenPrereqs.concat(
