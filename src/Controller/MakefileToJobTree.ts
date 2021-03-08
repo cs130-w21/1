@@ -74,5 +74,5 @@ export async function makefileToJobTree(options: {
 		filePath: options.filePath,
 		targets: options.targets,
 	})
-	return makefileTraceToJobTree(trace)
+	return makefileTraceToJobTree(trace, options.filePath || 'Makefile')
 }
