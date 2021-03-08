@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import bonjour from 'bonjour'
+import yargs from 'yargs'
 
 import { strict as assert } from 'assert'
 import {
@@ -25,10 +26,9 @@ if (cliArgs.cleanExit) {
 // we want `--help` messages to take priority over invalid arguments.
 if (cliArgs.invalidArguments) {
 	console.error(
-		new Error(
-			`Invalid arguments supplied: "${process.argv.slice(2).join(' ')}".`,
-		),
+		`Invalid arguments supplied: "${process.argv.slice(2).join(' ')}".`,
 	)
+	yargs.showHelp()
 	process.exit(1)
 }
 
