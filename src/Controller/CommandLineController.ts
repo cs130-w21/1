@@ -6,8 +6,13 @@ import yargs from 'yargs'
  */
 export interface ArgvData {
 	/**
-	 * The makefile specified by the user (eg. `build.make`).
-	 * Set to `undefined` if no file was specified.
+	 * Unused; right now, it's hardcoded to 'Makefile'.
+	 *
+	 * Its intent was to capture the makefile specified by the user (eg.
+	 * `build.make`), and to be `undefined` when no Makefile was specified.
+	 *
+	 * We cut this functionality due to time constraints; it's preserved here
+	 * for compatibility + futureproofing.
 	 */
 	makefile: string | undefined
 
@@ -57,19 +62,12 @@ export function interpretArgv(argv: readonly string[]): ArgvData {
 		.usage(
 			'Build a makefile target in parallel, given a docker image and' +
 				'a list of targets\nUsage: ' +
-				'junknet [-f makefile] docker-image [target1 target2...]',
+				'junknet docker-image [target1 target2...]',
 		)
 		.epilogue(
 			'for more information, read our manual ' +
 				'at https://github.com/cs130-w21/1',
 		)
-		.options({
-			f: {
-				alias: 'makefile',
-				type: 'string',
-				desc: 'The Makefile to process',
-			},
-		})
 		.exitProcess(false) // Don't `process.exit()` on invalid options.
 		.version() // SIDE EFFECT: parses package.json for version info.
 		.help().argv
@@ -77,7 +75,7 @@ export function interpretArgv(argv: readonly string[]): ArgvData {
 	// Exit when given `--help` or `--version`.
 	if (yargsArgv.help !== undefined || yargsArgv.version !== undefined) {
 		return {
-			makefile: undefined,
+			makefile: 'Makefile',
 			dockerImage: '',
 			targets: [],
 			cleanExit: true,
@@ -101,7 +99,7 @@ export function interpretArgv(argv: readonly string[]): ArgvData {
 	// invalidArguments flag.
 	if (dockerImage === undefined) {
 		return {
-			makefile: undefined,
+			makefile: 'Makefile',
 			dockerImage: '',
 			targets: [],
 			cleanExit: false,
@@ -110,7 +108,7 @@ export function interpretArgv(argv: readonly string[]): ArgvData {
 	}
 
 	return {
-		makefile: yargsArgv.f,
+		makefile: 'Makefile',
 		dockerImage,
 		targets,
 		cleanExit: false,
