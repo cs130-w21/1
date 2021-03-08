@@ -52,19 +52,18 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 			const pushInputStream = await promisify(conn.exec.bind(conn))(putPayload)
 			// We generate list of jobs to be tarred in the stream.
 			const fileList: Array<string> = job.getDeepPrerequisitesIterable()
+			// Add the makefile as a file to the fileList.
+			fileList.push('Makefile')
+			// Create tar stream.
+			const tarStream = create({}, fileList)
+			// Send tarred contents to daemon.
+			tarStream.pipe(pushInputStream)
 
-			if (fileList.length !== 0) {
-				// Create tar stream.
-				const tarStream = create({}, fileList)
-				// Send tarred contents to daemon.
-				tarStream.pipe(pushInputStream)
-
-				// Return code handling.
-				const tarExitSpec = (await once(pushInputStream, 'close')) as ExitSpec
-				if (tarExitSpec[0] === null) {
-					const [, tarSignal, , tarDesc] = tarExitSpec
-					throw new FailedJobError(`${tarSignal}: ${tarDesc}`)
-				}
+			// Return code handling.
+			const tarExitSpec = (await once(pushInputStream, 'close')) as ExitSpec
+			if (tarExitSpec[0] === null) {
+				const [, tarSignal, , tarDesc] = tarExitSpec
+				throw new FailedJobError(`${tarSignal}: ${tarDesc}`)
 			}
 			// const [tarCode] = tarExitSpec
 
