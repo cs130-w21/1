@@ -106,6 +106,7 @@ function extractInfoFromTargetLine(
  */
 function constructDAGFromTargetsAndCommands(
 	targetLinesWithCommands: TargetLineAndCommands[],
+	makefilePath: string,
 ): Set<Job> {
 	// We need to know whether a Job has dependents so we can isolate the root jobs later.
 	const targetToJAD = new Map<string, JobAndDependency>()
@@ -139,6 +140,7 @@ function constructDAGFromTargetsAndCommands(
 			!targetToJAD.has(target),
 			`Target "${target}" exists twice in the provided Makefile trace.`,
 		)
+		prerequisiteFiles.add(makefilePath)
 		targetToJAD.set(target, {
 			job: new NormalJob({
 				target,
@@ -203,7 +205,10 @@ function filterTraceLines(traceLines: string[]): string[] {
  * @param trace - the output from a call to 'make --trace --dry-run'.
  * @returns the tree's root jobs.
  */
-export function makefileTraceToJobTree(trace: string): Set<Job> {
+export function makefileTraceToJobTree(
+	trace: string,
+	makefilePath: string,
+): Set<Job> {
 	const traceLines = trace.split(/\r?\n/)
 	const filteredTraceLines = filterTraceLines(traceLines)
 
@@ -212,5 +217,8 @@ export function makefileTraceToJobTree(trace: string): Set<Job> {
 		filteredTraceLines,
 	)
 
-	return constructDAGFromTargetsAndCommands(targetLinesWithCommands)
+	return constructDAGFromTargetsAndCommands(
+		targetLinesWithCommands,
+		makefilePath,
+	)
 }
