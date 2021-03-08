@@ -45,28 +45,24 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 	await once(conn, 'ready')
 	return {
 		async run(streams: ProcessStreams, job: Job): Promise<JobResult> {
-			// TBD Transfter files to erv s jobstopushinputreq
-			// TBD  peipe tar.c to stdin of exec
-			// We send a put request to the daemon
+			// Send PushInputs:
 			const putPayload = JSON.stringify(jobToPushInputs(job))
 			const pushInputStream = await promisify(conn.exec.bind(conn))(putPayload)
-			// We generate list of jobs to be tarred in the stream.
-			const fileList: Array<string> = job.getDeepPrerequisitesIterable()
-			// Add the makefile as a file to the fileList.
+
+			const fileList: string[] = job.getDeepPrerequisitesIterable()
 			fileList.push('Makefile')
-			// Create tar stream.
-			const tarStream = create({}, fileList)
-			// Send tarred contents to daemon.
-			tarStream.pipe(pushInputStream)
 
-			// Return code handling.
-			const tarExitSpec = (await once(pushInputStream, 'close')) as ExitSpec
-			if (tarExitSpec[0] === null) {
-				const [, tarSignal, , tarDesc] = tarExitSpec
-				throw new FailedJobError(`${tarSignal}: ${tarDesc}`)
+			const tarPutStream = create({}, fileList)
+			tarPutStream.pipe(pushInputStream)
+			pushInputStream.pipe(streams.stdout)
+			pushInputStream.stderr.pipe(streams.stderr)
+
+			const [putCode] = (await once(pushInputStream, 'close')) as ExitSpec
+			if (putCode !== 0) {
+				throw new FailedJobError()
 			}
-			// const [tarCode] = tarExitSpec
 
+			// Send JobRequest:
 			const payload = JSON.stringify(jobToJobRequest(job))
 			const stream = await promisify(conn.exec.bind(conn))(payload)
 			streams.stdin.pipe(stream)
@@ -81,21 +77,24 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 			}
 
 			const [code] = exitSpec
+			if (code !== 0) {
+				return { status: code }
+			}
 
-			// Setup stream to collect build artifacts from daemon.
+			// Send GetArtifacts:
 			const artifactPayload = JSON.stringify(jobToGetArtifacts(job))
 			const artifactStream = await promisify(conn.exec.bind(conn))(
 				artifactPayload,
 			)
 
-			// tar extract <= stdout
-			artifactStream.stdout.pipe(extract({ cwd: process.cwd() }))
+			const tarGetStream = extract({ cwd: process.cwd() })
+			streams.stdin.pipe(stream)
+			artifactStream.pipe(tarGetStream)
+			stream.stderr.pipe(streams.stderr)
 
-			// Get exit code from daemon.
-			const artifactExitSpec = (await once(artifactStream, 'close')) as ExitSpec
-			if (artifactExitSpec[0] === null) {
-				const [, artifactSignal, , artifactDesc] = artifactExitSpec
-				throw new FailedJobError(`${artifactSignal}: ${artifactDesc}`)
+			const [getCode] = (await once(artifactStream, 'close')) as ExitSpec
+			if (getCode !== 0) {
+				throw new FailedJobError()
 			}
 
 			return { status: code }
