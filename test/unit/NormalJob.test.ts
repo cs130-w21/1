@@ -116,6 +116,37 @@ describe('NormalJob', () => {
 		expect(job.getEnvironment()).toEqual(environment)
 	})
 
+	it('returns a recursively generated list of prerequisites', () => {
+		const environment: JobEnv = Object.freeze({ dockerImage: 'fake:latest' })
+		const job1 = new NormalJob({ target: '1', commands: [], environment })
+		const job2 = new NormalJob({ target: '2', commands: [], environment })
+		const job3 = new NormalJob({ target: '3', commands: [], environment })
+		const job4 = new NormalJob({ target: '4', commands: [], environment })
+		const job5 = new NormalJob({ target: '5', commands: [], environment })
+		const job6 = new NormalJob({ target: '6', commands: [], environment })
+		const job7 = new NormalJob({
+			target: '7',
+			prerequisiteJobs: new Set<Job>([job1, job2, job3]),
+			commands: [],
+			environment,
+		})
+		const job8 = new NormalJob({
+			target: '8',
+			prerequisiteJobs: new Set<Job>([job4, job5, job6]),
+			commands: [],
+			environment,
+		})
+		const job9 = new NormalJob({
+			target: '9',
+			prerequisiteJobs: new Set<Job>([job7, job8]),
+			commands: [],
+			environment,
+		})
+		const expectedArray = ['1', '2', '3', '4', '5', '6', '7', '8']
+		expect(job9.getDeepPrerequisitesIterable().sort()).toEqual(
+			expectedArray.sort(),
+		)
+	})
 	// This is testing deprecated behavior.
 	it('defaults to an environment with a docker image', () => {
 		const job = new NormalJob({ target: 'job', commands: [] })

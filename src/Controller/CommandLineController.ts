@@ -60,7 +60,7 @@ export function interpretArgv(argv: readonly string[]): ArgvData {
 	// Use only the first two elements; Node.js appends extra elements to process.argv.
 	const yargsArgv = yargs(argv)
 		.usage(
-			'Build a makefile target in parallel, given a docker image and' +
+			'Build a makefile target in parallel, given a docker image and ' +
 				'a list of targets\nUsage: ' +
 				'junknet docker-image [target1 target2...]',
 		)
