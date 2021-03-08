@@ -66,10 +66,13 @@ async function initializeClient(): Promise<void> {
 
 	process.on('SIGINT', () => {
 		console.log('\nClosing Daemons\n')
-
-		client.quit()
-
-		console.log('Exit Process\n')
+		try {
+			client.quit()
+		} catch (e: unknown) {
+			// No need to show the stacktrace to the user, this is "normal".
+		} finally {
+			console.log('Exit Process\n')
+		}
 	})
 
 	const browser = supplyClient(zeroconf, client)

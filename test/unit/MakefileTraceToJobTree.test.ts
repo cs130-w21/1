@@ -10,7 +10,7 @@ cc -c -o main.o main.c
 Makefile:3: update target 'execute' due to: funct.o main.o
 cc execute funct.o main.o
 echo Done`
-		const rootJobs = makefileTraceToJobTree(sample)
+		const rootJobs = makefileTraceToJobTree(sample, '')
 		expect(rootJobs.size).toEqual(1)
 
 		const rootJob = rootJobs.values().next().value as Job
@@ -26,7 +26,7 @@ Makefile:18: target 'build' does not exist
 mkdir -p build
 Makefile:2: update target 'test' due to: build/vader
 Nu test/vimrc -c 'Vader! test/**'`
-		const rootJobs = makefileTraceToJobTree(sample)
+		const rootJobs = makefileTraceToJobTree(sample, '')
 		expect(rootJobs.size).toEqual(2)
 	})
 
@@ -42,7 +42,7 @@ mkdir -p build/./src/
 cc -I./src -MMD -MP  -c src/f.c -o build/./src/f.c.o
 Makefile:16: update target 'build/a.out' due to: build/./src/a.c.o build/./src/b.c.o build/./src/f.c.o
 cc ./build/./src/a.c.o ./build/./src/b.c.o ./build/./src/f.c.o -o build/a.out `
-		const rootJobs = makefileTraceToJobTree(sample)
+		const rootJobs = makefileTraceToJobTree(sample, '')
 		expect(rootJobs.size).toEqual(1)
 
 		const rootJob = rootJobs.values().next().value as Job
@@ -67,7 +67,7 @@ echo cdir/c.c -> c.o
 ../makefile-tests/Makefile:17: update target 'ddir/d.o' due to: ddir/d.c
 echo ddir/d.c -> ddir/d.o
 make: Leaving directory '/Users/rohankhajuria/Desktop/makefile-tests'`
-		const rootJobs = makefileTraceToJobTree(sample)
+		const rootJobs = makefileTraceToJobTree(sample, '')
 		expect(rootJobs.size).toEqual(4)
 	})
 })
