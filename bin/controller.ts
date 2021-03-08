@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import bonjour from 'bonjour'
+import yargs from 'yargs'
 
 import { strict as assert } from 'assert'
 import {
@@ -25,10 +26,9 @@ if (cliArgs.cleanExit) {
 // we want `--help` messages to take priority over invalid arguments.
 if (cliArgs.invalidArguments) {
 	console.error(
-		new Error(
-			`Invalid arguments supplied: "${process.argv.slice(2).join(' ')}".`,
-		),
+		`Invalid arguments supplied: "${process.argv.slice(2).join(' ')}".`,
 	)
+	yargs.showHelp()
 	process.exit(1)
 }
 
@@ -66,10 +66,13 @@ async function initializeClient(): Promise<void> {
 
 	process.on('SIGINT', () => {
 		console.log('\nClosing Daemons\n')
-
-		client.quit()
-
-		console.log('Exit Process\n')
+		try {
+			client.quit()
+		} catch (e: unknown) {
+			// No need to show the stacktrace to the user, this is "normal".
+		} finally {
+			console.log('Exit Process\n')
+		}
 	})
 
 	const browser = supplyClient(zeroconf, client)

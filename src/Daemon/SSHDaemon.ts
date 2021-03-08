@@ -39,19 +39,14 @@ function handleAuthentication(ctx: AuthContext, info: ClientInfo): void {
 /**
  * Service a Junknet client's requests, such as running jobs and transferring artifacts.
  * @param runJob - A strategy for executing jobs.
+ * @param futureRoot - A future containing the path to the working directory.
  * @param session - A new incoming SSH session.
  */
-function handleSession(runJob: RunJob, session: Session): void {
-	const futureTempDir = createTempDir()
-	futureTempDir.catch(() => {
-		// Proactively catch the rejection to avoid a race condition.
-	})
-
-	session.on('close', () => {
-		// Close the tempdir if it was created. Any errors are irrelevant here.
-		futureTempDir.then((root) => destroyTempDir(root)).catch(() => {})
-	})
-
+function handleSession(
+	runJob: RunJob,
+	futureRoot: Promise<string>,
+	session: Session,
+): void {
 	session.on('exec', (accept, reject, info) => {
 		// `accept` and `reject` are only defined if the client wants a response.
 		// For Junknet, it doesn't make sense to run a job without a client waiting for it.
@@ -101,7 +96,7 @@ function handleSession(runJob: RunJob, session: Session): void {
 		}
 
 		// Once the temporary directory is ready:
-		futureTempDir
+		futureRoot
 			// Delegate based on the request type.
 			.then(handleRequest)
 			// Format all errors to the client.
@@ -132,7 +127,20 @@ export function createSSHDaemon(
 	server.on('connection', (client, info) => {
 		client.on('authentication', (ctx) => handleAuthentication(ctx, info))
 		client.on('ready', () => {
-			client.on('session', (accept) => handleSession(runJob, accept()))
+			// Create a per-connection working directory.
+			const futureTempDir = createTempDir()
+			futureTempDir.catch(() => {
+				// Proactively catch the rejection to avoid a race condition.
+			})
+
+			client.on('end', () => {
+				// Close the tempdir if it was created. Any errors are irrelevant here.
+				futureTempDir.then((root) => destroyTempDir(root)).catch(() => {})
+			})
+
+			client.on('session', (accept) => {
+				handleSession(runJob, futureTempDir, accept())
+			})
 		})
 		client.on('error', () => {
 			// TODO: If this does need to be logged, refactor the error handling.

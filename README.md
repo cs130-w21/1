@@ -2,11 +2,17 @@
 
 Zero-config distributed parallel processing. Junknet can parallelize your existing Makefiles among any number of machines on your LAN.
 
+## User Information
+
+For installation/usage help, please see our [user manual](https://github.com/cs130-w21/1/wiki/User-Manual).
+
 ## Prerequisites
 
 - [Docker](https://www.docker.com)
 
 ## Developer's Guide
+
+Our program's internal documentation is presented [here](https://junknet.netlify.app/).
 
 The [NPM scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) you'll use most are listed below. They operate on the TypeScript source code, so there is no separate <q>build step</q> to worry about.
 
