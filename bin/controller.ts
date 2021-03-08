@@ -57,7 +57,9 @@ async function initializeClient(): Promise<void> {
 		new HeapJobOrderer(rootJobs),
 	)
 	client.on('error', console.error)
-	client.on('progress', (job, result) => console.log(job, result.status))
+	client.on('progress', (job, result) =>
+		console.log('==>', 'Finished:', job.toString(), result.status, '<==', '\n'),
+	)
 	client.on('done', (success): void => {
 		console.log('Finished')
 		process.exitCode = +!success
@@ -71,12 +73,12 @@ async function initializeClient(): Promise<void> {
 		} catch (e: unknown) {
 			// No need to show the stacktrace to the user, this is "normal".
 		} finally {
-			console.log('Exit Process\n')
+			process.exit()
 		}
 	})
 
 	const browser = supplyClient(zeroconf, client)
-	browser.on('up', console.info)
+	browser.on('up', (srv) => console.info(srv, '\n'))
 	browser.on('down', console.info)
 }
 
