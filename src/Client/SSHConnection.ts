@@ -51,11 +51,7 @@ export const createSSHConnection: ConnectionFactory = async (host, port) => {
 			const putPayload = JSON.stringify(jobToPushInputs(job))
 			const pushInputStream = await promisify(conn.exec.bind(conn))(putPayload)
 			// We generate list of jobs to be tarred in the stream.
-			const arrayOfJobs: Array<Job> = job.getDeepPrerequisitesIterable()
-			const fileList: Array<string> = []
-			for (const subJob of arrayOfJobs) {
-				fileList.push(subJob.getName())
-			}
+			const fileList: Array<string> = job.getDeepPrerequisitesIterable()
 			// Create tar stream.
 			const tarStream = create({}, fileList)
 			// Send tarred contents to daemon.

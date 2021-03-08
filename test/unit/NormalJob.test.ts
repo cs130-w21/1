@@ -142,7 +142,7 @@ describe('NormalJob', () => {
 			commands: [],
 			environment,
 		})
-		const expectedArray = [job1, job2, job3, job7, job4, job5, job6, job8]
+		const expectedArray = ['1', '2', '3', '4', '5', '6', '7', '8']
 		expect(job9.getDeepPrerequisitesIterable().sort()).toEqual(
 			expectedArray.sort(),
 		)

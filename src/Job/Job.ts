@@ -53,7 +53,7 @@ export interface Job {
 	 *
 	 * @returns an array containing a deep scan of the Job's prerequisites.
 	 */
-	getDeepPrerequisitesIterable(): Array<Job>
+	getDeepPrerequisitesIterable(): string[]
 
 	/**
 	 * Gets the number of prerequisites that this Job has.

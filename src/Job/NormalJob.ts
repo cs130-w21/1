@@ -83,15 +83,22 @@ export class NormalJob implements Job {
 	 *
 	 * @returns a iterable containing a deep scan of the Job's prerequisites.
 	 */
-	public getDeepPrerequisitesIterable(): Array<Job> {
-		let childrenPrereqs: Array<Job> = []
+	public getDeepPrerequisitesIterable(): string[] {
+		let childrenPrereqs: Array<string> = []
 		for (const prereqJob of this.getPrerequisiteJobsIterable()) {
 			childrenPrereqs = childrenPrereqs.concat(
 				prereqJob.getDeepPrerequisitesIterable(),
 			)
 		}
+		// childrenPrereqs = childrenPrereqs.concat(
+		//	Array.from(this.getPrerequisiteJobsIterable())),
 		childrenPrereqs = childrenPrereqs.concat(
-			Array.from(this.getPrerequisiteJobsIterable()),
+			Array.from(this.getPrerequisiteJobsIterable()).map((preJob) =>
+				preJob.getName(),
+			),
+		)
+		childrenPrereqs = childrenPrereqs.concat(
+			Array.from(this.getPrerequisiteFilesIterable()),
 		)
 		//  childrenPrereqs.push(this)
 		return childrenPrereqs
